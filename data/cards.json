@@ -1,0 +1,32 @@
+
+[
+  {
+    "name": "Lugia",
+    "set_name": "Neo Genesis",
+    "number": "9/111",
+    "variant": "holo",
+    "first_edition_required": true
+  },
+  {
+    "name": "Charizard",
+    "set_name": "Base Set",
+    "number": "4/102",
+    "variant": "holo",
+    "first_edition_required": true
+  },
+  {
+    "name": "Umbreon",
+    "set_name": "Aquapolis",
+    "number": "H29/H32",
+    "variant": "holo",
+    "first_edition_required": false
+  },
+  {
+    "name": "Charizard",
+    "set_name": "Legendary Collection",
+    "number": "3/110",
+    "variant": "reverse_holo",
+    "first_edition_required": false
+  }
+]
+
