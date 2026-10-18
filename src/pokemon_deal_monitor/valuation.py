@@ -25,14 +25,21 @@ TCGPLAYER_RETRY_AFTER = timedelta(hours=1)
 
 # A listing qualifies when its total is at least this far below value.
 MIN_DISCOUNT = 0.10
-# Cards often sold as reprints under the original set's name, with nothing
-# in the listing to tell them apart. A discount beyond the limit is taken to
-# mean a reprint rather than a bargain.
+# An auction's current bid will rise before it ends, so it qualifies only
+# when the current total is this far below value. The suggested maximum bid
+# still keeps the final total MIN_DISCOUNT below value.
+MIN_AUCTION_DISCOUNT = 0.40
+# The most a suggested maximum bid can be, matching the eBay price filter.
+MAX_BID_CENTS = 500000
 # Sets with a minimum card value to alert on, in cents, to skip the many
 # promos worth only a few dollars.
 MIN_VALUE_CENTS = {
     "Wizards Black Star Promos": 5000,
 }
+# Cards often sold as reprints under the original set's name, with nothing
+# in the listing to tell them apart. A discount beyond the limit is taken to
+# mean a reprint rather than a bargain. Auctions of these cards are skipped,
+# since a low current bid says nothing about whether it's a reprint.
 MAX_PLAUSIBLE_DISCOUNTS = {
     # 30th Anniversary Lugia reprints listed as Aquapolis.
     "Aquapolis:149/147:holo:unlimited": 0.50,
@@ -64,6 +71,9 @@ class Deal:
     qualifies: bool
     # Why the listing does not qualify; empty when it does.
     reasons: tuple[str, ...] = ()
+    # For an auction, the most to bid so the total stays MIN_DISCOUNT below
+    # value. Without known shipping it leaves no room for shipping.
+    max_bid_cents: int | None = None
 
 
 def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
@@ -160,6 +170,41 @@ def evaluate_deal(
         discount=discount,
         qualifies=not reasons,
         reasons=tuple(reasons),
+    )
+
+
+def evaluate_auction(
+    total_cents: int,
+    shipping_cents: int,
+    valuation: Valuation,
+    card: PokemonCard | None = None,
+) -> Deal:
+    """Judge an auction's current bid against a card's value, and suggest
+    the most to bid."""
+    discount = 1 - total_cents / valuation.value_cents
+    max_bid_cents = min(
+        round(valuation.value_cents * (1 - MIN_DISCOUNT)) - shipping_cents,
+        MAX_BID_CENTS,
+    )
+
+    reasons = []
+    if not valuation.confident:
+        reasons.append("value not confident")
+    if total_cents > round(valuation.value_cents * (1 - MIN_AUCTION_DISCOUNT)):
+        reasons.append(f"current bid less than {MIN_AUCTION_DISCOUNT:.0%} below value")
+    min_value = MIN_VALUE_CENTS.get(card.set_name) if card else None
+    if min_value is not None and valuation.value_cents < min_value:
+        reasons.append(f"value below ${min_value / 100:,.0f}")
+    if card is not None and card.identifier in MAX_PLAUSIBLE_DISCOUNTS:
+        reasons.append("auctions skipped, reprints are often sold as this card")
+
+    return Deal(
+        total_cents=total_cents,
+        valuation=valuation,
+        discount=discount,
+        qualifies=not reasons,
+        reasons=tuple(reasons),
+        max_bid_cents=max_bid_cents,
     )
 
 

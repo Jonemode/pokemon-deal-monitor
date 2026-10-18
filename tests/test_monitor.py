@@ -1,5 +1,6 @@
 import json
 import unittest
+import urllib.parse
 from datetime import datetime, timedelta, timezone
 
 from pokemon_deal_monitor.ebay import EbayClient
@@ -7,13 +8,30 @@ from pokemon_deal_monitor.monitor import poll_once
 from pokemon_deal_monitor.storage import PriceRecord, Storage, UpsertResult
 from pokemon_deal_monitor.valuation import PRICECHARTING, TCGPLAYER, value_card
 
-from .fakes import CONFIG, FakeTransport, item_response, item_summary, search_response
+from .fakes import (
+    CONFIG,
+    FakeTransport,
+    auction_summary,
+    item_response,
+    item_summary,
+    search_response,
+)
 
 
 START = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
 
 LUGIA = "Lugia 9/111 Neo Genesis 1st Edition Holo LP"
 UMBREON = "Umbreon H29/H32 Aquapolis Holo LP"
+
+
+class FixedPricer:
+    """Values every card at $2,000."""
+
+    def valuation(self, card, now=None):
+        return value_card({
+            source: PriceRecord(card.identifier, source, START, raw_cents=200000)
+            for source in (PRICECHARTING, TCGPLAYER)
+        })
 
 
 class TestPollOnce(unittest.TestCase):
@@ -190,14 +208,6 @@ class TestPollOnce(unittest.TestCase):
         self.assertEqual(len(poll.errors), 1)
 
     def test_candidates_are_valued(self):
-        class FixedPricer:
-            def valuation(self, card, now=None):
-                return value_card({
-                    source: PriceRecord(card.identifier, source, START,
-                                        raw_cents=200000)
-                    for source in (PRICECHARTING, TCGPLAYER)
-                })
-
         client = EbayClient(CONFIG, transport=FakeTransport({
             "neo": search_response(
                 item_summary("1", LUGIA, "1400.00", "5.00"),
@@ -212,15 +222,39 @@ class TestPollOnce(unittest.TestCase):
         self.assertAlmostEqual(deals["1"].discount, 0.2975)
         self.assertFalse(deals["2"].qualifies)
 
-    def test_unsent_deal_stays_candidate_until_alerted(self):
-        class FixedPricer:
-            def valuation(self, card, now=None):
-                return value_card({
-                    source: PriceRecord(card.identifier, source, START,
-                                        raw_cents=200000)
-                    for source in (PRICECHARTING, TCGPLAYER)
-                })
+    def test_auctions_ending_soon(self):
+        transport = FakeTransport({
+            "auction:neo": search_response(
+                auction_summary("1", LUGIA, bid="900.00", shipping="5.00"),
+                auction_summary("2", UMBREON, bid="1500.00", shipping="5.00"),
+            ),
+        })
+        client = EbayClient(CONFIG, transport=transport)
+        poll = poll_once(client, self.storage, queries=["neo"], now=START,
+                         pricer=FixedPricer(), auctions=True)
 
+        self.assertIn("itemEndDate:[..2026-10-17T14:00:00Z]",
+                      urllib.parse.unquote(transport.search_requests[0].full_url))
+        deals = {c.item.item_id: c.deal for c in poll.candidates}
+        self.assertTrue(deals["1"].qualifies)
+        self.assertEqual(deals["1"].max_bid_cents, 179500)
+        self.assertFalse(deals["2"].qualifies)
+
+    def test_auction_alerted_once_as_bids_rise(self):
+        def poll(bid, now):
+            client = EbayClient(CONFIG, transport=FakeTransport({
+                "auction:neo": search_response(
+                    auction_summary("1", LUGIA, bid=bid)),
+            }))
+            return poll_once(client, self.storage, queries=["neo"], now=now,
+                             pricer=FixedPricer(), auctions=True)
+
+        poll("500.00", START)
+        self.storage.record_alert("1", now=START)
+        later = poll("700.00", START + timedelta(minutes=15))
+        self.assertEqual(later.candidates, [])
+
+    def test_unsent_deal_stays_candidate_until_alerted(self):
         def poll():
             client = EbayClient(CONFIG, transport=FakeTransport({
                 "neo": search_response(

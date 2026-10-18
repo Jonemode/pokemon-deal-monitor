@@ -3,6 +3,7 @@ import json
 import urllib.parse
 import urllib.request
 import unittest
+from datetime import datetime, timezone
 from unittest import mock
 
 from pokemon_deal_monitor.config import EbayConfig
@@ -18,6 +19,7 @@ from pokemon_deal_monitor.ebay import (
 from .fakes import (
     CONFIG,
     FakeTransport,
+    auction_summary,
     item_response,
     item_summary,
     search_response,
@@ -212,6 +214,46 @@ class TestEbayClient(unittest.TestCase):
         transport = FakeTransport(items={"1": (200, json.dumps(item).encode())})
         details = EbayClient(CONFIG, transport=transport).item_details("1")
         self.assertIsNone(details.card_condition)
+
+    def test_auction_search(self):
+        transport = FakeTransport({"auction:q": search_response(
+            auction_summary("1", "Lugia", bid="250.00", bids=4,
+                            ends="2026-10-17T13:30:00.000Z"),
+        )})
+        (item,) = EbayClient(CONFIG, transport=transport).search(
+            "q", auctions_ending_before=datetime(2026, 10, 17, 14, 0,
+                                                 tzinfo=timezone.utc),
+        )
+
+        params = urllib.parse.parse_qs(
+            urllib.parse.urlsplit(transport.search_requests[0].full_url).query
+        )
+        self.assertEqual(params["filter"][0],
+                         "buyingOptions:{AUCTION},"
+                         "itemEndDate:[..2026-10-17T14:00:00Z],"
+                         "price:[..5000],priceCurrency:USD")
+        self.assertEqual(params["sort"][0], "endingSoonest")
+        self.assertTrue(item.auction)
+        self.assertEqual(item.price_cents, 25000)
+        self.assertEqual(item.bid_count, 4)
+        self.assertEqual(item.ends_at,
+                         datetime(2026, 10, 17, 13, 30, tzinfo=timezone.utc))
+
+    def test_auction_current_bid_not_buy_it_now_price(self):
+        summary = auction_summary("1", "Lugia", bid="250.00")
+        summary["price"] = {"value": "900.00", "currency": "USD"}
+        transport = FakeTransport({"auction:q": search_response(summary)})
+        (item,) = EbayClient(CONFIG, transport=transport).search(
+            "q", auctions_ending_before=datetime(2026, 10, 17, tzinfo=timezone.utc),
+        )
+        self.assertEqual(item.price_cents, 25000)
+
+    def test_reserve_met(self):
+        transport = FakeTransport(items={"1": item_response(reserve_met=False),
+                                         "2": item_response()})
+        client = EbayClient(CONFIG, transport=transport)
+        self.assertIs(client.item_details("1").reserve_met, False)
+        self.assertIsNone(client.item_details("2").reserve_met)
 
     def test_search_failure(self):
         transport = FakeTransport({"q": (429, b"rate limited")})

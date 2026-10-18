@@ -118,7 +118,9 @@ REJECT_PATTERNS = [
     r"\b(?:prerelease|pre release|winner)\b",
     r"(?<!edition )(?<!1st ed )(?<!1st )\bstamp(?:ed)?\b",
     # Modern promo codes such as SWSH050, SM210 or SVP 085.
-    r"\b(?:swsh|sm|xy|bw|dp|hgss|svp|sv) ?\d{1,3}\b",
+    r"\b(?:swsh|sm|xy|bw|dp|hgss|svp|sv|mep) ?\d{1,3}\b",
+    # Mega Evolutions, and the Mega Evolution series, came long after WotC.
+    r"\bmega\b",
     # Condition is deliberately not judged from titles, where "HP" usually
     # means hit points; eBay's Card Condition field is used instead.
 ]

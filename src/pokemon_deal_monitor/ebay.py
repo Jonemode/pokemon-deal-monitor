@@ -6,6 +6,7 @@ import urllib.parse
 import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
 
 from .config import EbayConfig
@@ -61,6 +62,10 @@ class EbayItem:
     condition: str | None = None
     image_url: str | None = None
     created_at: str | None = None
+    # For an auction, price_cents is the current bid.
+    auction: bool = False
+    ends_at: datetime | None = None
+    bid_count: int | None = None
 
     def to_listing(
         self,
@@ -106,6 +111,8 @@ class ItemDetails:
     # The "Card Condition" of an ungraded card, e.g. "Near mint or better".
     card_condition: str | None = None
     language: str | None = None
+    # An auction's reserve: None when it has none or eBay doesn't say.
+    reserve_met: bool | None = None
 
 
 # eBay's Card Condition values. Sellers on other eBay sites get descriptor
@@ -143,12 +150,30 @@ def parse_details(item: dict) -> ItemDetails:
         ),
         None,
     )
-    return ItemDetails(card_condition=card_condition, language=language)
+    return ItemDetails(
+        card_condition=card_condition,
+        language=language,
+        reserve_met=item.get("reservePriceMet"),
+    )
 
 
-def parse_item(summary: dict) -> EbayItem | None:
-    """Convert a Browse API itemSummary, or None if it lacks a price."""
-    price = summary.get("price")
+def parse_time(value: str | None) -> datetime | None:
+    if value is None:
+        return None
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def format_time(value: datetime) -> str:
+    return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def parse_item(summary: dict, auction: bool = False) -> EbayItem | None:
+    """Convert a Browse API itemSummary, or None if it lacks a price.
+
+    For an auction the price is the current bid, not any Buy It Now price.
+    """
+    price = summary.get("currentBidPrice") if auction else None
+    price = price or summary.get("price")
     if not price or "value" not in price:
         return None
 
@@ -162,6 +187,9 @@ def parse_item(summary: dict) -> EbayItem | None:
         condition=summary.get("condition"),
         image_url=summary.get("image", {}).get("imageUrl"),
         created_at=summary.get("itemCreationDate"),
+        auction=auction,
+        ends_at=parse_time(summary.get("itemEndDate")) if auction else None,
+        bid_count=summary.get("bidCount") if auction else None,
     )
 
 
@@ -210,25 +238,42 @@ class EbayClient:
         )
         return self._token
 
-    def search(self, query: str, limit: int = PAGE_LIMIT) -> list[EbayItem]:
-        """Return the newest Buy It Now card listings matching a query."""
+    def search(
+        self,
+        query: str,
+        limit: int = PAGE_LIMIT,
+        auctions_ending_before: datetime | None = None,
+    ) -> list[EbayItem]:
+        """Return the newest Buy It Now card listings matching a query, or
+        with auctions_ending_before, auctions ending by then, soonest first."""
+        if auctions_ending_before is None:
+            buying_filter = "buyingOptions:{FIXED_PRICE}"
+            sort = "newlyListed"
+        else:
+            buying_filter = (
+                "buyingOptions:{AUCTION},"
+                f"itemEndDate:[..{format_time(auctions_ending_before)}]"
+            )
+            sort = "endingSoonest"
         params = urllib.parse.urlencode({
             "q": query,
             "category_ids": CCG_INDIVIDUAL_CARDS_CATEGORY,
             "filter": (
-                "buyingOptions:{FIXED_PRICE},"
+                f"{buying_filter},"
                 f"price:[..{MAX_PRICE_USD}],priceCurrency:USD"
             ),
-            "sort": "newlyListed",
+            "sort": sort,
             "limit": str(limit),
         })
         url = f"{self.host}/buy/browse/v1/item_summary/search?{params}"
 
+        auction = auctions_ending_before is not None
         summaries = self._get_json(url).get("itemSummaries", [])
-        return [item for item in map(parse_item, summaries) if item is not None]
+        items = (parse_item(summary, auction) for summary in summaries)
+        return [item for item in items if item is not None]
 
     def item_details(self, item_id: str) -> ItemDetails:
-        """Return a listing's card condition and language."""
+        """Return a listing's card condition, language and reserve."""
         quoted = urllib.parse.quote(item_id, safe="")
         return parse_details(
             self._get_json(f"{self.host}/buy/browse/v1/item/{quoted}")

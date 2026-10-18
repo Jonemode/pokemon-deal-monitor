@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from .ebay import EbayClient, EbayError, EbayItem, ItemDetails
 from .matcher import Match, match_listing
 from .storage import Listing, Storage, UpsertResult, utc_now
-from .valuation import Deal, Pricer, evaluate_deal
+from .valuation import Deal, Pricer, evaluate_auction, evaluate_deal
 
 
 logger = logging.getLogger(__name__)
@@ -29,6 +29,12 @@ SEARCH_QUERIES = [
 ]
 
 DEFAULT_POLL_INTERVAL_SECONDS = 300
+
+# Auctions are searched less often, keeping total calls under the daily
+# limit, and only those ending within the window: late enough that the
+# current bid means something, early enough to place a bid.
+AUCTION_POLL_INTERVAL = timedelta(minutes=15)
+AUCTION_WINDOW = timedelta(hours=2)
 
 # Searches only return the newest listings, so a listing missing from one
 # poll may still be live. Only treat it as ended after this long unseen.
@@ -84,13 +90,17 @@ def stored_details(storage: Storage, item_id: str) -> ItemDetails | None:
 
 
 def value_listing(
-    pricer: Pricer | None, match: Match, listing: Listing, now: datetime
+    pricer: Pricer | None, match: Match, item: EbayItem, listing: Listing,
+    now: datetime,
 ) -> Deal | None:
     if pricer is None:
         return None
     valuation = pricer.valuation(match.card, now=now)
     if valuation is None:
         return None
+    if item.auction:
+        return evaluate_auction(listing.total_cents, listing.shipping_cents,
+                                valuation, match.card)
     return evaluate_deal(listing.total_cents, listing.shipping_known, valuation,
                          match.card)
 
@@ -101,8 +111,12 @@ def poll_once(
     queries: list[str] = SEARCH_QUERIES,
     now: datetime | None = None,
     pricer: Pricer | None = None,
+    auctions: bool = False,
 ) -> PollResult:
     """Search eBay once, store every listing, and return alert candidates.
+
+    Searches Buy It Now listings, or with auctions, auctions ending within
+    AUCTION_WINDOW.
 
     A candidate is a matched listing not yet alerted on at this price that
     is new, changed price, or qualifies as a deal. Unchanged deals stay
@@ -114,12 +128,14 @@ def poll_once(
     # Cleared when eBay rate limits or rejects a details lookup, since the
     # rest would fail too. Listings without details wait for the next poll.
     can_fetch_details = True
+    ending_before = now + AUCTION_WINDOW if auctions else None
+    kind = "auctions" if auctions else "Buy It Now"
 
     for index, query in enumerate(queries, 1):
         progress = f"[{index}/{len(queries)}]"
-        logger.info("%s Searching %r", progress, query)
+        logger.info("%s Searching %s %r", progress, kind, query)
         try:
-            items = client.search(query)
+            items = client.search(query, auctions_ending_before=ending_before)
         except EbayError as error:
             logger.warning("Search %r failed: %s", query, error)
             poll.errors.append(f"{query}: {error}")
@@ -171,7 +187,7 @@ def poll_once(
             if details_rejection(details) is not None:
                 continue
 
-            deal = value_listing(pricer, best, listing, now)
+            deal = value_listing(pricer, best, item, listing, now)
             if result != UpsertResult.UNCHANGED or (deal and deal.qualifies):
                 poll.candidates.append(
                     Candidate(item, best, result, deal, details)

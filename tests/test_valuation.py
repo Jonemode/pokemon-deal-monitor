@@ -9,6 +9,7 @@ from pokemon_deal_monitor.valuation import (
     PRICECHARTING,
     TCGPLAYER,
     Pricer,
+    evaluate_auction,
     evaluate_deal,
     value_card,
 )
@@ -141,6 +142,33 @@ class TestEvaluateDeal(unittest.TestCase):
 
         at_minimum = value_card({PRICECHARTING: record(PRICECHARTING, raw=5000)})
         self.assertTrue(evaluate_deal(4000, True, at_minimum, mewtwo).qualifies)
+
+    def test_auction_current_bid_well_below_value(self):
+        deal = evaluate_auction(120000, 500, self.valuation)
+        self.assertTrue(deal.qualifies)
+        self.assertAlmostEqual(deal.discount, 0.40)
+        # 10% under the $2,000 value, less $5 shipping.
+        self.assertEqual(deal.max_bid_cents, 179500)
+
+    def test_auction_current_bid_not_low_enough(self):
+        deal = evaluate_auction(120001, 500, self.valuation)
+        self.assertFalse(deal.qualifies)
+        self.assertEqual(deal.reasons, ("current bid less than 40% below value",))
+
+    def test_auction_max_bid_capped(self):
+        valuation = value_card({PRICECHARTING: record(PRICECHARTING, raw=900000)})
+        deal = evaluate_auction(100000, 0, valuation)
+        self.assertEqual(deal.max_bid_cents, 500000)
+
+    def test_auctions_of_reprinted_cards_skipped(self):
+        lugia = PokemonCard("Lugia", "Aquapolis", "149/147", Variant.HOLO,
+                            Edition.UNLIMITED, Rarity.CRYSTAL)
+        deal = evaluate_auction(50000, 500, self.valuation, lugia)
+        self.assertFalse(deal.qualifies)
+        self.assertEqual(
+            deal.reasons,
+            ("auctions skipped, reprints are often sold as this card",),
+        )
 
     def test_value_not_confident(self):
         valuation = value_card({TCGPLAYER: record(TCGPLAYER, raw=200000)})

@@ -4,7 +4,7 @@ import sys
 import time
 from collections.abc import Callable
 
-from .alerts import format_dollars, sample_alert, send_alerts
+from .alerts import format_dollars, format_time_left, sample_alert, send_alerts
 from .config import (
     TelegramConfig,
     load_ebay_config,
@@ -12,7 +12,12 @@ from .config import (
     load_telegram_config,
 )
 from .ebay import EbayClient
-from .monitor import DEFAULT_POLL_INTERVAL_SECONDS, PollResult, poll_once
+from .monitor import (
+    AUCTION_POLL_INTERVAL,
+    DEFAULT_POLL_INTERVAL_SECONDS,
+    PollResult,
+    poll_once,
+)
 from .pricecharting import PriceChartingClient, load_product_ids
 from .storage import Storage, utc_now
 from .telegram import TelegramClient, TelegramError
@@ -32,6 +37,8 @@ def describe_deal(candidate) -> str:
         f"({', '.join(f'{k} {format_dollars(v)}' for k, v in valuation.estimates.items())})"
         f", discount {deal.discount:.0%}"
     )
+    if deal.max_bid_cents is not None:
+        summary += f", max bid {format_dollars(deal.max_bid_cents)}"
     if valuation.warnings:
         summary += f" [warning: {', '.join(valuation.warnings)}]"
     if deal.qualifies:
@@ -61,6 +68,9 @@ def report(poll: PollResult) -> None:
             item.url,
         )
         logger.info("    %s", item.title)
+        if item.auction:
+            logger.info("    auction, %s, %s bids",
+                        format_time_left(item.ends_at, utc_now()), item.bid_count)
         logger.info("    %s", describe_deal(candidate))
 
 
@@ -116,8 +126,8 @@ def build_notifier() -> Callable[[str], None] | None:
     )
 
 
-def poll_and_alert(client, storage, pricer, notify) -> None:
-    poll = poll_once(client, storage, pricer=pricer)
+def poll_and_alert(client, storage, pricer, notify, auctions=False) -> None:
+    poll = poll_once(client, storage, pricer=pricer, auctions=auctions)
     report(poll)
     if notify is not None:
         sent = send_alerts(poll, storage, notify)
@@ -171,12 +181,24 @@ def main() -> None:
         )
         if args.command == "poll":
             poll_and_alert(client, storage, pricer, notify)
+            poll_and_alert(client, storage, pricer, notify, auctions=True)
             return
 
+        # Auctions are searched on every third poll at the default interval,
+        # with a second's leeway in case a sleep wakes slightly early.
+        last_auction_poll = None
         while True:
             started = time.monotonic()
+            auctions_due = (
+                last_auction_poll is None
+                or started - last_auction_poll
+                >= AUCTION_POLL_INTERVAL.total_seconds() - 1
+            )
             try:
                 poll_and_alert(client, storage, pricer, notify)
+                if auctions_due:
+                    last_auction_poll = started
+                    poll_and_alert(client, storage, pricer, notify, auctions=True)
             except Exception:
                 # Keep the monitor alive through transient network failures.
                 logger.exception("Poll failed")

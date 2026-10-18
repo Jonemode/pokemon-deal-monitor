@@ -190,6 +190,8 @@ REJECTED_TITLES = [
     "Pikachu SWSH020 Black Star Promo",
     "Mewtwo SM 210 Black Star Promo",
     "Pikachu #4 Nintendo Black Star Promo",
+    "Pokémon Mega Venusaur EX Black Star Promo 013 Mega Evolution NM",
+    "Charizard MEP 005 Black Star Promo",
     # Southern Islands cards that only come as non-holo, or "Regular".
     "Butterfree 09/18 Southern Islands Regular",
     "Pidgeot 02/18 Southern Islands - Pokemon TCG Vintage",

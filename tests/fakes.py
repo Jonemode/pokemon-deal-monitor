@@ -34,8 +34,23 @@ def item_summary(item_id, title, price="100.00", shipping="5.00",
     return summary
 
 
-def item_response(card_condition="Near mint or better", language="English"):
+def auction_summary(item_id, title, bid="100.00", shipping="5.00", bids=3,
+                    ends="2026-10-17T13:00:00.000Z"):
+    summary = item_summary(item_id, title, price=bid, shipping=shipping)
+    summary.update({
+        "buyingOptions": ["AUCTION"],
+        "currentBidPrice": {"value": bid, "currency": "USD"},
+        "bidCount": bids,
+        "itemEndDate": ends,
+    })
+    return summary
+
+
+def item_response(card_condition="Near mint or better", language="English",
+                  reserve_met=None):
     item = {"conditionDescriptors": [], "localizedAspects": []}
+    if reserve_met is not None:
+        item["reservePriceMet"] = reserve_met
     if card_condition is not None:
         item["conditionDescriptors"].append({
             "name": "Card Condition",
@@ -54,7 +69,8 @@ def search_response(*summaries):
 
 class FakeTransport:
     """Serves the token endpoint, canned search results by query, and
-    listing details by item ID (NM and English unless given)."""
+    listing details by item ID (NM and English unless given). Auction
+    searches are looked up as "auction:" plus the query."""
 
     def __init__(self, searches=None, token=None, items=None):
         self.searches = searches or {}
@@ -70,9 +86,10 @@ class FakeTransport:
             item_id = urllib.parse.unquote(request.full_url.rsplit("/", 1)[1])
             return self.items.get(item_id, item_response())
 
-        query = urllib.parse.parse_qs(
-            urllib.parse.urlsplit(request.full_url).query
-        )["q"][0]
+        params = urllib.parse.parse_qs(urllib.parse.urlsplit(request.full_url).query)
+        query = params["q"][0]
+        if "AUCTION" in params["filter"][0]:
+            query = "auction:" + query
         response = self.searches.get(query, search_response())
         if isinstance(response, list):
             return response.pop(0)

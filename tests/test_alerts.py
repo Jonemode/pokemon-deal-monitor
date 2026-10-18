@@ -1,14 +1,20 @@
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from pokemon_deal_monitor.alerts import format_alert, sample_alert, send_alerts
 from pokemon_deal_monitor.catalog import Edition, PokemonCard, Rarity, Variant
-from pokemon_deal_monitor.ebay import EbayItem
+from pokemon_deal_monitor.ebay import EbayItem, ItemDetails
 from pokemon_deal_monitor.matcher import Match
 from pokemon_deal_monitor.monitor import Candidate, PollResult
 from pokemon_deal_monitor.storage import PriceRecord, Storage, UpsertResult
 from pokemon_deal_monitor.telegram import TelegramError
-from pokemon_deal_monitor.valuation import PRICECHARTING, TCGPLAYER, evaluate_deal, value_card
+from pokemon_deal_monitor.valuation import (
+    PRICECHARTING,
+    TCGPLAYER,
+    evaluate_auction,
+    evaluate_deal,
+    value_card,
+)
 
 
 START = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
@@ -32,7 +38,40 @@ def candidate(item_id, price_cents, pricecharting=200000, tcgplayer=200000,
                      evaluate_deal(price_cents + 500, True, value_card(prices)))
 
 
+def auction_candidate(bid_cents, shipping_cents=500, bids=3,
+                      reserve_met=None):
+    valuation = value_card({PRICECHARTING: PriceRecord(
+        LUGIA.identifier, PRICECHARTING, START, raw_cents=200000)})
+    item = EbayItem(item_id="1", title="Lugia 9/111 Neo Genesis 1st Edition",
+                    url="https://www.ebay.com/itm/1", price_cents=bid_cents,
+                    currency="USD", shipping_cents=shipping_cents,
+                    auction=True, ends_at=START + timedelta(hours=1, minutes=25),
+                    bid_count=bids)
+    total = bid_cents + (shipping_cents or 0)
+    return Candidate(item, Match(LUGIA, 1.0), UpsertResult.NEW,
+                     evaluate_auction(total, shipping_cents or 0, valuation),
+                     ItemDetails(reserve_met=reserve_met))
+
+
 class TestFormatAlert(unittest.TestCase):
+
+    def test_auction_alert(self):
+        self.assertEqual(
+            format_alert(auction_candidate(80000), now=START),
+            "<b>Lugia</b> · Neo Genesis\n"
+            "<b>Auction</b> · ends in 1h 25m · 3 bids\n"
+            "Current bid $805.00 with shipping · 60% under value\n"
+            "<b>Max bid $1,795.00</b> to pay 10% under the $2,000.00 value\n"
+            '<a href="https://www.ebay.com/itm/1">https://www.ebay.com/itm/1</a>',
+        )
+
+    def test_auction_alert_without_shipping_or_reserve(self):
+        text = format_alert(auction_candidate(80000, None, bids=1,
+                                              reserve_met=False), now=START)
+        self.assertIn("· 1 bid\n", text)
+        self.assertIn("$800.00 + unknown shipping", text)
+        self.assertIn("$2,000.00 value, before shipping\n", text)
+        self.assertIn("Reserve not met\n", text)
 
     def test_alert_contents(self):
         self.assertEqual(

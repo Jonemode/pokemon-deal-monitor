@@ -11,7 +11,13 @@ from .matcher import Match
 from .monitor import Candidate, PollResult
 from .storage import PriceRecord, Storage, UpsertResult, utc_now
 from .telegram import TelegramError
-from .valuation import PRICECHARTING, TCGPLAYER, evaluate_deal, value_card
+from .valuation import (
+    MIN_DISCOUNT,
+    PRICECHARTING,
+    TCGPLAYER,
+    evaluate_deal,
+    value_card,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -20,20 +26,46 @@ def format_dollars(cents: int) -> str:
     return f"${cents / 100:,.2f}"
 
 
-def format_alert(candidate: Candidate) -> str:
-    """Return a short Telegram HTML message: card, discount, total, link."""
+def format_time_left(ends_at: datetime | None, now: datetime) -> str:
+    if ends_at is None:
+        return "end time unknown"
+    minutes = max(0, int((ends_at - now).total_seconds() // 60))
+    hours, minutes = divmod(minutes, 60)
+    return f"ends in {hours}h {minutes}m" if hours else f"ends in {minutes}m"
+
+
+def format_alert(candidate: Candidate, now: datetime | None = None) -> str:
+    """Return a short Telegram HTML message: card, discount, total, link.
+
+    An auction's alert gives the time left, bids and current bid, and leads
+    with the suggested maximum bid.
+    """
     card = candidate.match.card
     deal = candidate.deal
-    url = html.escape(candidate.item.url)
-    if candidate.item.shipping_cents is None:
+    item = candidate.item
+    url = html.escape(item.url)
+    if item.shipping_cents is None:
         price = f"{format_dollars(deal.total_cents)} + unknown shipping"
     else:
         price = f"{format_dollars(deal.total_cents)} with shipping"
-    return (
-        f"<b>{html.escape(card.name)}</b> · {html.escape(card.set_name)}\n"
-        f"<b>{deal.discount:.0%} off</b> · {price}\n"
-        f'<a href="{url}">{url}</a>'
-    )
+    heading = f"<b>{html.escape(card.name)}</b> · {html.escape(card.set_name)}\n"
+    link = f'<a href="{url}">{url}</a>'
+    if not item.auction:
+        return heading + f"<b>{deal.discount:.0%} off</b> · {price}\n" + link
+
+    bids = f"{item.bid_count} bid{'' if item.bid_count == 1 else 's'}"
+    lines = [
+        f"<b>Auction</b> · {format_time_left(item.ends_at, now or utc_now())}"
+        f" · {bids}",
+        f"Current bid {price} · {deal.discount:.0%} under value",
+        f"<b>Max bid {format_dollars(deal.max_bid_cents)}</b> to pay"
+        f" {MIN_DISCOUNT:.0%} under the"
+        f" {format_dollars(deal.valuation.value_cents)} value"
+        + ("" if item.shipping_cents is not None else ", before shipping"),
+    ]
+    if candidate.details is not None and candidate.details.reserve_met is False:
+        lines.append("Reserve not met")
+    return heading + "\n".join(lines) + "\n" + link
 
 
 def send_alerts(
@@ -57,7 +89,7 @@ def send_alerts(
     sent = 0
     for candidate in deals:
         try:
-            send(format_alert(candidate))
+            send(format_alert(candidate, now))
         except (TelegramError, OSError) as error:
             # Telegram is down or rate limiting: the rest would fail too.
             logger.warning("Sending alert for %s failed: %s",
