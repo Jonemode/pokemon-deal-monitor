@@ -56,7 +56,7 @@ class TestCardData(unittest.TestCase):
         for card in self.cards:
             expected = (
                 Variant.REVERSE_HOLO
-                if card.set_name == "Legendary Collection"
+                if card.set_name in ("Legendary Collection", "Southern Islands")
                 else Variant.HOLO
             )
             self.assertEqual(card.variant, expected, card.identifier)

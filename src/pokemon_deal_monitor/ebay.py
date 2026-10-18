@@ -70,6 +70,8 @@ class EbayItem:
             currency=self.currency,
             card_identifier=card_identifier,
             match_confidence=match_confidence,
+            condition=self.condition,
+            shipping_known=self.shipping_cents is not None,
         )
 
 

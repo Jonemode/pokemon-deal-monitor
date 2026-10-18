@@ -56,6 +56,13 @@ class TestParsing(unittest.TestCase):
         item = parse_item(item_summary("1", "Lugia", shipping=None))
         self.assertIsNone(item.shipping_cents)
         self.assertEqual(item.to_listing().shipping_cents, 0)
+        self.assertFalse(item.to_listing().shipping_known)
+
+    def test_listing_keeps_condition(self):
+        item = parse_item(item_summary("1", "Lugia", condition="Graded"))
+        listing = item.to_listing()
+        self.assertEqual(listing.condition, "Graded")
+        self.assertTrue(listing.shipping_known)
 
     def test_missing_price_is_skipped(self):
         summary = item_summary("1", "Lugia")

@@ -70,8 +70,9 @@ def poll_once(
         except EbayError as error:
             logger.warning("Search %r failed: %s", query, error)
             poll.errors.append(f"{query}: {error}")
-            if error.status == 429:
-                # Rate limited: further searches this poll would fail too.
+            if error.status in (401, 429):
+                # Bad credentials or rate limited: further searches this
+                # poll would fail too.
                 break
             continue
 

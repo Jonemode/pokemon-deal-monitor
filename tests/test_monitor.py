@@ -101,6 +101,15 @@ class TestPollOnce(unittest.TestCase):
         self.assertEqual(len(poll.errors), 1)
         self.assertEqual(poll.items_seen, 0)
 
+    def test_authentication_failure_stops_poll(self):
+        client = EbayClient(CONFIG, transport=FakeTransport(
+            {"neo": search_response(), "aquapolis": search_response()},
+            token=(401, b'{"error": "invalid_client"}'),
+        ))
+        poll = poll_once(client, self.storage, queries=["neo", "aquapolis"])
+
+        self.assertEqual(len(poll.errors), 1)
+
     def test_long_unseen_listing_is_ended(self):
         self.poll({"neo": search_response(item_summary("1", LUGIA))})
         self.poll({"neo": search_response()}, now=START + timedelta(hours=25))

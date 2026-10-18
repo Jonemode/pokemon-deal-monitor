@@ -42,7 +42,9 @@ TARGET_SETS = [
     ("ecard1", "Expedition", "unlimited", "holo", {"Rare Holo"}),
     ("ecard2", "Aquapolis", "unlimited", "holo", {"Rare Holo", "Rare Secret"}),
     ("ecard3", "Skyridge", "unlimited", "holo", {"Rare Holo", "Rare Secret"}),
-    ("si1", "Southern Islands", "unlimited", "holo", None),
+    # English Southern Islands cards come as Regular and Reverse Holo; only
+    # the reverse holos are targeted.
+    ("si1", "Southern Islands", "unlimited", "reverse_holo", None),
     ("base6", "Legendary Collection", "unlimited", "reverse_holo", None),
 ]
 

@@ -72,12 +72,16 @@ MATCHING_TITLES = [
     ("Gengar H9/H32 Skyridge Holo NM",
      ["Skyridge:H9/H32:holo:unlimited"]),
     # Southern Islands
-    ("Mew 1/18 Southern Islands Promo",
-     ["Southern Islands:1/18:holo:unlimited"]),
     ("Southern Islands Mew 01/18 Reverse Holo Promo",
-     ["Southern Islands:1/18:holo:unlimited"]),
+     ["Southern Islands:1/18:reverse_holo:unlimited"]),
     ("Marill 11/18 Southern Islands Holo",
-     ["Southern Islands:11/18:holo:unlimited"]),
+     ["Southern Islands:11/18:reverse_holo:unlimited"]),
+    ("Mew 1/18 Southern Islands Reverse Cosmo Holo WOTC 2001",
+     ["Southern Islands:1/18:reverse_holo:unlimited"]),
+    ("Pokémon TCG Slowking Southern Islands 14/18 Reverse Holo SWIRL 🌀 Promo Card",
+     ["Southern Islands:14/18:reverse_holo:unlimited"]),
+    ("Nintendo Vileplume 17/18 Southern Islands Holo Rare English 2001 70 HP",
+     ["Southern Islands:17/18:reverse_holo:unlimited"]),
     # Legendary Collection
     ("Charizard 3/110 Legendary Collection Reverse Holo",
      ["Legendary Collection:3/110:reverse_holo:unlimited"]),
@@ -92,6 +96,20 @@ MATCHING_TITLES = [
      ["Legendary Collection:14/110:reverse_holo:unlimited"]),
     ("2002 Pokemon Legendary Collection Flareon Reverse Holo #10/110",
      ["Legendary Collection:10/110:reverse_holo:unlimited"]),
+    ("Articuno 2/110 Legendary Collection Reverse Holo",
+     ["Legendary Collection:2/110:reverse_holo:unlimited"]),
+    ("2002 POKEMON LEGENDARY COLLECTION #86 PIKACHU-REVERSE FOIL - LP",
+     ["Legendary Collection:86/110:reverse_holo:unlimited"]),
+    ("Pokemon - Legendary LC - Haunter - 46/110 - LP - Reverse Holo",
+     ["Legendary Collection:46/110:reverse_holo:unlimited"]),
+    ("VTG 2001 Pokemon Southern Islands Slowking 14/18 Reverse Holo Promo W/ Swirl LP",
+     ["Southern Islands:14/18:reverse_holo:unlimited"]),
+    ("Machamp [1st Edition] #8 Holo Rare Pokemon Base Set",
+     ["Base Set:8/102:holo:1st"]),
+    ("Pokemon TCG Machamp 8/102 1st Edition Base Set 1999 SEALED NM",
+     ["Base Set:8/102:holo:1st"]),
+    ("Hypno Holo Pokemon e-Card Series Aquapolis #H12 2003",
+     ["Aquapolis:H12/H32:holo:unlimited"]),
 ]
 
 # Titles that must not match any catalog card.
@@ -120,6 +138,23 @@ REJECTED_TITLES = [
     "Charizard 1st Edition Holo Pokemon",
     # Real eBay titles
     "Mew 019/165 Expedition Base Set Reverse Holo Rare - NM/MINT",
+    "Rare Item PSA7 Mew Old Back Southern Island O16",
+    "PSA10 Pidgeot Old Back Southern Island Pokemon Pokeca O16",
+    "Mew Movie Release Commemoration Pack Southern Island O16",
+    "Nintendo Pokémon TCG Steelix Haganeeru Neo Genesis JP 1st Ed Holo No.208",
+    "Pokemon Southern Islands Rainbow Island 9 Card Set Mew Sealed 1999",
+    "VILEPLUME SOUTHERN ISLANDS PROMO POKEMON 3 CARD SET 1998 US SELLER FAST SHIPPING",
+    "Abra, Alakazam, Hypno & Wartortle legendary collection collection reverse holo !",
+    "Pokemon Alakazam 33/165 Expedition Holo Rare Stage 2 100 HP EN 2002",
+    "Nintendo Pokemon TCG Expedition Typhlosion 65/165 Holo Rare 2002 100HP",
+    "Ninetales 12/102 Base Set Shadowless Holo Pokemon vintage (Not 1st edition)LP-MP",
+    "WOTC Magnemite 91/147 Aquapolis Reverse Holo foreign 🇮🇹 ITA",
+    # Southern Islands Regular versions, or titles that don't say which.
+    "Mew 1/18 Southern Islands Promo",
+    "Butterfree 09/18 Southern Islands Regular",
+    "Pidgeot 02/18 Southern Islands - Pokemon TCG Vintage",
+    "Pokémon TCG Pidgeot Southern Islands Regular Stage 2 70 HP English 2/18 2001",
+    "Pokémon TCG DOUBLE SWIRL 💫 Vileplume #17 SOUTHERN ISLANDS NM-MT 8",
 ]
 
 

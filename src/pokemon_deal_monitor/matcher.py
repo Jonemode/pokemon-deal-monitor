@@ -54,21 +54,29 @@ NAME_PREFIXES = ("dark ", "light ", "shining ")
 # a card number must say it is the holo.
 SETS_WITH_NON_HOLO_DUPLICATES = {"Expedition", "Aquapolis", "Skyridge"}
 
-# Sellers commonly describe Southern Islands cards as reverse holofoil.
-REVERSE_WORDING_ALLOWED_SETS = {"Southern Islands"}
+# Southern Islands only exists as Regular and Reverse Holo, so sellers who
+# just say "holo" mean the reverse holo.
+HOLO_MEANS_REVERSE_SETS = {"Southern Islands"}
 
 REJECT_PATTERNS = [
-    # Graded cards.
+    # Graded cards, including grades written without a space ("PSA7").
     r"\b(?:psa|bgs|cgc|sgc|beckett|graded|slabbed|slab)\b",
+    r"\b(?:psa|bgs|cgc|sgc)\d",
+    # Grade labels copied from a slab, e.g. "NM-MT 8" or "GEM MINT 10".
+    r"\b(?:nm mt|gem mt|gem mint|mint) \d{1,2}\b(?!/)",
     # Modern reprints of vintage cards.
     r"\b(?:celebrations|classic collection|evolutions|25th|reprint)\b",
     # Non-English printings.
     r"\b(?:japanese|japan|jpn|korean|chinese|german|french|italian"
-    r"|spanish|portuguese|dutch)\b",
+    r"|spanish|portuguese|dutch|jp|ita|foreign)\b",
+    # Markers seen on Japanese listings sold as "Southern Island" and similar.
+    r"\b(?:old back|pokeca|commemorati)",
     # Fakes and customs.
     r"\b(?:proxy|custom|orica|fake|replica)\b",
     # Multi-card listings.
-    r"\b(?:lot|bundle)\b",
+    # Not "sealed": 1st Edition Machamp is commonly sold still in its
+    # starter deck shrink wrap.
+    r"\b(?:lot|bundle|complete set|\d+ card set)\b",
     # Conditions worse than lightly played.
     r"\b(?:damaged|dmg|heavily played|moderately played|poor|creased)\b",
     r"\bmp\b",
@@ -76,11 +84,18 @@ REJECT_PATTERNS = [
 ]
 REJECT_PATTERN = re.compile("|".join(f"(?:{p})" for p in REJECT_PATTERNS))
 
+# A title naming this many different catalog cards is a multi-card listing.
+MAX_DISTINCT_NAMES = 2
+
 FIRST_EDITION_PATTERN = re.compile(r"\b(?:1st|first ed|1 ?ed\b)")
 NOT_FIRST_EDITION_PATTERN = re.compile(r"\b(?:no|not|non) (?:1st|first)\b")
 UNLIMITED_PATTERN = re.compile(r"\b(?:unlimited|unl)\b")
 NON_HOLO_PATTERN = re.compile(r"\bnon ?holo|\bno holo\b")
-REVERSE_HOLO_PATTERN = re.compile(r"\breverse\b|\brev holo\b|\bfirework")
+REVERSE_HOLO_PATTERN = re.compile(
+    r"\breverse\b|\brev holo\b|\bfirework|\bswirl|\bcosmo"
+)
+# Sellers label the non-holo version of a reverse holo card "Regular".
+REGULAR_PATTERN = re.compile(r"\bregular\b")
 HOLO_PATTERN = re.compile(r"\bholo|\bfoil\b")
 CRYSTAL_PATTERN = re.compile(r"\bcrystal\b")
 
@@ -162,6 +177,11 @@ def has_name(card: PokemonCard, text: str) -> bool:
     return False
 
 
+def count_distinct_names(text: str) -> int:
+    names = {card.name: card for card in CARDS}
+    return sum(1 for card in names.values() if has_name(card, text))
+
+
 def score_card(
     card: PokemonCard,
     text: str,
@@ -199,9 +219,11 @@ def score_card(
 
     mentions_reverse = bool(REVERSE_HOLO_PATTERN.search(text))
     if card.variant == Variant.REVERSE_HOLO:
-        if not mentions_reverse:
+        if card.set_name in HOLO_MEANS_REVERSE_SETS:
+            mentions_reverse = mentions_reverse or bool(HOLO_PATTERN.search(text))
+        if not mentions_reverse or REGULAR_PATTERN.search(text):
             return None
-    elif mentions_reverse and card.set_name not in REVERSE_WORDING_ALLOWED_SETS:
+    elif mentions_reverse:
         return None
 
     is_crystal = card.rarity == Rarity.CRYSTAL
@@ -237,6 +259,9 @@ def match_listing(title: str) -> list[Match]:
 
     sets, other_set = detect_sets(text)
     if other_set and not sets:
+        return []
+
+    if count_distinct_names(text) > MAX_DISTINCT_NAMES:
         return []
 
     title_full_numbers = full_numbers(text)

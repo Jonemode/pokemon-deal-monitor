@@ -42,6 +42,10 @@ MIGRATIONS = [
 
     CREATE INDEX alerts_item_id ON alerts (item_id);
     """,
+    """
+    ALTER TABLE listings ADD COLUMN condition TEXT;
+    ALTER TABLE listings ADD COLUMN shipping_known INTEGER NOT NULL DEFAULT 1;
+    """,
 ]
 
 
@@ -55,6 +59,10 @@ class Listing:
     currency: str = "USD"
     card_identifier: str | None = None
     match_confidence: float | None = None
+    # eBay's condition label, e.g. "Ungraded" or "Graded".
+    condition: str | None = None
+    # False when eBay gave no shipping cost, so shipping_cents is a guess.
+    shipping_known: bool = True
 
     @property
     def total_cents(self) -> int:
@@ -132,6 +140,7 @@ class Storage:
         fields = dict(row)
         for name in ("first_seen_at", "last_seen_at", "ended_at"):
             fields[name] = parse_time(fields[name])
+        fields["shipping_known"] = bool(fields["shipping_known"])
         return StoredListing(**fields)
 
     def upsert_listing(
@@ -151,14 +160,15 @@ class Storage:
                     INSERT INTO listings (
                         item_id, title, url, price_cents, shipping_cents,
                         currency, card_identifier, match_confidence,
-                        first_seen_at, last_seen_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        condition, shipping_known, first_seen_at, last_seen_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         listing.item_id, listing.title, listing.url,
                         listing.price_cents, listing.shipping_cents,
                         listing.currency, listing.card_identifier,
-                        listing.match_confidence, seen_at, seen_at,
+                        listing.match_confidence, listing.condition,
+                        listing.shipping_known, seen_at, seen_at,
                     ),
                 )
                 return UpsertResult.NEW
@@ -168,14 +178,16 @@ class Storage:
                 UPDATE listings SET
                     title = ?, url = ?, price_cents = ?, shipping_cents = ?,
                     currency = ?, card_identifier = ?, match_confidence = ?,
-                    last_seen_at = ?, ended_at = NULL
+                    condition = ?, shipping_known = ?, last_seen_at = ?,
+                    ended_at = NULL
                 WHERE item_id = ?
                 """,
                 (
                     listing.title, listing.url, listing.price_cents,
                     listing.shipping_cents, listing.currency,
                     listing.card_identifier, listing.match_confidence,
-                    seen_at, listing.item_id,
+                    listing.condition, listing.shipping_known, seen_at,
+                    listing.item_id,
                 ),
             )
 

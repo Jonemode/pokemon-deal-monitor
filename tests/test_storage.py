@@ -1,4 +1,5 @@
 import os
+import sqlite3
 import tempfile
 import unittest
 from dataclasses import replace
@@ -47,6 +48,39 @@ class TestStorage(unittest.TestCase):
             with Storage(path) as storage:
                 self.assertEqual(storage.schema_version, len(MIGRATIONS))
                 self.assertIsNotNone(storage.get_listing(LUGIA.item_id))
+
+    def test_upgrades_version_1_database(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "monitor.db"
+            connection = sqlite3.connect(path)
+            connection.executescript(
+                f"{MIGRATIONS[0]} PRAGMA user_version = 1;"
+            )
+            connection.execute(
+                "INSERT INTO listings (item_id, title, url, price_cents, "
+                "shipping_cents, currency, first_seen_at, last_seen_at) "
+                "VALUES ('1', 't', 'u', 100, 0, 'USD', ?, ?)",
+                (START.isoformat(), START.isoformat()),
+            )
+            connection.commit()
+            connection.close()
+
+            with Storage(path) as storage:
+                self.assertEqual(storage.schema_version, len(MIGRATIONS))
+                stored = storage.get_listing("1")
+                self.assertIsNone(stored.condition)
+                self.assertTrue(stored.shipping_known)
+
+    def test_condition_and_unknown_shipping(self):
+        listing = replace(LUGIA, condition="Ungraded", shipping_known=False)
+        self.storage.upsert_listing(listing, now=START)
+
+        stored = self.storage.get_listing(LUGIA.item_id)
+        self.assertEqual(stored.condition, "Ungraded")
+        self.assertFalse(stored.shipping_known)
+
+        self.storage.upsert_listing(replace(listing, shipping_known=True))
+        self.assertTrue(self.storage.get_listing(LUGIA.item_id).shipping_known)
 
     def test_new_listing(self):
         result = self.storage.upsert_listing(LUGIA, now=START)
