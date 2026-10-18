@@ -2502,5 +2502,429 @@
     "variant": "reverse_holo",
     "edition": "unlimited",
     "rarity": "common"
+  },
+  {
+    "name": "Pikachu",
+    "set_name": "Wizards Black Star Promos",
+    "number": "1/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Electabuzz",
+    "set_name": "Wizards Black Star Promos",
+    "number": "2/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Mewtwo",
+    "set_name": "Wizards Black Star Promos",
+    "number": "3/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Pikachu",
+    "set_name": "Wizards Black Star Promos",
+    "number": "4/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Dragonite",
+    "set_name": "Wizards Black Star Promos",
+    "number": "5/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Arcanine",
+    "set_name": "Wizards Black Star Promos",
+    "number": "6/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Jigglypuff",
+    "set_name": "Wizards Black Star Promos",
+    "number": "7/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Mew",
+    "set_name": "Wizards Black Star Promos",
+    "number": "8/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Mew",
+    "set_name": "Wizards Black Star Promos",
+    "number": "9/53",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Meowth",
+    "set_name": "Wizards Black Star Promos",
+    "number": "10/53",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Eevee",
+    "set_name": "Wizards Black Star Promos",
+    "number": "11/53",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Mewtwo",
+    "set_name": "Wizards Black Star Promos",
+    "number": "12/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Venusaur",
+    "set_name": "Wizards Black Star Promos",
+    "number": "13/53",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Mewtwo",
+    "set_name": "Wizards Black Star Promos",
+    "number": "14/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Cool Porygon",
+    "set_name": "Wizards Black Star Promos",
+    "number": "15/53",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Computer Error",
+    "set_name": "Wizards Black Star Promos",
+    "number": "16/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Dark Persian",
+    "set_name": "Wizards Black Star Promos",
+    "number": "17/53",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Team Rocket's Meowth",
+    "set_name": "Wizards Black Star Promos",
+    "number": "18/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Sabrina's Abra",
+    "set_name": "Wizards Black Star Promos",
+    "number": "19/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Psyduck",
+    "set_name": "Wizards Black Star Promos",
+    "number": "20/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Moltres",
+    "set_name": "Wizards Black Star Promos",
+    "number": "21/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Articuno",
+    "set_name": "Wizards Black Star Promos",
+    "number": "22/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Zapdos",
+    "set_name": "Wizards Black Star Promos",
+    "number": "23/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Birthday Pikachu",
+    "set_name": "Wizards Black Star Promos",
+    "number": "24/53",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Flying Pikachu",
+    "set_name": "Wizards Black Star Promos",
+    "number": "25/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Pikachu",
+    "set_name": "Wizards Black Star Promos",
+    "number": "26/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Pikachu",
+    "set_name": "Wizards Black Star Promos",
+    "number": "27/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Surfing Pikachu",
+    "set_name": "Wizards Black Star Promos",
+    "number": "28/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Marill",
+    "set_name": "Wizards Black Star Promos",
+    "number": "29/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Togepi",
+    "set_name": "Wizards Black Star Promos",
+    "number": "30/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Cleffa",
+    "set_name": "Wizards Black Star Promos",
+    "number": "31/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Smeargle",
+    "set_name": "Wizards Black Star Promos",
+    "number": "32/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Scizor",
+    "set_name": "Wizards Black Star Promos",
+    "number": "33/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Entei",
+    "set_name": "Wizards Black Star Promos",
+    "number": "34/53",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Pichu",
+    "set_name": "Wizards Black Star Promos",
+    "number": "35/53",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Igglybuff",
+    "set_name": "Wizards Black Star Promos",
+    "number": "36/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Hitmontop",
+    "set_name": "Wizards Black Star Promos",
+    "number": "37/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Unown J",
+    "set_name": "Wizards Black Star Promos",
+    "number": "38/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Misdreavus",
+    "set_name": "Wizards Black Star Promos",
+    "number": "39/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Pokémon Center",
+    "set_name": "Wizards Black Star Promos",
+    "number": "40/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Lucky Stadium",
+    "set_name": "Wizards Black Star Promos",
+    "number": "41/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Pokémon Tower",
+    "set_name": "Wizards Black Star Promos",
+    "number": "42/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Machamp",
+    "set_name": "Wizards Black Star Promos",
+    "number": "43/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Magmar",
+    "set_name": "Wizards Black Star Promos",
+    "number": "44/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Scyther",
+    "set_name": "Wizards Black Star Promos",
+    "number": "45/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Electabuzz",
+    "set_name": "Wizards Black Star Promos",
+    "number": "46/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Mew",
+    "set_name": "Wizards Black Star Promos",
+    "number": "47/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Articuno",
+    "set_name": "Wizards Black Star Promos",
+    "number": "48/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Snorlax",
+    "set_name": "Wizards Black Star Promos",
+    "number": "49/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Celebi",
+    "set_name": "Wizards Black Star Promos",
+    "number": "50/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Rapidash",
+    "set_name": "Wizards Black Star Promos",
+    "number": "51/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Ho-Oh",
+    "set_name": "Wizards Black Star Promos",
+    "number": "52/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Suicune",
+    "set_name": "Wizards Black Star Promos",
+    "number": "53/53",
+    "variant": "normal",
+    "edition": "unlimited",
+    "rarity": "promo"
   }
 ]

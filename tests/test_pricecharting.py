@@ -140,6 +140,27 @@ class TestProductSelection(unittest.TestCase):
         ]
         self.assertEqual([p["id"] for p in select_products(MEW_SI, products)], [1])
 
+    def test_plain_promo_chosen_over_variants(self):
+        mewtwo = PokemonCard("Mewtwo", "Wizards Black Star Promos", "3/53",
+                             Variant.NORMAL, Edition.UNLIMITED, Rarity.PROMO)
+        products = [
+            pc_product(1, "Pokemon Promo", "Mewtwo #3"),
+            pc_product(2, "Pokemon Promo", "Mewtwo [Inverted Stamp Error] #3"),
+            pc_product(3, "Pokemon Japanese Promo", "Mewtwo #3"),
+            pc_product(4, "Pokemon Promo", "Mewtwo [Pokemon Center NY] #3"),
+        ]
+        self.assertEqual([p["id"] for p in select_products(mewtwo, products)], [1])
+        self.assertEqual(search_query(mewtwo), "Mewtwo Promo #3")
+
+    def test_wotc_tagged_promo(self):
+        pikachu = PokemonCard("Pikachu", "Wizards Black Star Promos", "27/53",
+                              Variant.NORMAL, Edition.UNLIMITED, Rarity.PROMO)
+        products = [
+            pc_product(1, "Pokemon Promo", "Pikachu [Paldea] #27"),
+            pc_product(2, "Pokemon Promo", "Pikachu [WOTC] #27"),
+        ]
+        self.assertEqual([p["id"] for p in select_products(pikachu, products)], [2])
+
     def test_number_and_name_must_match(self):
         products = [
             pc_product(1, "Pokemon Aquapolis", "Umbreon #H30"),

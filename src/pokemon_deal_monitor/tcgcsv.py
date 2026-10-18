@@ -1,6 +1,7 @@
 """TCGplayer market prices from tcgcsv.com, which mirrors them daily."""
 
 import json
+import re
 import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -25,7 +26,14 @@ GROUP_IDS = {
     "Skyridge": 1372,
     "Southern Islands": 648,
     "Legendary Collection": 1374,
+    "Wizards Black Star Promos": 1418,
 }
+
+# TCGplayer lists stamped and special versions of a promo under the same
+# number as the plain card, e.g. "Rapidash [Pokemon Center NY]".
+SPECIAL_VERSION_PATTERN = re.compile(
+    r"\[|misprint|stamp|prerelease|corocoro|glossy", re.IGNORECASE
+)
 
 FetchJson = Callable[[str], dict]
 
@@ -50,6 +58,8 @@ def sub_type_name(card: PokemonCard) -> str:
     """Return the TCGplayer printing name for a catalog card."""
     if card.variant == Variant.REVERSE_HOLO:
         return "Reverse Holofoil"
+    if card.variant == Variant.NORMAL:
+        return "Normal"
     if card.first_edition_required:
         return "1st Edition Holofoil"
     return "Holofoil"
@@ -83,6 +93,8 @@ def fetch_prices(
 
         product_ids_by_number: dict[str, list[int]] = {}
         for product in products:
+            if SPECIAL_VERSION_PATTERN.search(product.get("name", "")):
+                continue
             number = product_number(product)
             if number is not None:
                 product_ids_by_number.setdefault(number, []).append(

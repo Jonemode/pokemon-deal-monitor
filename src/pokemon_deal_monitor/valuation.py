@@ -28,6 +28,11 @@ MIN_DISCOUNT = 0.10
 # Cards often sold as reprints under the original set's name, with nothing
 # in the listing to tell them apart. A discount beyond the limit is taken to
 # mean a reprint rather than a bargain.
+# Sets with a minimum card value to alert on, in cents, to skip the many
+# promos worth only a few dollars.
+MIN_VALUE_CENTS = {
+    "Wizards Black Star Promos": 5000,
+}
 MAX_PLAUSIBLE_DISCOUNTS = {
     # 30th Anniversary Lugia reprints listed as Aquapolis.
     "Aquapolis:149/147:holo:unlimited": 0.50,
@@ -122,7 +127,7 @@ def evaluate_deal(
     total_cents: int,
     shipping_known: bool,
     valuation: Valuation,
-    card_identifier: str | None = None,
+    card: PokemonCard | None = None,
 ) -> Deal:
     """Judge a listing against a card's value.
 
@@ -137,7 +142,10 @@ def evaluate_deal(
     # Compared in cents, since 1 - 0.9 in floating point is just under 0.1.
     if total_cents > round(valuation.value_cents * (1 - MIN_DISCOUNT)):
         reasons.append(f"discount below {MIN_DISCOUNT:.0%}")
-    max_discount = MAX_PLAUSIBLE_DISCOUNTS.get(card_identifier)
+    min_value = MIN_VALUE_CENTS.get(card.set_name) if card else None
+    if min_value is not None and valuation.value_cents < min_value:
+        reasons.append(f"value below ${min_value / 100:,.0f}")
+    max_discount = MAX_PLAUSIBLE_DISCOUNTS.get(card.identifier) if card else None
     if (
         max_discount is not None
         and total_cents < round(valuation.value_cents * (1 - max_discount))

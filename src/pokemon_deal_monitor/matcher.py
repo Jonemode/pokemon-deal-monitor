@@ -32,23 +32,38 @@ SET_ALIASES = {
     "Skyridge": ["skyridge", "sky ridge"],
     "Southern Islands": ["southern islands", "southern island"],
     "Legendary Collection": ["legendary collection", "legendary coll"],
+    "Wizards Black Star Promos": [
+        "wizards black star promos", "wizards black star promo",
+        "wotc black star promos", "wotc black star promo",
+        "black star promos", "black star promo",
+        "wizards promo", "wotc promos", "wotc promo",
+    ],
 }
 
 # Vintage sets outside the target list. A title naming one of these and no
 # target set is about some other card.
 OTHER_SET_ALIASES = [
     "base set 2", "base 2", "jungle", "fossil", "team rocket",
-    "gym heroes", "gym challenge", "black star promo",
+    "gym heroes", "gym challenge",
+    "nintendo black star promo", "nintendo promo",
 ]
 
 NAME_ALIASES = {
     "Ho-Oh": ["hooh"],
     "Porygon2": ["porygon 2"],
+    # Printed as "_____'s Pikachu", which normalizes to "s pikachu".
+    "Birthday Pikachu": ["s pikachu"],
 }
 
 # Cards are named with these prefixes in the catalog, so "Dark Charizard"
-# must not count as evidence for plain Charizard.
-NAME_PREFIXES = ("dark ", "light ", "shining ")
+# must not count as evidence for plain Charizard, nor "Team Rocket's
+# Meowth" ("team rocket s meowth") for plain Meowth.
+NAME_PREFIXES = (
+    "dark ", "light ", "shining ", "s ", "cool ", "flying ", "surfing ",
+    "birthday ",
+)
+
+WORD_PREFIXES = tuple(" " + prefix for prefix in NAME_PREFIXES)
 
 # Sets where the same Pokemon also has a non-holo rare, so a title without
 # a card number must say it is the holo.
@@ -72,7 +87,12 @@ CRYSTAL_NAME_CLASHES = {
 # Sets where each targeted card has a single English printing, so the
 # title needn't say holo or reverse holo. In Southern Islands the six
 # targeted cards only exist as reverse holos.
-SINGLE_PRINTING_SETS = {"Southern Islands"}
+SINGLE_PRINTING_SETS = {"Southern Islands", "Wizards Black Star Promos"}
+
+# Sets whose titles must include the card's number. Promos repeat names
+# (four Pikachus) and modern Black Star Promos reuse the set name, so the
+# number is the only reliable way to tell them apart.
+NUMBER_REQUIRED_SETS = {"Wizards Black Star Promos"}
 
 REJECT_PATTERNS = [
     # Graded cards, including grades written without a space ("PSA7").
@@ -93,6 +113,12 @@ REJECT_PATTERNS = [
     # Not "sealed": 1st Edition Machamp is commonly sold still in its
     # starter deck shrink wrap.
     r"\b(?:lot|bundle|complete set|\d+ card set)\b",
+    # Stamped and special promo versions, priced apart from the plain card.
+    # A "1st Edition stamp" is the edition mark, not a special version.
+    r"\b(?:prerelease|pre release|winner)\b",
+    r"(?<!edition )(?<!1st ed )(?<!1st )\bstamp(?:ed)?\b",
+    # Modern promo codes such as SWSH050, SM210 or SVP 085.
+    r"\b(?:swsh|sm|xy|bw|dp|hgss|svp|sv) ?\d{1,3}\b",
     # Condition is deliberately not judged from titles, where "HP" usually
     # means hit points; eBay's Card Condition field is used instead.
 ]
@@ -114,7 +140,11 @@ HOLO_PATTERN = re.compile(r"\bholo|\bfoil\b")
 CRYSTAL_PATTERN = re.compile(r"\bcrystal\b")
 
 FULL_NUMBER_PATTERN = re.compile(r"\b(h?)0*(\d{1,3}) ?/ ?(h?)0*(\d{1,3})\b")
-PARTIAL_NUMBER_PATTERN = re.compile(r"#\s?(h?)0*(\d{1,3})\b|\b(h)0*(\d{1,2})\b")
+PARTIAL_NUMBER_PATTERN = re.compile(
+    r"#\s?(h?)0*(\d{1,3})\b|\b(h)0*(\d{1,2})\b"
+    # Promo numbers are also written "No. 4" or "Promo 4".
+    r"|\b(?:no|promo) ?#?0*(\d{1,3})\b"
+)
 
 
 def normalize(text: str) -> str:
@@ -137,8 +167,10 @@ def partial_numbers(text: str) -> set[str]:
     for m in PARTIAL_NUMBER_PATTERN.finditer(text):
         if m[2] is not None:
             numbers.add(f"{m[1]}{m[2]}")
-        else:
+        elif m[4] is not None:
             numbers.add(f"{m[3]}{m[4]}")
+        else:
+            numbers.add(m[5])
     return numbers
 
 
@@ -185,7 +217,10 @@ def has_name(card: PokemonCard, text: str) -> bool:
 
     for pattern in name_patterns(card.name):
         for m in pattern.finditer(text):
-            if has_prefix or not text[:m.start()].endswith(NAME_PREFIXES):
+            # Padded so prefixes only match whole words: "islands mew" must
+            # not read as the "s " of "_____'s".
+            before = " " + text[:m.start()]
+            if has_prefix or not before.endswith(WORD_PREFIXES):
                 return True
 
     return False
@@ -216,6 +251,8 @@ def score_card(
         confidence += FULL_NUMBER_WEIGHT
     elif numerator in title_partial_numbers:
         confidence += PARTIAL_NUMBER_WEIGHT
+    elif card.set_name in NUMBER_REQUIRED_SETS:
+        return None
 
     if sets:
         if card.set_name not in sets:
@@ -232,9 +269,12 @@ def score_card(
         confidence -= UNEXPECTED_FIRST_EDITION_PENALTY
 
     mentions_reverse = bool(REVERSE_HOLO_PATTERN.search(text))
-    if card.variant == Variant.REVERSE_HOLO:
-        if card.set_name in SINGLE_PRINTING_SETS:
-            mentions_reverse = True
+    if card.set_name in SINGLE_PRINTING_SETS:
+        # Only one printing exists, so the title needn't say which. Sellers
+        # use "Regular" for the non-holo Southern Islands cards.
+        if card.variant == Variant.REVERSE_HOLO and REGULAR_PATTERN.search(text):
+            return None
+    elif card.variant == Variant.REVERSE_HOLO:
         if not mentions_reverse or REGULAR_PATTERN.search(text):
             return None
     elif mentions_reverse:

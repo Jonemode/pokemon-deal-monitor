@@ -45,7 +45,12 @@ NON_ENGLISH_CONSOLES = re.compile(
 )
 # Sets with one English printing per card, so PriceCharting names the
 # product without a [Reverse Holo] tag even when the card is a reverse holo.
-SINGLE_PRINTING_SETS = {"Southern Islands"}
+SINGLE_PRINTING_SETS = {"Southern Islands", "Wizards Black Star Promos"}
+# PriceCharting consoles for sets it doesn't name after the set. Its plain
+# promos are untagged, e.g. "Mewtwo #3", or tagged [WOTC] where a modern
+# promo shares the number; every other tag is a variant.
+CONSOLE_NAMES = {"Wizards Black Star Promos": "pokemon promo"}
+SEARCH_SET_NAMES = {"Wizards Black Star Promos": "Promo"}
 PRODUCT_NUMBER_PATTERN = re.compile(r"#\s*(h?)0*(\d+)")
 
 
@@ -89,13 +94,17 @@ def parse_product(product: dict) -> PriceChartingPrice:
 
 def search_query(card: PokemonCard) -> str:
     _, numerator = card_number_key(card.number)
-    return f"{card.name} {card.set_name} #{numerator.upper()}"
+    set_name = SEARCH_SET_NAMES.get(card.set_name, card.set_name)
+    return f"{card.name} {set_name} #{numerator.upper()}"
 
 
 def product_matches(card: PokemonCard, product: dict) -> bool:
     """Return whether a PriceCharting product is this exact catalog card."""
     console = normalize(product.get("console-name", ""))
-    if normalize(card.set_name) not in console or NON_ENGLISH_CONSOLES.search(console):
+    if card.set_name in CONSOLE_NAMES:
+        if console != CONSOLE_NAMES[card.set_name]:
+            return False
+    elif normalize(card.set_name) not in console or NON_ENGLISH_CONSOLES.search(console):
         return False
     if card.set_name == "Base Set" and "base set 2" in console:
         return False
@@ -113,6 +122,8 @@ def product_matches(card: PokemonCard, product: dict) -> bool:
         return False
     if ("1st edition" in tags) != card.first_edition_required:
         return False
+    if card.set_name in CONSOLE_NAMES:
+        return tags in ("", "wotc")
     if card.set_name in SINGLE_PRINTING_SETS:
         return "reverse" in tags or not tags
     if ("reverse" in tags) != (card.variant == Variant.REVERSE_HOLO):

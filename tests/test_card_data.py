@@ -15,7 +15,10 @@ EXPECTED_SET_COUNTS = {
     "Skyridge": 38,
     "Southern Islands": 6,
     "Legendary Collection": 110,
+    "Wizards Black Star Promos": 53,
 }
+
+PROMOS = "Wizards Black Star Promos"
 
 FIRST_EDITION_SETS = {
     "Base Set",
@@ -54,12 +57,22 @@ class TestCardData(unittest.TestCase):
 
     def test_variants(self):
         for card in self.cards:
+            if card.set_name == PROMOS:
+                continue
             expected = (
                 Variant.REVERSE_HOLO
                 if card.set_name in ("Legendary Collection", "Southern Islands")
                 else Variant.HOLO
             )
             self.assertEqual(card.variant, expected, card.identifier)
+
+    def test_promo_variants(self):
+        variants = {card.number: card.variant
+                    for card in self.cards if card.set_name == PROMOS}
+        self.assertEqual(variants["3/53"], Variant.NORMAL)
+        self.assertEqual(variants["9/53"], Variant.HOLO)
+        self.assertEqual(variants["24/53"], Variant.HOLO)
+        self.assertEqual(variants["35/53"], Variant.REVERSE_HOLO)
 
     def test_numbers_are_unique_within_set(self):
         counts = Counter((card.set_name, card.number) for card in self.cards)
@@ -79,6 +92,8 @@ class TestCardData(unittest.TestCase):
             ("Skyridge", "146/144", "Charizard", Rarity.CRYSTAL),
             ("Southern Islands", "1/18", "Mew", Rarity.PROMO),
             ("Legendary Collection", "3/110", "Charizard", Rarity.HOLO_RARE),
+            (PROMOS, "24/53", "Birthday Pikachu", Rarity.PROMO),
+            (PROMOS, "38/53", "Unown J", Rarity.PROMO),
         ]
 
         for set_name, number, name, rarity in expected:
@@ -91,7 +106,7 @@ class TestCardData(unittest.TestCase):
     def test_regular_holo_sets_exclude_non_holos(self):
         allowed = {Rarity.HOLO_RARE, Rarity.SHINING, Rarity.CRYSTAL}
         for card in self.cards:
-            if card.set_name in ("Southern Islands", "Legendary Collection"):
+            if card.set_name in ("Southern Islands", "Legendary Collection", PROMOS):
                 continue
             self.assertIn(card.rarity, allowed, card.identifier)
 

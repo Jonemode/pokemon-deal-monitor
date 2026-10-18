@@ -10,7 +10,8 @@ from .valuation import Deal, Pricer, evaluate_deal
 
 logger = logging.getLogger(__name__)
 
-# One search per target set. Each poll makes one call per query, so with the
+# One search per target set, two for promos since sellers call them either
+# Black Star or WOTC promos. Each poll makes one call per query, so with the
 # Browse API's default 5,000 calls a day a 5 minute interval leaves headroom.
 SEARCH_QUERIES = [
     "pokemon base set 1st edition",
@@ -23,6 +24,8 @@ SEARCH_QUERIES = [
     "pokemon skyridge",
     "pokemon southern islands",
     "pokemon legendary collection reverse holo",
+    "pokemon black star promo",
+    "pokemon wotc promo",
 ]
 
 DEFAULT_POLL_INTERVAL_SECONDS = 300
@@ -87,7 +90,7 @@ def value_listing(
     if valuation is None:
         return None
     return evaluate_deal(listing.total_cents, listing.shipping_known, valuation,
-                         match.card.identifier)
+                         match.card)
 
 
 def poll_once(

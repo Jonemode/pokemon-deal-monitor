@@ -28,7 +28,10 @@ RARITY_MAP = {
 
 NAME_FIXES = {
     "Unown [A]": "Unown A",
+    "Unown [J]": "Unown J",
     "Ho-oh": "Ho-Oh",
+    # Promo #24, printed with a blank to write a name in.
+    "_____'s Pikachu": "Birthday Pikachu",
 }
 
 # (source set id, set name, edition, variant, source rarities to include).
@@ -44,7 +47,22 @@ TARGET_SETS = [
     ("ecard3", "Skyridge", "unlimited", "holo", {"Rare Holo", "Rare Secret"}),
     ("si1", "Southern Islands", "unlimited", "reverse_holo", None),
     ("base6", "Legendary Collection", "unlimited", "reverse_holo", None),
+    # A variant of None takes each card's printing from VARIANTS.
+    ("basep", "Wizards Black Star Promos", "unlimited", None, None),
 ]
+
+# Per-card printings, for sets whose cards differ, keyed by card number.
+# Each promo has a single printing; these follow TCGplayer's listings and
+# every other promo is non-holo.
+VARIANTS = {
+    "basep": {
+        **{n: "holo" for n in ("9", "10", "11", "13", "15", "17", "24")},
+        **{n: "reverse_holo" for n in ("34", "35")},
+    },
+}
+DEFAULT_VARIANTS = {"basep": "normal"}
+
+PROMO_SETS = {"si1", "basep"}
 
 
 # Card numbers to keep, for sets the source data can't filter by rarity.
@@ -80,14 +98,16 @@ def build_set(set_info: dict, target: tuple) -> list[dict]:
         if set_id in INCLUDED_NUMBERS and card["number"] not in INCLUDED_NUMBERS[set_id]:
             continue
 
-        rarity = "promo" if set_id == "si1" else RARITY_MAP[source_rarity]
+        rarity = "promo" if set_id in PROMO_SETS else RARITY_MAP[source_rarity]
         entries.append({
             "name": NAME_FIXES.get(card["name"], card["name"]),
             "set_name": set_name,
             "number": format_number(
                 card["number"], set_info["printedTotal"], holo_total
             ),
-            "variant": variant,
+            "variant": variant or VARIANTS[set_id].get(
+                card["number"], DEFAULT_VARIANTS[set_id]
+            ),
             "edition": edition,
             "rarity": rarity,
         })

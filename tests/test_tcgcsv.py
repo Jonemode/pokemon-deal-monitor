@@ -88,6 +88,23 @@ class TestTcgcsv(unittest.TestCase):
         })
         self.assertEqual(fetch_prices([LUGIA], fetch=fetch), {})
 
+    def test_special_versions_are_ignored(self):
+        rapidash = PokemonCard("Rapidash", "Wizards Black Star Promos", "51/53",
+                               Variant.NORMAL, Edition.UNLIMITED, Rarity.PROMO)
+        fetch = FakeTcgcsv({
+            1418: {
+                "products": [
+                    {**product(88575, "51/53"), "name": "Rapidash (51)"},
+                    {**product(244347, "51/53"),
+                     "name": "Rapidash [Pokemon Center NY]"},
+                ],
+                "prices": [price(88575, "Normal", 55.71),
+                           price(244347, "Normal", 119.87)],
+            },
+        })
+        prices = fetch_prices([rapidash], fetch=fetch)
+        self.assertEqual(prices[rapidash.identifier].market_cents, 5571)
+
     def test_one_download_per_set(self):
         fetch = FakeTcgcsv({1396: {"products": [], "prices": []}})
         fetch_prices([LUGIA, LUGIA], fetch=fetch)

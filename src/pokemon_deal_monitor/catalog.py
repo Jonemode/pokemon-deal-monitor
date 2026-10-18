@@ -8,6 +8,8 @@ from pathlib import Path
 class Variant(str, Enum):
     HOLO = "holo"
     REVERSE_HOLO = "reverse_holo"
+    # Non-holo; only promos are tracked in this printing.
+    NORMAL = "normal"
 
 
 class Edition(str, Enum):

@@ -113,7 +113,8 @@ class TestEvaluateDeal(unittest.TestCase):
         self.assertAlmostEqual(deal.discount, 0.5)
 
     def test_implausible_discount_on_reprinted_card(self):
-        lugia = "Aquapolis:149/147:holo:unlimited"
+        lugia = PokemonCard("Lugia", "Aquapolis", "149/147", Variant.HOLO,
+                            Edition.UNLIMITED, Rarity.CRYSTAL)
         at_limit = evaluate_deal(100000, True, self.valuation, lugia)
         self.assertTrue(at_limit.qualifies)
 
@@ -125,8 +126,21 @@ class TestEvaluateDeal(unittest.TestCase):
         )
 
     def test_other_cards_have_no_discount_ceiling(self):
-        deal = evaluate_deal(20000, True, self.valuation, LUGIA.identifier)
+        deal = evaluate_deal(20000, True, self.valuation, LUGIA)
         self.assertTrue(deal.qualifies)
+
+    def test_promo_minimum_value(self):
+        mewtwo = PokemonCard("Mewtwo", "Wizards Black Star Promos", "3/53",
+                             Variant.NORMAL, Edition.UNLIMITED, Rarity.PROMO)
+        cheap = value_card({
+            PRICECHARTING: record(PRICECHARTING, raw=4999),
+        })
+        deal = evaluate_deal(1000, True, cheap, mewtwo)
+        self.assertFalse(deal.qualifies)
+        self.assertEqual(deal.reasons, ("value below $50",))
+
+        at_minimum = value_card({PRICECHARTING: record(PRICECHARTING, raw=5000)})
+        self.assertTrue(evaluate_deal(4000, True, at_minimum, mewtwo).qualifies)
 
     def test_value_not_confident(self):
         valuation = value_card({TCGPLAYER: record(TCGPLAYER, raw=200000)})
