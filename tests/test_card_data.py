@@ -13,7 +13,7 @@ EXPECTED_SET_COUNTS = {
     "Expedition": 32,
     "Aquapolis": 35,
     "Skyridge": 38,
-    "Southern Islands": 18,
+    "Southern Islands": 6,
     "Legendary Collection": 110,
 }
 

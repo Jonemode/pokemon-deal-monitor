@@ -42,11 +42,17 @@ TARGET_SETS = [
     ("ecard1", "Expedition", "unlimited", "holo", {"Rare Holo"}),
     ("ecard2", "Aquapolis", "unlimited", "holo", {"Rare Holo", "Rare Secret"}),
     ("ecard3", "Skyridge", "unlimited", "holo", {"Rare Holo", "Rare Secret"}),
-    # English Southern Islands cards come as Regular and Reverse Holo; only
-    # the reverse holos are targeted.
     ("si1", "Southern Islands", "unlimited", "reverse_holo", None),
     ("base6", "Legendary Collection", "unlimited", "reverse_holo", None),
 ]
+
+
+# Card numbers to keep, for sets the source data can't filter by rarity.
+# Each English Southern Islands card has a single printing: six are reverse
+# holos and the other twelve are non-holo, so only those six are targeted.
+INCLUDED_NUMBERS = {
+    "si1": {"1", "4", "7", "11", "14", "17"},
+}
 
 
 def fetch_json(path: str):
@@ -70,6 +76,8 @@ def build_set(set_info: dict, target: tuple) -> list[dict]:
     for card in cards:
         source_rarity = card.get("rarity")
         if rarities is not None and source_rarity not in rarities:
+            continue
+        if set_id in INCLUDED_NUMBERS and card["number"] not in INCLUDED_NUMBERS[set_id]:
             continue
 
         rarity = "promo" if set_id == "si1" else RARITY_MAP[source_rarity]

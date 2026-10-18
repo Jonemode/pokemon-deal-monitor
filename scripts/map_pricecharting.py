@@ -1,8 +1,10 @@
 """Build data/pricecharting_ids.json, mapping catalog cards to products.
 
 Run with `make pricecharting-ids` once PRICECHARTING_TOKEN is set. Searches
-one card per second, so a full run takes about six minutes. Entries already
-mapped, including ones edited by hand, are kept; pass --refresh to redo them.
+one card every few seconds to stay clear of Cloudflare's rate limiting, so a
+full run takes about fifteen minutes. Progress is saved after every card, so
+an interrupted run resumes where it stopped. Entries already mapped,
+including ones edited by hand, are kept; pass --refresh to redo them.
 
 Review the output: cards marked "unresolved" or "ambiguous" list candidate
 products, and a correct product_id can be filled in by hand.
@@ -17,10 +19,16 @@ from pokemon_deal_monitor.config import load_pricecharting_token
 from pokemon_deal_monitor.pricecharting import (
     PRODUCT_IDS_PATH,
     PriceChartingClient,
+    PriceChartingError,
     search_query,
     select_products,
 )
 from pokemon_deal_monitor.tcgcsv import fetch_prices
+
+
+# Bulk searches are spaced further apart than the API's one-per-second limit:
+# about 50 searches at that rate triggered Cloudflare's rate limiting.
+SECONDS_BETWEEN_SEARCHES = 3.0
 
 
 def describe(product: dict) -> str:
@@ -44,11 +52,16 @@ def main() -> None:
     if token is None:
         sys.exit("Set PRICECHARTING_TOKEN in .env first.")
 
-    client = PriceChartingClient(token)
+    client = PriceChartingClient(
+        token, min_seconds_between_calls=SECONDS_BETWEEN_SEARCHES
+    )
     entries = (
         json.loads(PRODUCT_IDS_PATH.read_text(encoding="utf-8"))
         if PRODUCT_IDS_PATH.exists() else {}
     )
+    # Drop entries for cards no longer in the catalog.
+    identifiers = {card.identifier for card in CARDS}
+    entries = {k: v for k, v in entries.items() if k in identifiers}
     tcg_prices = fetch_prices(CARDS)
 
     for index, card in enumerate(CARDS, 1):
@@ -56,7 +69,14 @@ def main() -> None:
         if existing.get("product_id") and not args.refresh:
             continue
 
-        products = client.search(search_query(card))
+        try:
+            products = client.search(search_query(card))
+        except PriceChartingError as error:
+            mapped = sum(1 for entry in entries.values() if entry.get("product_id"))
+            sys.exit(
+                f"Stopped at {card.identifier}: {error}\n"
+                f"{mapped} cards are mapped and saved. Run again later to resume."
+            )
         tcg = tcg_prices.get(card.identifier)
         matches = select_products(card, products, tcg.product_id if tcg else None)
 

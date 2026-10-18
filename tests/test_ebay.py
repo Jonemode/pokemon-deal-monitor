@@ -1,13 +1,17 @@
 import base64
 import urllib.parse
+import urllib.request
 import unittest
+from unittest import mock
 
 from pokemon_deal_monitor.config import EbayConfig
 from pokemon_deal_monitor.ebay import (
+    USER_AGENT,
     EbayClient,
     EbayError,
     parse_item,
     to_cents,
+    urllib_transport,
 )
 
 from .fakes import (
@@ -68,6 +72,29 @@ class TestParsing(unittest.TestCase):
         summary = item_summary("1", "Lugia")
         del summary["price"]
         self.assertIsNone(parse_item(summary))
+
+
+class TestUrllibTransport(unittest.TestCase):
+
+    def test_sets_user_agent(self):
+        request = urllib.request.Request("https://example.invalid/")
+        with mock.patch("urllib.request.urlopen") as urlopen:
+            urlopen.return_value.__enter__.return_value.status = 200
+            urlopen.return_value.__enter__.return_value.read.return_value = b"{}"
+            urllib_transport(request)
+
+        self.assertEqual(request.get_header("User-agent"), USER_AGENT)
+
+    def test_keeps_existing_user_agent(self):
+        request = urllib.request.Request(
+            "https://example.invalid/", headers={"User-Agent": "custom"}
+        )
+        with mock.patch("urllib.request.urlopen") as urlopen:
+            urlopen.return_value.__enter__.return_value.status = 200
+            urlopen.return_value.__enter__.return_value.read.return_value = b"{}"
+            urllib_transport(request)
+
+        self.assertEqual(request.get_header("User-agent"), "custom")
 
 
 class TestEbayClient(unittest.TestCase):

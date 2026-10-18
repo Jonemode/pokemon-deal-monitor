@@ -1584,41 +1584,9 @@
     "rarity": "promo"
   },
   {
-    "name": "Pidgeot",
-    "set_name": "Southern Islands",
-    "number": "2/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
-    "name": "Onix",
-    "set_name": "Southern Islands",
-    "number": "3/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
     "name": "Togepi",
     "set_name": "Southern Islands",
     "number": "4/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
-    "name": "Ivysaur",
-    "set_name": "Southern Islands",
-    "number": "5/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
-    "name": "Raticate",
-    "set_name": "Southern Islands",
-    "number": "6/18",
     "variant": "reverse_holo",
     "edition": "unlimited",
     "rarity": "promo"
@@ -1632,49 +1600,9 @@
     "rarity": "promo"
   },
   {
-    "name": "Jigglypuff",
-    "set_name": "Southern Islands",
-    "number": "8/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
-    "name": "Butterfree",
-    "set_name": "Southern Islands",
-    "number": "9/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
-    "name": "Tentacruel",
-    "set_name": "Southern Islands",
-    "number": "10/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
     "name": "Marill",
     "set_name": "Southern Islands",
     "number": "11/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
-    "name": "Lapras",
-    "set_name": "Southern Islands",
-    "number": "12/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
-    "name": "Exeggutor",
-    "set_name": "Southern Islands",
-    "number": "13/18",
     "variant": "reverse_holo",
     "edition": "unlimited",
     "rarity": "promo"
@@ -1688,33 +1616,9 @@
     "rarity": "promo"
   },
   {
-    "name": "Wartortle",
-    "set_name": "Southern Islands",
-    "number": "15/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
-    "name": "Lickitung",
-    "set_name": "Southern Islands",
-    "number": "16/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
     "name": "Vileplume",
     "set_name": "Southern Islands",
     "number": "17/18",
-    "variant": "reverse_holo",
-    "edition": "unlimited",
-    "rarity": "promo"
-  },
-  {
-    "name": "Primeape",
-    "set_name": "Southern Islands",
-    "number": "18/18",
     "variant": "reverse_holo",
     "edition": "unlimited",
     "rarity": "promo"

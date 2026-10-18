@@ -27,6 +27,8 @@ def describe_deal(candidate) -> str:
         f"({', '.join(f'{k} {format_dollars(v)}' for k, v in valuation.estimates.items())})"
         f", discount {deal.discount:.0%}"
     )
+    if valuation.warnings:
+        summary += f" [warning: {', '.join(valuation.warnings)}]"
     if deal.qualifies:
         return "DEAL " + summary
     return f"{summary}; not a deal: {', '.join(deal.reasons)}"

@@ -25,7 +25,8 @@ TCGPLAYER_RETRY_AFTER = timedelta(hours=1)
 
 # A listing qualifies when its total is at least this far below value.
 MIN_DISCOUNT = 0.25
-# Two raw price sources must agree within this ratio for a confident value.
+# A TCGplayer price this many times below PriceCharting's is flagged as a
+# warning on the alert, since it can mean a mismatched or stale product.
 MAX_SOURCE_RATIO = 1.5
 # With no raw price, a grade 5 copy stands in for a lightly played raw card
 # after taking off the premium buyers pay for a graded slab.
@@ -39,6 +40,8 @@ class Valuation:
     # The estimate from each source that went into the value, in cents.
     estimates: dict[str, int]
     notes: tuple[str, ...] = ()
+    # Problems worth showing on an alert; they don't stop it qualifying.
+    warnings: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -52,10 +55,13 @@ class Deal:
 
 
 def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
-    """Return a conservative value for a card from its cached prices.
+    """Return a value for a card from its cached prices.
 
-    The value is the lowest raw estimate, capped at the grade 7 price since
-    a raw card rarely sells above a graded near mint copy.
+    PriceCharting's ungraded price is the value, capped at its grade 7 price
+    since a raw card rarely sells above a graded near mint copy. TCGplayer is
+    a cross-check: a much lower TCGplayer price adds a warning. Without a
+    PriceCharting raw price, the TCGplayer price or a grade 5 estimate is
+    shown but is never confident enough to alert on.
     """
     pricecharting = prices.get(PRICECHARTING)
     tcgplayer = prices.get(TCGPLAYER)
@@ -67,14 +73,22 @@ def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
         estimates[TCGPLAYER] = tcgplayer.raw_cents
 
     notes = []
-    if estimates:
-        value = min(estimates.values())
-        ratio = max(estimates.values()) / value
-        confident = len(estimates) > 1 and ratio <= MAX_SOURCE_RATIO
-        if len(estimates) == 1:
-            notes.append("only one price source")
-        elif not confident:
-            notes.append(f"sources disagree by {ratio:.1f}x")
+    warnings = []
+    if PRICECHARTING in estimates:
+        value = estimates[PRICECHARTING]
+        confident = True
+        if TCGPLAYER in estimates:
+            ratio = value / estimates[TCGPLAYER]
+            if ratio > MAX_SOURCE_RATIO:
+                warnings.append(
+                    f"sources disagree: TCGplayer is {ratio:.1f}x lower"
+                )
+        else:
+            notes.append("no TCGplayer price")
+    elif TCGPLAYER in estimates:
+        value = estimates[TCGPLAYER]
+        confident = False
+        notes.append("no PriceCharting price")
     elif pricecharting and pricecharting.grade_5_cents:
         value = round(pricecharting.grade_5_cents * (1 - GRADE_5_RAW_DISCOUNT))
         estimates["pricecharting_grade_5"] = value
@@ -93,6 +107,7 @@ def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
         confident=confident,
         estimates=estimates,
         notes=tuple(notes),
+        warnings=tuple(warnings),
     )
 
 

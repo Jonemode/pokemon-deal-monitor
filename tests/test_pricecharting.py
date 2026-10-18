@@ -19,6 +19,10 @@ LUGIA = PokemonCard("Lugia", "Neo Genesis", "9/111", Variant.HOLO,
                     Edition.FIRST_EDITION, Rarity.HOLO_RARE)
 UMBREON = PokemonCard("Umbreon", "Aquapolis", "H29/H32", Variant.HOLO,
                       Edition.UNLIMITED, Rarity.HOLO_RARE)
+MEW_SI = PokemonCard("Mew", "Southern Islands", "1/18", Variant.REVERSE_HOLO,
+                     Edition.UNLIMITED, Rarity.PROMO)
+CHARIZARD_BASE = PokemonCard("Charizard", "Base Set", "4/102", Variant.HOLO,
+                             Edition.FIRST_EDITION, Rarity.HOLO_RARE)
 CHARIZARD_LC = PokemonCard("Charizard", "Legendary Collection", "3/110",
                            Variant.REVERSE_HOLO, Edition.UNLIMITED,
                            Rarity.HOLO_RARE)
@@ -27,6 +31,10 @@ CHARIZARD_LC = PokemonCard("Charizard", "Legendary Collection", "3/110",
 def pc_product(product_id, console, name, tcg_id=None):
     return {"id": product_id, "console-name": console,
             "product-name": name, "tcg-id": tcg_id}
+
+
+CLOUDFLARE_PAGE = b"<!DOCTYPE html><title>Just a moment...</title>"
+EMPTY_SEARCH = {"status": "success", "products": []}
 
 
 class FakeTransport:
@@ -38,6 +46,8 @@ class FakeTransport:
     def __call__(self, request):
         self.requests.append(request)
         status, payload = self.responses.pop(0)
+        if isinstance(payload, bytes):
+            return status, payload
         return status, json.dumps(payload).encode()
 
 
@@ -109,6 +119,24 @@ class TestProductSelection(unittest.TestCase):
             [p["id"] for p in select_products(CHARIZARD_LC, products)], [2]
         )
 
+    def test_non_english_consoles_excluded(self):
+        products = [
+            pc_product(1, "Pokemon Base Set", "Charizard [1st Edition] #4"),
+            pc_product(2, "Pokemon Korean Base Set", "Charizard [1st Edition] #4"),
+            pc_product(3, "Pokemon Chinese Base Set", "Charizard [1st Edition] #4"),
+        ]
+        self.assertEqual(
+            [p["id"] for p in select_products(CHARIZARD_BASE, products)], [1]
+        )
+
+    def test_single_printing_set_needs_no_reverse_tag(self):
+        products = [
+            pc_product(1, "Pokemon Southern Islands", "Mew #1"),
+            pc_product(2, "Pokemon Japanese Southern Islands", "Mew #151"),
+            pc_product(3, "Pokemon Southern Islands", "Mew [Error] #1"),
+        ]
+        self.assertEqual([p["id"] for p in select_products(MEW_SI, products)], [1])
+
     def test_number_and_name_must_match(self):
         products = [
             pc_product(1, "Pokemon Aquapolis", "Umbreon #H30"),
@@ -163,6 +191,51 @@ class TestClient(unittest.TestCase):
         client.search("b")
 
         self.assertEqual(clock.slept, [0.75])
+
+    def test_custom_spacing(self):
+        clock = FakeClock()
+        transport = FakeTransport((200, EMPTY_SEARCH), (200, EMPTY_SEARCH))
+        client = PriceChartingClient(
+            "tok", transport=transport, clock=clock, sleep=clock.sleep,
+            min_seconds_between_calls=3.0,
+        )
+        client.search("a")
+        client.search("b")
+
+        self.assertEqual(clock.slept, [3.0])
+
+    def test_rate_limit_is_retried_with_backoff(self):
+        clock = FakeClock()
+        transport = FakeTransport(
+            (429, CLOUDFLARE_PAGE), (429, CLOUDFLARE_PAGE), (200, EMPTY_SEARCH)
+        )
+        client = PriceChartingClient(
+            "tok", transport=transport, clock=clock, sleep=clock.sleep
+        )
+
+        self.assertEqual(client.search("a"), [])
+        self.assertEqual(clock.slept, [30.0, 60.0])
+        self.assertEqual(len(transport.requests), 3)
+
+    def test_rate_limit_gives_up_after_retries(self):
+        clock = FakeClock()
+        transport = FakeTransport(*[(429, CLOUDFLARE_PAGE)] * 5)
+        client = PriceChartingClient(
+            "tok", transport=transport, clock=clock, sleep=clock.sleep
+        )
+
+        with self.assertRaises(PriceChartingError) as context:
+            client.search("a")
+        self.assertEqual(context.exception.status, 429)
+        self.assertIn("rate limited", str(context.exception))
+        self.assertEqual(clock.slept, [30.0, 60.0, 120.0, 240.0])
+
+    def test_other_errors_are_not_retried(self):
+        transport = FakeTransport((500, b"oops"))
+        with self.assertRaises(PriceChartingError) as context:
+            PriceChartingClient("tok", transport=transport).search("a")
+        self.assertEqual(context.exception.status, 500)
+        self.assertEqual(len(transport.requests), 1)
 
 
 if __name__ == "__main__":

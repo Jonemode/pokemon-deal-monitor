@@ -25,6 +25,10 @@ PAGE_LIMIT = 200
 # Refresh the access token this many seconds before eBay says it expires.
 TOKEN_EXPIRY_MARGIN = 60
 
+# Sent on every request. Cloudflare, in front of PriceCharting, rejects
+# Python's default "Python-urllib" agent with error 1010.
+USER_AGENT = "pokemon-deal-monitor/0.1 (+https://github.com/Jonemode/pokemon-deal-monitor)"
+
 Transport = Callable[[urllib.request.Request], tuple[int, bytes]]
 
 
@@ -36,6 +40,8 @@ class EbayError(Exception):
 
 
 def urllib_transport(request: urllib.request.Request) -> tuple[int, bytes]:
+    if not request.has_header("User-agent"):
+        request.add_header("User-Agent", USER_AGENT)
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
             return response.status, response.read()

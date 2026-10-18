@@ -6,7 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from .catalog import PokemonCard, Variant
-from .ebay import to_cents
+from .ebay import USER_AGENT, to_cents
 from .matcher import full_numbers, normalize, card_number_key
 
 
@@ -40,7 +40,7 @@ class TcgPrice:
 
 def fetch_json(url: str) -> dict:
     request = urllib.request.Request(
-        url, headers={"User-Agent": "pokemon-deal-monitor"}
+        url, headers={"User-Agent": USER_AGENT}
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.load(response)

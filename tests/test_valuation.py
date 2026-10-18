@@ -29,26 +29,41 @@ def record(source, raw=None, grade_5=None, grade_7=None, fetched_at=START):
 
 class TestValueCard(unittest.TestCase):
 
-    def test_agreeing_sources_are_confident(self):
+    def test_pricecharting_is_the_value(self):
         valuation = value_card({
             PRICECHARTING: record(PRICECHARTING, raw=250000),
             TCGPLAYER: record(TCGPLAYER, raw=220000),
         })
-        self.assertEqual(valuation.value_cents, 220000)
+        self.assertEqual(valuation.value_cents, 250000)
         self.assertTrue(valuation.confident)
+        self.assertEqual(valuation.warnings, ())
         self.assertEqual(valuation.estimates,
                          {PRICECHARTING: 250000, TCGPLAYER: 220000})
 
-    def test_disagreeing_sources_are_not_confident(self):
+    def test_much_lower_tcgplayer_warns_but_stays_confident(self):
         valuation = value_card({
             PRICECHARTING: record(PRICECHARTING, raw=400000),
             TCGPLAYER: record(TCGPLAYER, raw=130000),
         })
-        self.assertEqual(valuation.value_cents, 130000)
-        self.assertFalse(valuation.confident)
-        self.assertIn("sources disagree by 3.1x", valuation.notes)
+        self.assertEqual(valuation.value_cents, 400000)
+        self.assertTrue(valuation.confident)
+        self.assertEqual(valuation.warnings,
+                         ("sources disagree: TCGplayer is 3.1x lower",))
 
-    def test_single_source_is_not_confident(self):
+    def test_higher_tcgplayer_does_not_warn(self):
+        valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, raw=130000),
+            TCGPLAYER: record(TCGPLAYER, raw=400000),
+        })
+        self.assertEqual(valuation.value_cents, 130000)
+        self.assertEqual(valuation.warnings, ())
+
+    def test_pricecharting_alone_is_confident(self):
+        valuation = value_card({PRICECHARTING: record(PRICECHARTING, raw=130000)})
+        self.assertTrue(valuation.confident)
+        self.assertIn("no TCGplayer price", valuation.notes)
+
+    def test_tcgplayer_alone_is_not_confident(self):
         valuation = value_card({TCGPLAYER: record(TCGPLAYER, raw=130000)})
         self.assertEqual(valuation.value_cents, 130000)
         self.assertFalse(valuation.confident)
@@ -161,7 +176,7 @@ class TestPricer(unittest.TestCase):
     def test_values_from_both_sources(self):
         valuation = self.pricer().valuation(LUGIA, now=START)
 
-        self.assertEqual(valuation.value_cents, 230000)
+        self.assertEqual(valuation.value_cents, 250000)
         self.assertTrue(valuation.confident)
         self.assertEqual(self.pricecharting.calls, ["6910"])
         self.assertEqual(
