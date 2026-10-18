@@ -21,6 +21,9 @@ MARKETPLACE_ID = "EBAY_US"
 CCG_INDIVIDUAL_CARDS_CATEGORY = "183454"
 MAX_PRICE_USD = 5000
 PAGE_LIMIT = 200
+# Values of the category's "Card Condition" aspect to search for. Listings
+# that are moderately or heavily played, or don't say, are left out.
+CARD_CONDITIONS = ("Near Mint or Better", "Lightly Played (Excellent)")
 
 # Refresh the access token this many seconds before eBay says it expires.
 TOKEN_EXPIRY_MARGIN = 60
@@ -168,6 +171,10 @@ class EbayClient:
             "filter": (
                 "buyingOptions:{FIXED_PRICE},"
                 f"price:[..{MAX_PRICE_USD}],priceCurrency:USD"
+            ),
+            "aspect_filter": (
+                f"categoryId:{CCG_INDIVIDUAL_CARDS_CATEGORY},"
+                f"Card Condition:{{{'|'.join(CARD_CONDITIONS)}}}"
             ),
             "sort": "newlyListed",
             "limit": str(limit),

@@ -150,6 +150,11 @@ class TestEbayClient(unittest.TestCase):
         self.assertEqual(params["sort"], ["newlyListed"])
         self.assertIn("buyingOptions:{FIXED_PRICE}", params["filter"][0])
         self.assertIn("price:[..5000]", params["filter"][0])
+        self.assertEqual(
+            params["aspect_filter"],
+            ["categoryId:183454,Card Condition:"
+             "{Near Mint or Better|Lightly Played (Excellent)}"],
+        )
         self.assertEqual(request.get_header("Authorization"), "Bearer token-1")
         self.assertEqual(
             request.get_header("X-ebay-c-marketplace-id"), "EBAY_US"
