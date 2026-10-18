@@ -77,10 +77,8 @@ REJECT_PATTERNS = [
     # Not "sealed": 1st Edition Machamp is commonly sold still in its
     # starter deck shrink wrap.
     r"\b(?:lot|bundle|complete set|\d+ card set)\b",
-    # Conditions worse than lightly played.
-    r"\b(?:damaged|dmg|heavily played|moderately played|poor|creased)\b",
-    r"\bmp\b",
-    r"(?<!\d )\bhp\b",
+    # Condition is deliberately not judged from titles, where "HP" usually
+    # means hit points; eBay's Card Condition field is used instead.
 ]
 REJECT_PATTERN = re.compile("|".join(f"(?:{p})" for p in REJECT_PATTERNS))
 

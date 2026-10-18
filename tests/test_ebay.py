@@ -17,6 +17,7 @@ from pokemon_deal_monitor.ebay import (
 from .fakes import (
     CONFIG,
     FakeTransport,
+    item_response,
     item_summary,
     search_response,
     token_response,
@@ -150,11 +151,7 @@ class TestEbayClient(unittest.TestCase):
         self.assertEqual(params["sort"], ["newlyListed"])
         self.assertIn("buyingOptions:{FIXED_PRICE}", params["filter"][0])
         self.assertIn("price:[..5000]", params["filter"][0])
-        self.assertEqual(
-            params["aspect_filter"],
-            ["categoryId:183454,Card Condition:"
-             "{Near Mint or Better|Lightly Played (Excellent)}"],
-        )
+        self.assertNotIn("aspect_filter", params)
         self.assertEqual(request.get_header("Authorization"), "Bearer token-1")
         self.assertEqual(
             request.get_header("X-ebay-c-marketplace-id"), "EBAY_US"
@@ -172,6 +169,24 @@ class TestEbayClient(unittest.TestCase):
 
         self.assertEqual(len(items), 1)
         self.assertEqual(len(transport.token_requests), 2)
+
+    def test_item_details(self):
+        transport = FakeTransport(items={
+            "v1|123|0": item_response("Lightly played (Excellent)", "English"),
+        })
+        details = EbayClient(CONFIG, transport=transport).item_details("v1|123|0")
+
+        self.assertEqual(details.card_condition, "Lightly played (Excellent)")
+        self.assertEqual(details.language, "English")
+        self.assertTrue(transport.item_requests[0].full_url.endswith(
+            "/buy/browse/v1/item/v1%7C123%7C0"
+        ))
+
+    def test_item_details_left_blank(self):
+        transport = FakeTransport(items={"1": item_response(None, None)})
+        details = EbayClient(CONFIG, transport=transport).item_details("1")
+        self.assertIsNone(details.card_condition)
+        self.assertIsNone(details.language)
 
     def test_search_failure(self):
         transport = FakeTransport({"q": (429, b"rate limited")})

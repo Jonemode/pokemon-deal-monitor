@@ -6,7 +6,7 @@ from pokemon_deal_monitor.monitor import poll_once
 from pokemon_deal_monitor.storage import PriceRecord, Storage, UpsertResult
 from pokemon_deal_monitor.valuation import PRICECHARTING, TCGPLAYER, value_card
 
-from .fakes import CONFIG, FakeTransport, item_summary, search_response
+from .fakes import CONFIG, FakeTransport, item_response, item_summary, search_response
 
 
 START = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
@@ -21,9 +21,63 @@ class TestPollOnce(unittest.TestCase):
         self.storage = Storage(":memory:")
         self.addCleanup(self.storage.close)
 
-    def poll(self, searches, now=START):
-        client = EbayClient(CONFIG, transport=FakeTransport(searches))
+    def poll(self, searches, now=START, items=None):
+        self.transport = FakeTransport(searches, items=items)
+        client = EbayClient(CONFIG, transport=self.transport)
         return poll_once(client, self.storage, queries=list(searches), now=now)
+
+    def test_played_card_condition_is_rejected(self):
+        poll = self.poll(
+            {"neo": search_response(item_summary("1", LUGIA),
+                                    item_summary("2", UMBREON))},
+            items={"1": item_response("Moderately played (Very good)"),
+                   "2": item_response("Heavily played (Poor)")},
+        )
+        self.assertEqual(poll.candidates, [])
+        self.assertEqual(self.storage.get_listing("1").card_condition,
+                         "Moderately played (Very good)")
+
+    def test_blank_condition_and_language_are_kept(self):
+        poll = self.poll(
+            {"neo": search_response(item_summary("1", LUGIA))},
+            items={"1": item_response(None, None)},
+        )
+        (candidate,) = poll.candidates
+        self.assertIsNone(candidate.details.card_condition)
+        self.assertIsNone(candidate.details.language)
+
+    def test_non_english_language_is_rejected(self):
+        poll = self.poll(
+            {"neo": search_response(item_summary("1", LUGIA))},
+            items={"1": item_response("Near mint or better", "Japanese")},
+        )
+        self.assertEqual(poll.candidates, [])
+
+    def test_details_are_fetched_once(self):
+        searches = {"neo": search_response(item_summary("1", LUGIA, "900.00"))}
+        self.poll(searches)
+        self.poll({"neo": search_response(item_summary("1", LUGIA, "800.00"))},
+                  now=START + timedelta(minutes=5))
+
+        self.assertEqual(self.transport.item_requests, [])
+        self.assertIsNotNone(self.storage.get_listing("1").details_fetched_at)
+
+    def test_unmatched_listing_details_not_fetched(self):
+        self.poll({"neo": search_response(item_summary("1", "Pokemon Card Lot"))})
+        self.assertEqual(self.transport.item_requests, [])
+
+    def test_details_rate_limit_stops_lookups_until_next_poll(self):
+        searches = {"neo": search_response(item_summary("1", LUGIA),
+                                           item_summary("2", UMBREON))}
+        poll = self.poll(searches, items={"1": (429, b"rate limited")})
+
+        self.assertEqual(poll.candidates, [])
+        self.assertEqual(len(self.transport.item_requests), 1)
+        self.assertEqual(len(poll.errors), 1)
+
+        retry = self.poll(searches, now=START + timedelta(minutes=5))
+        self.assertEqual(len(self.transport.item_requests), 2)
+        self.assertEqual(retry.candidates, [])
 
     def test_new_matched_listing_is_candidate(self):
         poll = self.poll({

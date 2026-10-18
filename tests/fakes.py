@@ -34,22 +34,41 @@ def item_summary(item_id, title, price="100.00", shipping="5.00",
     return summary
 
 
+def item_response(card_condition="Near mint or better", language="English"):
+    item = {"conditionDescriptors": [], "localizedAspects": []}
+    if card_condition is not None:
+        item["conditionDescriptors"].append({
+            "name": "Card Condition",
+            "values": [{"content": card_condition}],
+        })
+    if language is not None:
+        item["localizedAspects"].append(
+            {"type": "STRING", "name": "Language", "value": language}
+        )
+    return 200, json.dumps(item).encode()
+
+
 def search_response(*summaries):
     return 200, json.dumps({"itemSummaries": list(summaries)}).encode()
 
 
 class FakeTransport:
-    """Serves the token endpoint and canned search results by query."""
+    """Serves the token endpoint, canned search results by query, and
+    listing details by item ID (NM and English unless given)."""
 
-    def __init__(self, searches=None, token=None):
+    def __init__(self, searches=None, token=None, items=None):
         self.searches = searches or {}
         self.token = token or token_response()
+        self.items = items or {}
         self.requests = []
 
     def __call__(self, request):
         self.requests.append(request)
         if request.full_url.endswith("/oauth2/token"):
             return self.token
+        if "/buy/browse/v1/item/" in request.full_url:
+            item_id = urllib.parse.unquote(request.full_url.rsplit("/", 1)[1])
+            return self.items.get(item_id, item_response())
 
         query = urllib.parse.parse_qs(
             urllib.parse.urlsplit(request.full_url).query
@@ -62,6 +81,10 @@ class FakeTransport:
     @property
     def token_requests(self):
         return [r for r in self.requests if r.full_url.endswith("/oauth2/token")]
+
+    @property
+    def item_requests(self):
+        return [r for r in self.requests if "/buy/browse/v1/item/" in r.full_url]
 
     @property
     def search_requests(self):

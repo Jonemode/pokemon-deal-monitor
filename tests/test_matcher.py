@@ -71,6 +71,11 @@ MATCHING_TITLES = [
      ["Skyridge:146/144:holo:unlimited"]),
     ("Gengar H9/H32 Skyridge Holo NM",
      ["Skyridge:H9/H32:holo:unlimited"]),
+    # Condition words don't reject a title; eBay's Card Condition is used.
+    ("Lugia 9/111 Neo Genesis 1st Edition Holo HP",
+     ["Neo Genesis:9/111:holo:1st"]),
+    ("Lugia 9/111 Neo Genesis 1st Edition Holo MP Damaged",
+     ["Neo Genesis:9/111:holo:1st"]),
     # Southern Islands
     ("Southern Islands Mew 01/18 Reverse Holo Promo",
      ["Southern Islands:1/18:reverse_holo:unlimited"]),
@@ -133,8 +138,6 @@ REJECTED_TITLES = [
     "Japanese Lugia Neo Genesis 1st Edition Holo",
     "Lugia 9/111 Neo Genesis 1st Edition Holo Proxy",
     "Pokemon Neo Genesis 1st Edition Holo Lot x5",
-    "Lugia Neo Genesis 1st Edition Holo Damaged",
-    "Lugia 9/111 Neo Genesis 1st Edition Holo HP",
     "Lugia 1st Edition Holo",
     "Charizard 1st Edition Holo Pokemon",
     # Real eBay titles

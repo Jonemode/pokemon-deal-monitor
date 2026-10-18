@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
-from .ebay import EbayClient, EbayError, EbayItem
+from .ebay import EbayClient, EbayError, EbayItem, ItemDetails
 from .matcher import Match, match_listing
 from .storage import Listing, Storage, UpsertResult, utc_now
 from .valuation import Deal, Pricer, evaluate_deal
@@ -31,6 +31,13 @@ DEFAULT_POLL_INTERVAL_SECONDS = 300
 # poll may still be live. Only treat it as ended after this long unseen.
 ENDED_AFTER = timedelta(hours=24)
 
+# eBay "Card Condition" values to keep, lowercased. Listings that leave it
+# blank are kept too: the title isn't used to guess, since "HP" in a title
+# usually means hit points rather than heavily played.
+ACCEPTED_CARD_CONDITIONS = {"near mint or better", "lightly played (excellent)"}
+# A blank Language is kept; the matcher rejects non-English titles anyway.
+ACCEPTED_LANGUAGES = {"english"}
+
 
 @dataclass(frozen=True)
 class Candidate:
@@ -39,6 +46,7 @@ class Candidate:
     result: UpsertResult
     # None when no pricer was given or the card has no known value.
     deal: Deal | None = None
+    details: ItemDetails | None = None
 
 
 @dataclass
@@ -50,6 +58,24 @@ class PollResult:
 
 def is_graded(item: EbayItem) -> bool:
     return (item.condition or "").strip().lower() == "graded"
+
+
+def details_rejection(details: ItemDetails) -> str | None:
+    """Return why a listing's details rule it out, or None if they don't."""
+    condition = details.card_condition
+    if condition is not None and condition.lower() not in ACCEPTED_CARD_CONDITIONS:
+        return f"card condition {condition}"
+    language = details.language
+    if language is not None and language.lower() not in ACCEPTED_LANGUAGES:
+        return f"language {language}"
+    return None
+
+
+def stored_details(storage: Storage, item_id: str) -> ItemDetails | None:
+    stored = storage.get_listing(item_id)
+    if stored is None or stored.details_fetched_at is None:
+        return None
+    return ItemDetails(stored.card_condition, stored.language)
 
 
 def value_listing(
@@ -79,6 +105,9 @@ def poll_once(
     now = now or utc_now()
     poll = PollResult()
     seen = set()
+    # Cleared when eBay rate limits or rejects a details lookup, since the
+    # rest would fail too. Listings without details wait for the next poll.
+    can_fetch_details = True
 
     for query in queries:
         try:
@@ -108,9 +137,30 @@ def poll_once(
 
             if best is None or not storage.should_alert(item.item_id):
                 continue
+
+            # Each listing's details are fetched once, then read from storage.
+            details = stored_details(storage, item.item_id)
+            if details is None:
+                if not can_fetch_details:
+                    continue
+                try:
+                    details = client.item_details(item.item_id)
+                except EbayError as error:
+                    logger.warning("Details for %s failed: %s", item.item_id, error)
+                    poll.errors.append(f"details {item.item_id}: {error}")
+                    if error.status in (401, 429):
+                        can_fetch_details = False
+                    continue
+                storage.save_details(item.item_id, details.card_condition,
+                                     details.language, now=now)
+            if details_rejection(details) is not None:
+                continue
+
             deal = value_listing(pricer, best, listing, now)
             if result != UpsertResult.UNCHANGED or (deal and deal.qualifies):
-                poll.candidates.append(Candidate(item, best, result, deal))
+                poll.candidates.append(
+                    Candidate(item, best, result, deal, details)
+                )
 
     poll.items_seen = len(seen)
     storage.mark_ended(not_seen_since=now - ENDED_AFTER, now=now)

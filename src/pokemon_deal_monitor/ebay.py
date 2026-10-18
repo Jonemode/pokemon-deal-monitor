@@ -21,9 +21,6 @@ MARKETPLACE_ID = "EBAY_US"
 CCG_INDIVIDUAL_CARDS_CATEGORY = "183454"
 MAX_PRICE_USD = 5000
 PAGE_LIMIT = 200
-# Values of the category's "Card Condition" aspect to search for. Listings
-# that are moderately or heavily played, or don't say, are left out.
-CARD_CONDITIONS = ("Near Mint or Better", "Lightly Played (Excellent)")
 
 # Refresh the access token this many seconds before eBay says it expires.
 TOKEN_EXPIRY_MARGIN = 60
@@ -99,6 +96,40 @@ def parse_shipping(summary: dict) -> int | None:
     return min(costs) if costs else None
 
 
+@dataclass(frozen=True)
+class ItemDetails:
+    """Fields only the full listing has, not search results.
+
+    Search filters can't select listings that leave these blank, so they
+    are looked up per listing instead.
+    """
+    # The "Card Condition" of an ungraded card, e.g. "Near mint or better".
+    card_condition: str | None = None
+    language: str | None = None
+
+
+def parse_details(item: dict) -> ItemDetails:
+    card_condition = next(
+        (
+            value["content"]
+            for descriptor in item.get("conditionDescriptors", [])
+            if descriptor.get("name") == "Card Condition"
+            for value in descriptor.get("values", [])
+            if value.get("content")
+        ),
+        None,
+    )
+    language = next(
+        (
+            aspect["value"]
+            for aspect in item.get("localizedAspects", [])
+            if aspect.get("name") == "Language" and aspect.get("value")
+        ),
+        None,
+    )
+    return ItemDetails(card_condition=card_condition, language=language)
+
+
 def parse_item(summary: dict) -> EbayItem | None:
     """Convert a Browse API itemSummary, or None if it lacks a price."""
     price = summary.get("price")
@@ -172,15 +203,22 @@ class EbayClient:
                 "buyingOptions:{FIXED_PRICE},"
                 f"price:[..{MAX_PRICE_USD}],priceCurrency:USD"
             ),
-            "aspect_filter": (
-                f"categoryId:{CCG_INDIVIDUAL_CARDS_CATEGORY},"
-                f"Card Condition:{{{'|'.join(CARD_CONDITIONS)}}}"
-            ),
             "sort": "newlyListed",
             "limit": str(limit),
         })
         url = f"{self.host}/buy/browse/v1/item_summary/search?{params}"
 
+        summaries = self._get_json(url).get("itemSummaries", [])
+        return [item for item in map(parse_item, summaries) if item is not None]
+
+    def item_details(self, item_id: str) -> ItemDetails:
+        """Return a listing's card condition and language."""
+        quoted = urllib.parse.quote(item_id, safe="")
+        return parse_details(
+            self._get_json(f"{self.host}/buy/browse/v1/item/{quoted}")
+        )
+
+    def _get_json(self, url: str) -> dict:
         status, body = self._get(url)
         if status == 401:
             # The token may have been revoked early; retry once with a new one.
@@ -188,9 +226,7 @@ class EbayClient:
             status, body = self._get(url)
         if status != 200:
             raise EbayError(status, body)
-
-        summaries = json.loads(body).get("itemSummaries", [])
-        return [item for item in map(parse_item, summaries) if item is not None]
+        return json.loads(body)
 
     def _get(self, url: str) -> tuple[int, bytes]:
         request = urllib.request.Request(

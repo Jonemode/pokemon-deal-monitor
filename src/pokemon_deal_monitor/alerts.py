@@ -6,7 +6,7 @@ from collections.abc import Callable
 from datetime import datetime
 
 from .catalog import CARDS, PokemonCard, Variant
-from .ebay import EbayItem
+from .ebay import EbayItem, ItemDetails
 from .matcher import Match
 from .monitor import Candidate, PollResult
 from .storage import PriceRecord, Storage, UpsertResult, utc_now
@@ -56,7 +56,13 @@ def format_alert(candidate: Candidate) -> str:
     lines.extend(f"⚠️ {html.escape(warning)}" for warning in valuation.warnings)
     if candidate.result == UpsertResult.PRICE_CHANGED:
         lines.append("Price dropped since last seen")
-    if item.condition:
+    details = candidate.details
+    if details is not None:
+        condition = details.card_condition or "not specified"
+        language = details.language or "not specified, check the photos"
+        lines.append(f"Condition: {html.escape(condition)}")
+        lines.append(f"Language: {html.escape(language)}")
+    elif item.condition:
         lines.append(f"Condition: {html.escape(item.condition)}")
     lines.append(f"<i>{html.escape(item.title)}</i>")
     lines.append(f'<a href="{html.escape(item.url)}">View on eBay</a>')
@@ -118,5 +124,6 @@ def sample_alert() -> str:
         match=Match(card, 1.0),
         result=UpsertResult.NEW,
         deal=evaluate_deal(170500, True, valuation),
+        details=ItemDetails("Near mint or better", "English"),
     )
     return "🧪 <b>Test alert</b>, not a real listing\n\n" + format_alert(candidate)

@@ -58,6 +58,11 @@ MIGRATIONS = [
         PRIMARY KEY (card_identifier, source)
     );
     """,
+    """
+    ALTER TABLE listings ADD COLUMN card_condition TEXT;
+    ALTER TABLE listings ADD COLUMN language TEXT;
+    ALTER TABLE listings ADD COLUMN details_fetched_at TEXT;
+    """,
 ]
 
 
@@ -86,6 +91,12 @@ class StoredListing(Listing):
     first_seen_at: datetime | None = None
     last_seen_at: datetime | None = None
     ended_at: datetime | None = None
+    # From the full listing; see save_details. Both are None until
+    # details_fetched_at is set, and either may be None afterwards when the
+    # seller left it blank.
+    card_condition: str | None = None
+    language: str | None = None
+    details_fetched_at: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -163,7 +174,8 @@ class Storage:
             return None
 
         fields = dict(row)
-        for name in ("first_seen_at", "last_seen_at", "ended_at"):
+        for name in ("first_seen_at", "last_seen_at", "ended_at",
+                     "details_fetched_at"):
             fields[name] = parse_time(fields[name])
         fields["shipping_known"] = bool(fields["shipping_known"])
         return StoredListing(**fields)
@@ -219,6 +231,23 @@ class Storage:
         if existing.total_cents != listing.total_cents:
             return UpsertResult.PRICE_CHANGED
         return UpsertResult.UNCHANGED
+
+    def save_details(
+        self,
+        item_id: str,
+        card_condition: str | None,
+        language: str | None,
+        now: datetime | None = None,
+    ) -> None:
+        with self.connection:
+            self.connection.execute(
+                """
+                UPDATE listings SET
+                    card_condition = ?, language = ?, details_fetched_at = ?
+                WHERE item_id = ?
+                """,
+                (card_condition, language, format_time(now or utc_now()), item_id),
+            )
 
     def should_alert(self, item_id: str) -> bool:
         """Return whether a live listing deserves an alert now.
