@@ -108,14 +108,29 @@ class ItemDetails:
     language: str | None = None
 
 
+# eBay's Card Condition values. Sellers on other eBay sites get descriptor
+# names in their own language, e.g. "Condizione della carta", but the values
+# stay in English, so a descriptor with one of these values is the condition.
+CARD_CONDITIONS = {
+    "near mint or better",
+    "lightly played (excellent)",
+    "moderately played (very good)",
+    "heavily played (poor)",
+}
+
+# "Language" as other eBay sites name it.
+LANGUAGE_NAMES = {"language", "lingua", "sprache", "langue", "idioma", "taal"}
+
+
 def parse_details(item: dict) -> ItemDetails:
     card_condition = next(
         (
             value["content"]
             for descriptor in item.get("conditionDescriptors", [])
-            if descriptor.get("name") == "Card Condition"
             for value in descriptor.get("values", [])
             if value.get("content")
+            and (descriptor.get("name") == "Card Condition"
+                 or value["content"].lower() in CARD_CONDITIONS)
         ),
         None,
     )
@@ -123,7 +138,8 @@ def parse_details(item: dict) -> ItemDetails:
         (
             aspect["value"]
             for aspect in item.get("localizedAspects", [])
-            if aspect.get("name") == "Language" and aspect.get("value")
+            if (aspect.get("name") or "").lower() in LANGUAGE_NAMES
+            and aspect.get("value")
         ),
         None,
     )

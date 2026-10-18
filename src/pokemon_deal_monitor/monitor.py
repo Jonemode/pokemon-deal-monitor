@@ -39,7 +39,9 @@ ENDED_AFTER = timedelta(hours=24)
 # usually means hit points rather than heavily played.
 ACCEPTED_CARD_CONDITIONS = {"near mint or better", "lightly played (excellent)"}
 # A blank Language is kept; the matcher rejects non-English titles anyway.
-ACCEPTED_LANGUAGES = {"english"}
+# Sellers on other eBay sites name English in their own language.
+ACCEPTED_LANGUAGES = {"english", "inglese", "englisch", "anglais", "inglés",
+                      "ingles", "engels"}
 
 
 @dataclass(frozen=True)

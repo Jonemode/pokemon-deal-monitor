@@ -63,6 +63,12 @@ MIGRATIONS = [
     ALTER TABLE listings ADD COLUMN language TEXT;
     ALTER TABLE listings ADD COLUMN details_fetched_at TEXT;
     """,
+    # Details from other eBay sites were stored blank before their localized
+    # names were recognised, so fetch those again.
+    """
+    UPDATE listings SET details_fetched_at = NULL
+    WHERE card_condition IS NULL AND language IS NULL;
+    """,
 ]
 
 

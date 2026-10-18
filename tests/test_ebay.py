@@ -1,4 +1,5 @@
 import base64
+import json
 import urllib.parse
 import urllib.request
 import unittest
@@ -187,6 +188,30 @@ class TestEbayClient(unittest.TestCase):
         details = EbayClient(CONFIG, transport=transport).item_details("1")
         self.assertIsNone(details.card_condition)
         self.assertIsNone(details.language)
+
+    def test_item_details_from_another_ebay_site(self):
+        item = {
+            "conditionDescriptors": [{
+                "name": "Condizione della carta",
+                "values": [{"content": "Heavily Played (Poor)"}],
+            }],
+            "localizedAspects": [
+                {"type": "STRING", "name": "Lingua", "value": "Italiano"},
+            ],
+        }
+        transport = FakeTransport(items={"1": (200, json.dumps(item).encode())})
+        details = EbayClient(CONFIG, transport=transport).item_details("1")
+        self.assertEqual(details.card_condition, "Heavily Played (Poor)")
+        self.assertEqual(details.language, "Italiano")
+
+    def test_grade_descriptors_are_not_card_condition(self):
+        item = {"conditionDescriptors": [
+            {"name": "Professional Grader", "values": [{"content": "PSA"}]},
+            {"name": "Grade", "values": [{"content": "9"}]},
+        ]}
+        transport = FakeTransport(items={"1": (200, json.dumps(item).encode())})
+        details = EbayClient(CONFIG, transport=transport).item_details("1")
+        self.assertIsNone(details.card_condition)
 
     def test_search_failure(self):
         transport = FakeTransport({"q": (429, b"rate limited")})

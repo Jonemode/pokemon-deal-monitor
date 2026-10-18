@@ -1,3 +1,4 @@
+import json
 import unittest
 from datetime import datetime, timedelta, timezone
 
@@ -52,6 +53,29 @@ class TestPollOnce(unittest.TestCase):
             items={"1": item_response("Near mint or better", "Japanese")},
         )
         self.assertEqual(poll.candidates, [])
+
+    def test_listings_from_another_ebay_site(self):
+        def italian_item(condition, language):
+            return 200, json.dumps({
+                "conditionDescriptors": [{
+                    "name": "Condizione della carta",
+                    "values": [{"content": condition}],
+                }],
+                "localizedAspects": [
+                    {"type": "STRING", "name": "Lingua", "value": language},
+                ],
+            }).encode()
+
+        poll = self.poll(
+            {"neo": search_response(item_summary("1", LUGIA),
+                                    item_summary("2", UMBREON),
+                                    item_summary("3", LUGIA + " "))},
+            items={"1": italian_item("Near Mint or Better", "Inglese"),
+                   "2": italian_item("Moderately Played (Very Good)", "Inglese"),
+                   "3": italian_item("Lightly Played (Excellent)", "Italiano")},
+        )
+        self.assertEqual([c.item.item_id for c in poll.candidates], ["1"])
+        self.assertEqual(len(self.transport.item_requests), 3)
 
     def test_details_are_fetched_once(self):
         searches = {"neo": search_response(item_summary("1", LUGIA, "900.00"))}
