@@ -10,13 +10,33 @@ class Variant(str, Enum):
     REVERSE_HOLO = "reverse_holo"
 
 
+class Edition(str, Enum):
+    FIRST_EDITION = "1st_edition"
+    UNLIMITED = "unlimited"
+
+
+class Rarity(str, Enum):
+    COMMON = "common"
+    UNCOMMON = "uncommon"
+    RARE = "rare"
+    HOLO_RARE = "holo_rare"
+    SHINING = "shining"
+    CRYSTAL = "crystal"
+    PROMO = "promo"
+
+
 @dataclass(frozen=True)
 class PokemonCard:
     name: str
     set_name: str
     number: str
     variant: Variant
-    first_edition_required: bool = False
+    edition: Edition
+    rarity: Rarity
+
+    @property
+    def first_edition_required(self) -> bool:
+        return self.edition == Edition.FIRST_EDITION
 
     @property
     def identifier(self) -> str:
@@ -54,7 +74,8 @@ def load_catalog(path: Path | None = None) -> list[PokemonCard]:
             set_name = entry["set_name"]
             number = entry["number"]
             variant = Variant(entry["variant"])
-            first_edition_required = entry["first_edition_required"]
+            edition = Edition(entry["edition"])
+            rarity = Rarity(entry["rarity"])
         except (KeyError, ValueError) as error:
             raise ValueError(
                 f"Invalid card at index {index}: {error}"
@@ -70,17 +91,13 @@ def load_catalog(path: Path | None = None) -> list[PokemonCard]:
                     f"Card at index {index} has invalid {field_name}"
                 )
 
-        if type(first_edition_required) is not bool:
-            raise ValueError(
-                f"Card at index {index} has invalid first_edition_required"
-            )
-
         card = PokemonCard(
             name=name.strip(),
             set_name=set_name.strip(),
             number=number.strip(),
             variant=variant,
-            first_edition_required=first_edition_required,
+            edition=edition,
+            rarity=rarity,
         )
 
         if card.identifier in identifiers:

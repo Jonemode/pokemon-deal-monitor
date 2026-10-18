@@ -1,32 +1,2602 @@
-
 [
   {
-    "name": "Lugia",
-    "set_name": "Neo Genesis",
-    "number": "9/111",
+    "name": "Alakazam",
+    "set_name": "Base Set",
+    "number": "1/102",
     "variant": "holo",
-    "first_edition_required": true
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Blastoise",
+    "set_name": "Base Set",
+    "number": "2/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Chansey",
+    "set_name": "Base Set",
+    "number": "3/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
   },
   {
     "name": "Charizard",
     "set_name": "Base Set",
     "number": "4/102",
     "variant": "holo",
-    "first_edition_required": true
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Clefairy",
+    "set_name": "Base Set",
+    "number": "5/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Gyarados",
+    "set_name": "Base Set",
+    "number": "6/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Hitmonchan",
+    "set_name": "Base Set",
+    "number": "7/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Machamp",
+    "set_name": "Base Set",
+    "number": "8/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Magneton",
+    "set_name": "Base Set",
+    "number": "9/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Mewtwo",
+    "set_name": "Base Set",
+    "number": "10/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Nidoking",
+    "set_name": "Base Set",
+    "number": "11/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ninetales",
+    "set_name": "Base Set",
+    "number": "12/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Poliwrath",
+    "set_name": "Base Set",
+    "number": "13/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Raichu",
+    "set_name": "Base Set",
+    "number": "14/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Venusaur",
+    "set_name": "Base Set",
+    "number": "15/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Zapdos",
+    "set_name": "Base Set",
+    "number": "16/102",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ampharos",
+    "set_name": "Neo Genesis",
+    "number": "1/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Azumarill",
+    "set_name": "Neo Genesis",
+    "number": "2/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Bellossom",
+    "set_name": "Neo Genesis",
+    "number": "3/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Feraligatr",
+    "set_name": "Neo Genesis",
+    "number": "4/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Feraligatr",
+    "set_name": "Neo Genesis",
+    "number": "5/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Heracross",
+    "set_name": "Neo Genesis",
+    "number": "6/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Jumpluff",
+    "set_name": "Neo Genesis",
+    "number": "7/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Kingdra",
+    "set_name": "Neo Genesis",
+    "number": "8/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Lugia",
+    "set_name": "Neo Genesis",
+    "number": "9/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Meganium",
+    "set_name": "Neo Genesis",
+    "number": "10/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Meganium",
+    "set_name": "Neo Genesis",
+    "number": "11/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Pichu",
+    "set_name": "Neo Genesis",
+    "number": "12/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Skarmory",
+    "set_name": "Neo Genesis",
+    "number": "13/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Slowking",
+    "set_name": "Neo Genesis",
+    "number": "14/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Steelix",
+    "set_name": "Neo Genesis",
+    "number": "15/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Togetic",
+    "set_name": "Neo Genesis",
+    "number": "16/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Typhlosion",
+    "set_name": "Neo Genesis",
+    "number": "17/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Typhlosion",
+    "set_name": "Neo Genesis",
+    "number": "18/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Metal Energy",
+    "set_name": "Neo Genesis",
+    "number": "19/111",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Espeon",
+    "set_name": "Neo Discovery",
+    "number": "1/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Forretress",
+    "set_name": "Neo Discovery",
+    "number": "2/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Hitmontop",
+    "set_name": "Neo Discovery",
+    "number": "3/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Houndoom",
+    "set_name": "Neo Discovery",
+    "number": "4/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Houndour",
+    "set_name": "Neo Discovery",
+    "number": "5/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Kabutops",
+    "set_name": "Neo Discovery",
+    "number": "6/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Magnemite",
+    "set_name": "Neo Discovery",
+    "number": "7/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Politoed",
+    "set_name": "Neo Discovery",
+    "number": "8/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Poliwrath",
+    "set_name": "Neo Discovery",
+    "number": "9/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Scizor",
+    "set_name": "Neo Discovery",
+    "number": "10/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Smeargle",
+    "set_name": "Neo Discovery",
+    "number": "11/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Tyranitar",
+    "set_name": "Neo Discovery",
+    "number": "12/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Umbreon",
+    "set_name": "Neo Discovery",
+    "number": "13/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Unown A",
+    "set_name": "Neo Discovery",
+    "number": "14/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ursaring",
+    "set_name": "Neo Discovery",
+    "number": "15/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Wobbuffet",
+    "set_name": "Neo Discovery",
+    "number": "16/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Yanma",
+    "set_name": "Neo Discovery",
+    "number": "17/75",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ampharos",
+    "set_name": "Neo Revelation",
+    "number": "1/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Blissey",
+    "set_name": "Neo Revelation",
+    "number": "2/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Celebi",
+    "set_name": "Neo Revelation",
+    "number": "3/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Crobat",
+    "set_name": "Neo Revelation",
+    "number": "4/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Delibird",
+    "set_name": "Neo Revelation",
+    "number": "5/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Entei",
+    "set_name": "Neo Revelation",
+    "number": "6/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ho-Oh",
+    "set_name": "Neo Revelation",
+    "number": "7/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Houndoom",
+    "set_name": "Neo Revelation",
+    "number": "8/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Jumpluff",
+    "set_name": "Neo Revelation",
+    "number": "9/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Magneton",
+    "set_name": "Neo Revelation",
+    "number": "10/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Misdreavus",
+    "set_name": "Neo Revelation",
+    "number": "11/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Porygon2",
+    "set_name": "Neo Revelation",
+    "number": "12/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Raikou",
+    "set_name": "Neo Revelation",
+    "number": "13/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Suicune",
+    "set_name": "Neo Revelation",
+    "number": "14/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Shining Gyarados",
+    "set_name": "Neo Revelation",
+    "number": "65/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "shining"
+  },
+  {
+    "name": "Shining Magikarp",
+    "set_name": "Neo Revelation",
+    "number": "66/64",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "shining"
+  },
+  {
+    "name": "Dark Ampharos",
+    "set_name": "Neo Destiny",
+    "number": "1/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Crobat",
+    "set_name": "Neo Destiny",
+    "number": "2/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Donphan",
+    "set_name": "Neo Destiny",
+    "number": "3/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Espeon",
+    "set_name": "Neo Destiny",
+    "number": "4/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Feraligatr",
+    "set_name": "Neo Destiny",
+    "number": "5/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Gengar",
+    "set_name": "Neo Destiny",
+    "number": "6/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Houndoom",
+    "set_name": "Neo Destiny",
+    "number": "7/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Porygon2",
+    "set_name": "Neo Destiny",
+    "number": "8/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Scizor",
+    "set_name": "Neo Destiny",
+    "number": "9/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Typhlosion",
+    "set_name": "Neo Destiny",
+    "number": "10/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Tyranitar",
+    "set_name": "Neo Destiny",
+    "number": "11/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Light Arcanine",
+    "set_name": "Neo Destiny",
+    "number": "12/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Light Azumarill",
+    "set_name": "Neo Destiny",
+    "number": "13/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Light Dragonite",
+    "set_name": "Neo Destiny",
+    "number": "14/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Light Togetic",
+    "set_name": "Neo Destiny",
+    "number": "15/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Miracle Energy",
+    "set_name": "Neo Destiny",
+    "number": "16/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Shining Celebi",
+    "set_name": "Neo Destiny",
+    "number": "106/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "shining"
+  },
+  {
+    "name": "Shining Charizard",
+    "set_name": "Neo Destiny",
+    "number": "107/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "shining"
+  },
+  {
+    "name": "Shining Kabutops",
+    "set_name": "Neo Destiny",
+    "number": "108/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "shining"
+  },
+  {
+    "name": "Shining Mewtwo",
+    "set_name": "Neo Destiny",
+    "number": "109/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "shining"
+  },
+  {
+    "name": "Shining Noctowl",
+    "set_name": "Neo Destiny",
+    "number": "110/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "shining"
+  },
+  {
+    "name": "Shining Raichu",
+    "set_name": "Neo Destiny",
+    "number": "111/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "shining"
+  },
+  {
+    "name": "Shining Steelix",
+    "set_name": "Neo Destiny",
+    "number": "112/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "shining"
+  },
+  {
+    "name": "Shining Tyranitar",
+    "set_name": "Neo Destiny",
+    "number": "113/105",
+    "variant": "holo",
+    "edition": "1st_edition",
+    "rarity": "shining"
+  },
+  {
+    "name": "Alakazam",
+    "set_name": "Expedition",
+    "number": "1/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ampharos",
+    "set_name": "Expedition",
+    "number": "2/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Arbok",
+    "set_name": "Expedition",
+    "number": "3/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Blastoise",
+    "set_name": "Expedition",
+    "number": "4/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Butterfree",
+    "set_name": "Expedition",
+    "number": "5/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Charizard",
+    "set_name": "Expedition",
+    "number": "6/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Clefable",
+    "set_name": "Expedition",
+    "number": "7/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Cloyster",
+    "set_name": "Expedition",
+    "number": "8/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dragonite",
+    "set_name": "Expedition",
+    "number": "9/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dugtrio",
+    "set_name": "Expedition",
+    "number": "10/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Fearow",
+    "set_name": "Expedition",
+    "number": "11/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Feraligatr",
+    "set_name": "Expedition",
+    "number": "12/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Gengar",
+    "set_name": "Expedition",
+    "number": "13/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Golem",
+    "set_name": "Expedition",
+    "number": "14/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Kingler",
+    "set_name": "Expedition",
+    "number": "15/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Machamp",
+    "set_name": "Expedition",
+    "number": "16/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Magby",
+    "set_name": "Expedition",
+    "number": "17/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Meganium",
+    "set_name": "Expedition",
+    "number": "18/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Mew",
+    "set_name": "Expedition",
+    "number": "19/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Mewtwo",
+    "set_name": "Expedition",
+    "number": "20/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ninetales",
+    "set_name": "Expedition",
+    "number": "21/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Pichu",
+    "set_name": "Expedition",
+    "number": "22/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Pidgeot",
+    "set_name": "Expedition",
+    "number": "23/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Poliwrath",
+    "set_name": "Expedition",
+    "number": "24/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Raichu",
+    "set_name": "Expedition",
+    "number": "25/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Rapidash",
+    "set_name": "Expedition",
+    "number": "26/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Skarmory",
+    "set_name": "Expedition",
+    "number": "27/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Typhlosion",
+    "set_name": "Expedition",
+    "number": "28/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Tyranitar",
+    "set_name": "Expedition",
+    "number": "29/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Venusaur",
+    "set_name": "Expedition",
+    "number": "30/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Vileplume",
+    "set_name": "Expedition",
+    "number": "31/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Weezing",
+    "set_name": "Expedition",
+    "number": "32/165",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Kingdra",
+    "set_name": "Aquapolis",
+    "number": "148/147",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "crystal"
+  },
+  {
+    "name": "Lugia",
+    "set_name": "Aquapolis",
+    "number": "149/147",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "crystal"
+  },
+  {
+    "name": "Nidoking",
+    "set_name": "Aquapolis",
+    "number": "150/147",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "crystal"
+  },
+  {
+    "name": "Ampharos",
+    "set_name": "Aquapolis",
+    "number": "H1/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Arcanine",
+    "set_name": "Aquapolis",
+    "number": "H2/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ariados",
+    "set_name": "Aquapolis",
+    "number": "H3/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Azumarill",
+    "set_name": "Aquapolis",
+    "number": "H4/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Bellossom",
+    "set_name": "Aquapolis",
+    "number": "H5/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Blissey",
+    "set_name": "Aquapolis",
+    "number": "H6/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Electrode",
+    "set_name": "Aquapolis",
+    "number": "H7/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Entei",
+    "set_name": "Aquapolis",
+    "number": "H8/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Espeon",
+    "set_name": "Aquapolis",
+    "number": "H9/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Exeggutor",
+    "set_name": "Aquapolis",
+    "number": "H10/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Houndoom",
+    "set_name": "Aquapolis",
+    "number": "H11/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Hypno",
+    "set_name": "Aquapolis",
+    "number": "H12/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Jumpluff",
+    "set_name": "Aquapolis",
+    "number": "H13/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Kingdra",
+    "set_name": "Aquapolis",
+    "number": "H14/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Lanturn",
+    "set_name": "Aquapolis",
+    "number": "H15/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Magneton",
+    "set_name": "Aquapolis",
+    "number": "H16/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Muk",
+    "set_name": "Aquapolis",
+    "number": "H17/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Nidoking",
+    "set_name": "Aquapolis",
+    "number": "H18/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ninetales",
+    "set_name": "Aquapolis",
+    "number": "H19/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Octillery",
+    "set_name": "Aquapolis",
+    "number": "H20/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Scizor",
+    "set_name": "Aquapolis",
+    "number": "H21/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Slowking",
+    "set_name": "Aquapolis",
+    "number": "H22/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Steelix",
+    "set_name": "Aquapolis",
+    "number": "H23/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Sudowoodo",
+    "set_name": "Aquapolis",
+    "number": "H24/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Suicune",
+    "set_name": "Aquapolis",
+    "number": "H25/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Tentacruel",
+    "set_name": "Aquapolis",
+    "number": "H26/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Togetic",
+    "set_name": "Aquapolis",
+    "number": "H27/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Tyranitar",
+    "set_name": "Aquapolis",
+    "number": "H28/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
   },
   {
     "name": "Umbreon",
     "set_name": "Aquapolis",
     "number": "H29/H32",
     "variant": "holo",
-    "first_edition_required": false
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Victreebel",
+    "set_name": "Aquapolis",
+    "number": "H30/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Vileplume",
+    "set_name": "Aquapolis",
+    "number": "H31/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Zapdos",
+    "set_name": "Aquapolis",
+    "number": "H32/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Celebi",
+    "set_name": "Skyridge",
+    "number": "145/144",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "crystal"
+  },
+  {
+    "name": "Charizard",
+    "set_name": "Skyridge",
+    "number": "146/144",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "crystal"
+  },
+  {
+    "name": "Crobat",
+    "set_name": "Skyridge",
+    "number": "147/144",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "crystal"
+  },
+  {
+    "name": "Golem",
+    "set_name": "Skyridge",
+    "number": "148/144",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "crystal"
+  },
+  {
+    "name": "Ho-Oh",
+    "set_name": "Skyridge",
+    "number": "149/144",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "crystal"
+  },
+  {
+    "name": "Kabutops",
+    "set_name": "Skyridge",
+    "number": "150/144",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "crystal"
+  },
+  {
+    "name": "Alakazam",
+    "set_name": "Skyridge",
+    "number": "H1/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Arcanine",
+    "set_name": "Skyridge",
+    "number": "H2/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Articuno",
+    "set_name": "Skyridge",
+    "number": "H3/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Beedrill",
+    "set_name": "Skyridge",
+    "number": "H4/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Crobat",
+    "set_name": "Skyridge",
+    "number": "H5/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dewgong",
+    "set_name": "Skyridge",
+    "number": "H6/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Flareon",
+    "set_name": "Skyridge",
+    "number": "H7/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Forretress",
+    "set_name": "Skyridge",
+    "number": "H8/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Gengar",
+    "set_name": "Skyridge",
+    "number": "H9/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Gyarados",
+    "set_name": "Skyridge",
+    "number": "H10/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Houndoom",
+    "set_name": "Skyridge",
+    "number": "H11/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Jolteon",
+    "set_name": "Skyridge",
+    "number": "H12/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Kabutops",
+    "set_name": "Skyridge",
+    "number": "H13/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ledian",
+    "set_name": "Skyridge",
+    "number": "H14/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Machamp",
+    "set_name": "Skyridge",
+    "number": "H15/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Magcargo",
+    "set_name": "Skyridge",
+    "number": "H16/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Magcargo",
+    "set_name": "Skyridge",
+    "number": "H17/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Magneton",
+    "set_name": "Skyridge",
+    "number": "H18/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Magneton",
+    "set_name": "Skyridge",
+    "number": "H19/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Moltres",
+    "set_name": "Skyridge",
+    "number": "H20/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Nidoqueen",
+    "set_name": "Skyridge",
+    "number": "H21/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Piloswine",
+    "set_name": "Skyridge",
+    "number": "H22/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Politoed",
+    "set_name": "Skyridge",
+    "number": "H23/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Poliwrath",
+    "set_name": "Skyridge",
+    "number": "H24/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Raichu",
+    "set_name": "Skyridge",
+    "number": "H25/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Raikou",
+    "set_name": "Skyridge",
+    "number": "H26/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Rhydon",
+    "set_name": "Skyridge",
+    "number": "H27/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Starmie",
+    "set_name": "Skyridge",
+    "number": "H28/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Steelix",
+    "set_name": "Skyridge",
+    "number": "H29/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Umbreon",
+    "set_name": "Skyridge",
+    "number": "H30/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Vaporeon",
+    "set_name": "Skyridge",
+    "number": "H31/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Xatu",
+    "set_name": "Skyridge",
+    "number": "H32/H32",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Mew",
+    "set_name": "Southern Islands",
+    "number": "1/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Pidgeot",
+    "set_name": "Southern Islands",
+    "number": "2/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Onix",
+    "set_name": "Southern Islands",
+    "number": "3/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Togepi",
+    "set_name": "Southern Islands",
+    "number": "4/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Ivysaur",
+    "set_name": "Southern Islands",
+    "number": "5/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Raticate",
+    "set_name": "Southern Islands",
+    "number": "6/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Ledyba",
+    "set_name": "Southern Islands",
+    "number": "7/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Jigglypuff",
+    "set_name": "Southern Islands",
+    "number": "8/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Butterfree",
+    "set_name": "Southern Islands",
+    "number": "9/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Tentacruel",
+    "set_name": "Southern Islands",
+    "number": "10/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Marill",
+    "set_name": "Southern Islands",
+    "number": "11/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Lapras",
+    "set_name": "Southern Islands",
+    "number": "12/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Exeggutor",
+    "set_name": "Southern Islands",
+    "number": "13/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Slowking",
+    "set_name": "Southern Islands",
+    "number": "14/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Wartortle",
+    "set_name": "Southern Islands",
+    "number": "15/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Lickitung",
+    "set_name": "Southern Islands",
+    "number": "16/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Vileplume",
+    "set_name": "Southern Islands",
+    "number": "17/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Primeape",
+    "set_name": "Southern Islands",
+    "number": "18/18",
+    "variant": "holo",
+    "edition": "unlimited",
+    "rarity": "promo"
+  },
+  {
+    "name": "Alakazam",
+    "set_name": "Legendary Collection",
+    "number": "1/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Articuno",
+    "set_name": "Legendary Collection",
+    "number": "2/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
   },
   {
     "name": "Charizard",
     "set_name": "Legendary Collection",
     "number": "3/110",
     "variant": "reverse_holo",
-    "first_edition_required": false
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Blastoise",
+    "set_name": "Legendary Collection",
+    "number": "4/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Dragonite",
+    "set_name": "Legendary Collection",
+    "number": "5/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Persian",
+    "set_name": "Legendary Collection",
+    "number": "6/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Raichu",
+    "set_name": "Legendary Collection",
+    "number": "7/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Slowbro",
+    "set_name": "Legendary Collection",
+    "number": "8/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Dark Vaporeon",
+    "set_name": "Legendary Collection",
+    "number": "9/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Flareon",
+    "set_name": "Legendary Collection",
+    "number": "10/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Gengar",
+    "set_name": "Legendary Collection",
+    "number": "11/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Gyarados",
+    "set_name": "Legendary Collection",
+    "number": "12/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Hitmonlee",
+    "set_name": "Legendary Collection",
+    "number": "13/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Jolteon",
+    "set_name": "Legendary Collection",
+    "number": "14/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Machamp",
+    "set_name": "Legendary Collection",
+    "number": "15/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Muk",
+    "set_name": "Legendary Collection",
+    "number": "16/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Ninetales",
+    "set_name": "Legendary Collection",
+    "number": "17/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Venusaur",
+    "set_name": "Legendary Collection",
+    "number": "18/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Zapdos",
+    "set_name": "Legendary Collection",
+    "number": "19/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "holo_rare"
+  },
+  {
+    "name": "Beedrill",
+    "set_name": "Legendary Collection",
+    "number": "20/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Butterfree",
+    "set_name": "Legendary Collection",
+    "number": "21/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Electrode",
+    "set_name": "Legendary Collection",
+    "number": "22/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Exeggutor",
+    "set_name": "Legendary Collection",
+    "number": "23/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Golem",
+    "set_name": "Legendary Collection",
+    "number": "24/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Hypno",
+    "set_name": "Legendary Collection",
+    "number": "25/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Jynx",
+    "set_name": "Legendary Collection",
+    "number": "26/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Kabutops",
+    "set_name": "Legendary Collection",
+    "number": "27/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Magneton",
+    "set_name": "Legendary Collection",
+    "number": "28/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Mewtwo",
+    "set_name": "Legendary Collection",
+    "number": "29/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Moltres",
+    "set_name": "Legendary Collection",
+    "number": "30/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Nidoking",
+    "set_name": "Legendary Collection",
+    "number": "31/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Nidoqueen",
+    "set_name": "Legendary Collection",
+    "number": "32/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Pidgeot",
+    "set_name": "Legendary Collection",
+    "number": "33/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Pidgeotto",
+    "set_name": "Legendary Collection",
+    "number": "34/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Rhydon",
+    "set_name": "Legendary Collection",
+    "number": "35/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Arcanine",
+    "set_name": "Legendary Collection",
+    "number": "36/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Charmeleon",
+    "set_name": "Legendary Collection",
+    "number": "37/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Dark Dragonair",
+    "set_name": "Legendary Collection",
+    "number": "38/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Dark Wartortle",
+    "set_name": "Legendary Collection",
+    "number": "39/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Dewgong",
+    "set_name": "Legendary Collection",
+    "number": "40/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Dodrio",
+    "set_name": "Legendary Collection",
+    "number": "41/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Fearow",
+    "set_name": "Legendary Collection",
+    "number": "42/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Golduck",
+    "set_name": "Legendary Collection",
+    "number": "43/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Graveler",
+    "set_name": "Legendary Collection",
+    "number": "44/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Growlithe",
+    "set_name": "Legendary Collection",
+    "number": "45/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Haunter",
+    "set_name": "Legendary Collection",
+    "number": "46/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Ivysaur",
+    "set_name": "Legendary Collection",
+    "number": "47/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Kabuto",
+    "set_name": "Legendary Collection",
+    "number": "48/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Kadabra",
+    "set_name": "Legendary Collection",
+    "number": "49/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Kakuna",
+    "set_name": "Legendary Collection",
+    "number": "50/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Machoke",
+    "set_name": "Legendary Collection",
+    "number": "51/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Magikarp",
+    "set_name": "Legendary Collection",
+    "number": "52/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Meowth",
+    "set_name": "Legendary Collection",
+    "number": "53/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Metapod",
+    "set_name": "Legendary Collection",
+    "number": "54/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Nidorina",
+    "set_name": "Legendary Collection",
+    "number": "55/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Nidorino",
+    "set_name": "Legendary Collection",
+    "number": "56/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Omanyte",
+    "set_name": "Legendary Collection",
+    "number": "57/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Omastar",
+    "set_name": "Legendary Collection",
+    "number": "58/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Primeape",
+    "set_name": "Legendary Collection",
+    "number": "59/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Rapidash",
+    "set_name": "Legendary Collection",
+    "number": "60/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Raticate",
+    "set_name": "Legendary Collection",
+    "number": "61/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Sandslash",
+    "set_name": "Legendary Collection",
+    "number": "62/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Seadra",
+    "set_name": "Legendary Collection",
+    "number": "63/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Snorlax",
+    "set_name": "Legendary Collection",
+    "number": "64/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Tauros",
+    "set_name": "Legendary Collection",
+    "number": "65/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Tentacruel",
+    "set_name": "Legendary Collection",
+    "number": "66/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Abra",
+    "set_name": "Legendary Collection",
+    "number": "67/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Bulbasaur",
+    "set_name": "Legendary Collection",
+    "number": "68/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Caterpie",
+    "set_name": "Legendary Collection",
+    "number": "69/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Charmander",
+    "set_name": "Legendary Collection",
+    "number": "70/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Doduo",
+    "set_name": "Legendary Collection",
+    "number": "71/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Dratini",
+    "set_name": "Legendary Collection",
+    "number": "72/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Drowzee",
+    "set_name": "Legendary Collection",
+    "number": "73/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Eevee",
+    "set_name": "Legendary Collection",
+    "number": "74/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Exeggcute",
+    "set_name": "Legendary Collection",
+    "number": "75/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Gastly",
+    "set_name": "Legendary Collection",
+    "number": "76/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Geodude",
+    "set_name": "Legendary Collection",
+    "number": "77/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Grimer",
+    "set_name": "Legendary Collection",
+    "number": "78/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Machop",
+    "set_name": "Legendary Collection",
+    "number": "79/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Magnemite",
+    "set_name": "Legendary Collection",
+    "number": "80/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Mankey",
+    "set_name": "Legendary Collection",
+    "number": "81/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Nidoran ♀",
+    "set_name": "Legendary Collection",
+    "number": "82/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Nidoran ♂",
+    "set_name": "Legendary Collection",
+    "number": "83/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Onix",
+    "set_name": "Legendary Collection",
+    "number": "84/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Pidgey",
+    "set_name": "Legendary Collection",
+    "number": "85/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Pikachu",
+    "set_name": "Legendary Collection",
+    "number": "86/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Ponyta",
+    "set_name": "Legendary Collection",
+    "number": "87/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Psyduck",
+    "set_name": "Legendary Collection",
+    "number": "88/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Rattata",
+    "set_name": "Legendary Collection",
+    "number": "89/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Rhyhorn",
+    "set_name": "Legendary Collection",
+    "number": "90/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Sandshrew",
+    "set_name": "Legendary Collection",
+    "number": "91/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Seel",
+    "set_name": "Legendary Collection",
+    "number": "92/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Slowpoke",
+    "set_name": "Legendary Collection",
+    "number": "93/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Spearow",
+    "set_name": "Legendary Collection",
+    "number": "94/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Squirtle",
+    "set_name": "Legendary Collection",
+    "number": "95/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Tentacool",
+    "set_name": "Legendary Collection",
+    "number": "96/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Voltorb",
+    "set_name": "Legendary Collection",
+    "number": "97/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Vulpix",
+    "set_name": "Legendary Collection",
+    "number": "98/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Weedle",
+    "set_name": "Legendary Collection",
+    "number": "99/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Full Heal Energy",
+    "set_name": "Legendary Collection",
+    "number": "100/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Potion Energy",
+    "set_name": "Legendary Collection",
+    "number": "101/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Pokémon Breeder",
+    "set_name": "Legendary Collection",
+    "number": "102/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Pokémon Trader",
+    "set_name": "Legendary Collection",
+    "number": "103/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Scoop Up",
+    "set_name": "Legendary Collection",
+    "number": "104/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "The Boss's Way",
+    "set_name": "Legendary Collection",
+    "number": "105/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Challenge!",
+    "set_name": "Legendary Collection",
+    "number": "106/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Energy Retrieval",
+    "set_name": "Legendary Collection",
+    "number": "107/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Bill",
+    "set_name": "Legendary Collection",
+    "number": "108/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Mysterious Fossil",
+    "set_name": "Legendary Collection",
+    "number": "109/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Potion",
+    "set_name": "Legendary Collection",
+    "number": "110/110",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
   }
 ]
-

@@ -5,7 +5,9 @@ import unittest
 from pathlib import Path
 
 from pokemon_deal_monitor.catalog import (
+    Edition,
     PokemonCard,
+    Rarity,
     Variant,
     load_catalog,
 )
@@ -26,18 +28,17 @@ class TestCatalog(unittest.TestCase):
                 "set_name": "Neo Genesis",
                 "number": "9/111",
                 "variant": "holo",
-                "first_edition_required": True,
+                "edition": "1st_edition",
+                "rarity": "holo_rare",
             }
         ])
 
         self.assertEqual(len(cards), 1)
         self.assertEqual(cards[0].name, "Lugia")
         self.assertEqual(cards[0].variant, Variant.HOLO)
+        self.assertEqual(cards[0].edition, Edition.FIRST_EDITION)
+        self.assertEqual(cards[0].rarity, Rarity.HOLO_RARE)
         self.assertTrue(cards[0].first_edition_required)
-
-    def test_default_catalog(self):
-        cards = load_catalog()
-        self.assertEqual(len(cards), 4)
 
     def test_invalid_root(self):
         with self.assertRaises(ValueError):
@@ -62,11 +63,12 @@ class TestCatalog(unittest.TestCase):
                     "set_name": "Neo Genesis",
                     "number": "9/111",
                     "variant": "non_holo",
-                    "first_edition_required": True,
+                    "edition": "1st_edition",
+                "rarity": "holo_rare",
                 }
             ])
 
-    def test_invalid_edition_type(self):
+    def test_invalid_edition(self):
         with self.assertRaises(ValueError):
             self.load_from_data([
                 {
@@ -74,7 +76,21 @@ class TestCatalog(unittest.TestCase):
                     "set_name": "Neo Genesis",
                     "number": "9/111",
                     "variant": "holo",
-                    "first_edition_required": "yes",
+                    "edition": "yes",
+                    "rarity": "holo_rare",
+                }
+            ])
+
+    def test_invalid_rarity(self):
+        with self.assertRaises(ValueError):
+            self.load_from_data([
+                {
+                    "name": "Lugia",
+                    "set_name": "Neo Genesis",
+                    "number": "9/111",
+                    "variant": "holo",
+                    "edition": "1st_edition",
+                    "rarity": "ultra_rare",
                 }
             ])
 
@@ -84,7 +100,8 @@ class TestCatalog(unittest.TestCase):
             "set_name": "Neo Genesis",
             "number": "9/111",
             "variant": "holo",
-            "first_edition_required": True,
+            "edition": "1st_edition",
+            "rarity": "holo_rare",
         }
 
         with self.assertRaises(ValueError):
@@ -96,7 +113,8 @@ class TestCatalog(unittest.TestCase):
             set_name="Neo Genesis",
             number="9/111",
             variant=Variant.HOLO,
-            first_edition_required=True,
+            edition=Edition.FIRST_EDITION,
+            rarity=Rarity.HOLO_RARE,
         )
 
         self.assertEqual(

@@ -1,0 +1,105 @@
+"""Generate data/cards.json from the PokemonTCG/pokemon-tcg-data repository.
+
+Run with `make catalog`. The source data is pinned to a commit so the
+generated catalog is reproducible; bump SOURCE_COMMIT to pick up fixes.
+"""
+
+import json
+import urllib.request
+from pathlib import Path
+
+SOURCE_COMMIT = "39a26a144c8b6ef6c2fb17b2c29d0bb7121e3a11"
+SOURCE_URL = (
+    "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/"
+    f"{SOURCE_COMMIT}"
+)
+
+OUTPUT_PATH = Path(__file__).resolve().parents[1] / "data" / "cards.json"
+
+RARITY_MAP = {
+    "Common": "common",
+    "Uncommon": "uncommon",
+    "Rare": "rare",
+    "Rare Holo": "holo_rare",
+    "Rare Shining": "shining",
+    # The only secret rares in Aquapolis and Skyridge are Crystal cards.
+    "Rare Secret": "crystal",
+}
+
+NAME_FIXES = {
+    "Unown [A]": "Unown A",
+    "Ho-oh": "Ho-Oh",
+}
+
+# (source set id, set name, edition, variant, source rarities to include).
+# A rarity set of None includes every card in the set.
+TARGET_SETS = [
+    ("base1", "Base Set", "1st_edition", "holo", {"Rare Holo"}),
+    ("neo1", "Neo Genesis", "1st_edition", "holo", {"Rare Holo"}),
+    ("neo2", "Neo Discovery", "1st_edition", "holo", {"Rare Holo"}),
+    ("neo3", "Neo Revelation", "1st_edition", "holo", {"Rare Holo", "Rare Shining"}),
+    ("neo4", "Neo Destiny", "1st_edition", "holo", {"Rare Holo", "Rare Shining"}),
+    ("ecard1", "Expedition", "unlimited", "holo", {"Rare Holo"}),
+    ("ecard2", "Aquapolis", "unlimited", "holo", {"Rare Holo", "Rare Secret"}),
+    ("ecard3", "Skyridge", "unlimited", "holo", {"Rare Holo", "Rare Secret"}),
+    ("si1", "Southern Islands", "unlimited", "holo", None),
+    ("base6", "Legendary Collection", "unlimited", "reverse_holo", None),
+]
+
+
+def fetch_json(path: str):
+    with urllib.request.urlopen(f"{SOURCE_URL}/{path}", timeout=30) as response:
+        return json.load(response)
+
+
+def format_number(number: str, printed_total: int, holo_total: int) -> str:
+    # e-Card holo rares use their own H-numbered series, e.g. H29/H32.
+    if number.startswith("H"):
+        return f"{number}/H{holo_total}"
+    return f"{number}/{printed_total}"
+
+
+def build_set(set_info: dict, target: tuple) -> list[dict]:
+    set_id, set_name, edition, variant, rarities = target
+    cards = fetch_json(f"cards/en/{set_id}.json")
+    holo_total = sum(1 for card in cards if card["number"].startswith("H"))
+
+    entries = []
+    for card in cards:
+        source_rarity = card.get("rarity")
+        if rarities is not None and source_rarity not in rarities:
+            continue
+
+        rarity = "promo" if set_id == "si1" else RARITY_MAP[source_rarity]
+        entries.append({
+            "name": NAME_FIXES.get(card["name"], card["name"]),
+            "set_name": set_name,
+            "number": format_number(
+                card["number"], set_info["printedTotal"], holo_total
+            ),
+            "variant": variant,
+            "edition": edition,
+            "rarity": rarity,
+        })
+
+    return entries
+
+
+def main() -> None:
+    sets = {entry["id"]: entry for entry in fetch_json("sets/en.json")}
+
+    catalog = []
+    for target in TARGET_SETS:
+        entries = build_set(sets[target[0]], target)
+        print(f"{target[1]}: {len(entries)} cards")
+        catalog.extend(entries)
+
+    OUTPUT_PATH.write_text(
+        json.dumps(catalog, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    print(f"Wrote {len(catalog)} cards to {OUTPUT_PATH}")
+
+
+if __name__ == "__main__":
+    main()
