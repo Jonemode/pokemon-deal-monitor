@@ -22,13 +22,14 @@ class TelegramClient:
         self.bot_token = bot_token
         self.transport = transport
 
-    def send_message(self, chat_id: str, text: str) -> None:
-        """Send an HTML-formatted message."""
+    def send_message(self, chat_id: str, text: str, silent: bool = False) -> None:
+        """Send an HTML-formatted message, without sound if silent."""
         self._call("sendMessage", {
             "chat_id": chat_id,
             "text": text,
             "parse_mode": "HTML",
             "link_preview_options": {"is_disabled": True},
+            "disable_notification": silent,
         })
 
     def chats(self) -> list[dict]:

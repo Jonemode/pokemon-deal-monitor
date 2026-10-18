@@ -29,6 +29,12 @@ class TestTelegramClient(unittest.TestCase):
         self.assertEqual(body["chat_id"], "42")
         self.assertEqual(body["text"], "<b>hi</b>")
         self.assertEqual(body["parse_mode"], "HTML")
+        self.assertFalse(body["disable_notification"])
+
+    def test_silent_message(self):
+        transport = FakeTransport((200, {"ok": True, "result": {}}))
+        TelegramClient("t", transport=transport).send_message("42", "x", silent=True)
+        self.assertTrue(json.loads(transport.requests[0].data)["disable_notification"])
 
     def test_error_does_not_reveal_token(self):
         transport = FakeTransport(

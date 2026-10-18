@@ -5,11 +5,16 @@ import time
 from collections.abc import Callable
 
 from .alerts import format_dollars, sample_alert, send_alerts
-from .config import load_ebay_config, load_pricecharting_token, load_telegram_config
+from .config import (
+    TelegramConfig,
+    load_ebay_config,
+    load_pricecharting_token,
+    load_telegram_config,
+)
 from .ebay import EbayClient
 from .monitor import DEFAULT_POLL_INTERVAL_SECONDS, PollResult, poll_once
 from .pricecharting import PriceChartingClient, load_product_ids
-from .storage import Storage
+from .storage import Storage, utc_now
 from .telegram import TelegramClient, TelegramError
 from .valuation import Pricer
 
@@ -59,11 +64,22 @@ def report(poll: PollResult) -> None:
         logger.info("    %s", describe_deal(candidate))
 
 
-def telegram_client() -> tuple[TelegramClient, str | None]:
-    config = load_telegram_config()
+def telegram_config() -> TelegramConfig | None:
+    try:
+        return load_telegram_config()
+    except ValueError as error:
+        sys.exit(f"{error}.")
+
+
+def is_quiet(config: TelegramConfig) -> bool:
+    return config.quiet_hours is not None and config.quiet_hours.contains(utc_now())
+
+
+def telegram_client() -> tuple[TelegramClient, TelegramConfig]:
+    config = telegram_config()
     if config is None:
         sys.exit("Set TELEGRAM_BOT_TOKEN in .env first.")
-    return TelegramClient(config.bot_token), config.chat_id
+    return TelegramClient(config.bot_token), config
 
 
 def show_chat_ids() -> None:
@@ -78,23 +94,26 @@ def show_chat_ids() -> None:
 
 
 def send_test_alert() -> None:
-    client, chat_id = telegram_client()
-    if chat_id is None:
+    client, config = telegram_client()
+    if config.chat_id is None:
         sys.exit("Set TELEGRAM_CHAT_ID in .env first; run make telegram-chat-id.")
+    silent = is_quiet(config)
     try:
-        client.send_message(chat_id, sample_alert())
+        client.send_message(config.chat_id, sample_alert(), silent=silent)
     except TelegramError as error:
         sys.exit(str(error))
-    print("Test alert sent.")
+    print("Test alert sent silently (quiet hours)." if silent else "Test alert sent.")
 
 
 def build_notifier() -> Callable[[str], None] | None:
-    config = load_telegram_config()
+    config = telegram_config()
     if config is None or config.chat_id is None:
         logger.warning("Telegram not configured; deals are only logged")
         return None
     client = TelegramClient(config.bot_token)
-    return lambda text: client.send_message(config.chat_id, text)
+    return lambda text: client.send_message(
+        config.chat_id, text, silent=is_quiet(config)
+    )
 
 
 def poll_and_alert(client, storage, pricer, notify) -> None:

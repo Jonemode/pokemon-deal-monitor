@@ -1,6 +1,9 @@
 import os
+import re
 from dataclasses import dataclass
+from datetime import datetime, time
 from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .catalog import PROJECT_ROOT
 
@@ -16,10 +19,47 @@ class EbayConfig:
 
 
 @dataclass(frozen=True)
+class QuietHours:
+    """A daily window, which may span midnight, for silent alerts."""
+    start: time
+    end: time
+    timezone: ZoneInfo
+
+    def contains(self, moment: datetime) -> bool:
+        local = moment.astimezone(self.timezone).time()
+        if self.start <= self.end:
+            return self.start <= local < self.end
+        return local >= self.start or local < self.end
+
+
+@dataclass(frozen=True)
 class TelegramConfig:
     bot_token: str
     # None until the chat ID has been looked up; see make telegram-chat-id.
     chat_id: str | None = None
+    # Alerts in this window are delivered without a sound or vibration.
+    quiet_hours: QuietHours | None = None
+
+
+QUIET_HOURS_PATTERN = re.compile(r"(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})")
+
+
+def parse_quiet_hours(value: str, timezone: str | None) -> QuietHours:
+    """Parse "22:00-07:00" in an IANA timezone such as America/Los_Angeles."""
+    match = QUIET_HOURS_PATTERN.fullmatch(value.strip())
+    if match is None:
+        raise ValueError("TELEGRAM_QUIET_HOURS must look like 22:00-07:00")
+    if not timezone:
+        raise ValueError("Set TIMEZONE, e.g. America/Los_Angeles, to use quiet hours")
+    try:
+        zone = ZoneInfo(timezone)
+        start = time(int(match[1]), int(match[2]))
+        end = time(int(match[3]), int(match[4]))
+    except ZoneInfoNotFoundError:
+        raise ValueError(f"Unknown TIMEZONE {timezone!r}") from None
+    except ValueError:
+        raise ValueError("TELEGRAM_QUIET_HOURS has an invalid time") from None
+    return QuietHours(start=start, end=end, timezone=zone)
 
 
 def read_env_file(path: Path) -> dict[str, str]:
@@ -68,9 +108,14 @@ def load_telegram_config(
     values = load_settings(env_path, environ)
     if not values.get("TELEGRAM_BOT_TOKEN"):
         return None
+    quiet_hours = values.get("TELEGRAM_QUIET_HOURS")
     return TelegramConfig(
         bot_token=values["TELEGRAM_BOT_TOKEN"],
         chat_id=values.get("TELEGRAM_CHAT_ID") or None,
+        quiet_hours=(
+            parse_quiet_hours(quiet_hours, values.get("TIMEZONE"))
+            if quiet_hours else None
+        ),
     )
 
 
