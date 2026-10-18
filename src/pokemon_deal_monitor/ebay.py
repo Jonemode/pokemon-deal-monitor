@@ -1,0 +1,188 @@
+import base64
+import json
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from collections.abc import Callable
+from dataclasses import dataclass
+from decimal import ROUND_HALF_UP, Decimal
+
+from .config import EbayConfig
+from .storage import Listing
+
+
+API_HOSTS = {
+    "production": "https://api.ebay.com",
+    "sandbox": "https://api.sandbox.ebay.com",
+}
+BROWSE_SCOPE = "https://api.ebay.com/oauth/api_scope"
+MARKETPLACE_ID = "EBAY_US"
+CCG_INDIVIDUAL_CARDS_CATEGORY = "183454"
+MAX_PRICE_USD = 5000
+PAGE_LIMIT = 200
+
+# Refresh the access token this many seconds before eBay says it expires.
+TOKEN_EXPIRY_MARGIN = 60
+
+Transport = Callable[[urllib.request.Request], tuple[int, bytes]]
+
+
+class EbayError(Exception):
+
+    def __init__(self, status: int, body: bytes):
+        super().__init__(f"eBay API returned HTTP {status}: {body[:500]!r}")
+        self.status = status
+
+
+def urllib_transport(request: urllib.request.Request) -> tuple[int, bytes]:
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return response.status, response.read()
+    except urllib.error.HTTPError as error:
+        return error.code, error.read()
+
+
+@dataclass(frozen=True)
+class EbayItem:
+    item_id: str
+    title: str
+    url: str
+    price_cents: int
+    currency: str
+    # None when eBay reports calculated shipping without a cost.
+    shipping_cents: int | None
+    condition: str | None = None
+    image_url: str | None = None
+    created_at: str | None = None
+
+    def to_listing(
+        self,
+        card_identifier: str | None = None,
+        match_confidence: float | None = None,
+    ) -> Listing:
+        return Listing(
+            item_id=self.item_id,
+            title=self.title,
+            url=self.url,
+            price_cents=self.price_cents,
+            shipping_cents=self.shipping_cents or 0,
+            currency=self.currency,
+            card_identifier=card_identifier,
+            match_confidence=match_confidence,
+        )
+
+
+def to_cents(value: str) -> int:
+    cents = Decimal(value) * 100
+    return int(cents.quantize(Decimal(1), rounding=ROUND_HALF_UP))
+
+
+def parse_shipping(summary: dict) -> int | None:
+    """Return the cheapest listed shipping cost in cents, if any."""
+    costs = [
+        to_cents(option["shippingCost"]["value"])
+        for option in summary.get("shippingOptions", [])
+        if "shippingCost" in option
+    ]
+    return min(costs) if costs else None
+
+
+def parse_item(summary: dict) -> EbayItem | None:
+    """Convert a Browse API itemSummary, or None if it lacks a price."""
+    price = summary.get("price")
+    if not price or "value" not in price:
+        return None
+
+    return EbayItem(
+        item_id=summary["itemId"],
+        title=summary["title"],
+        url=summary["itemWebUrl"],
+        price_cents=to_cents(price["value"]),
+        currency=price.get("currency", "USD"),
+        shipping_cents=parse_shipping(summary),
+        condition=summary.get("condition"),
+        image_url=summary.get("image", {}).get("imageUrl"),
+        created_at=summary.get("itemCreationDate"),
+    )
+
+
+class EbayClient:
+    """Minimal eBay Browse API client using an application access token."""
+
+    def __init__(
+        self,
+        config: EbayConfig,
+        transport: Transport = urllib_transport,
+        clock: Callable[[], float] = time.monotonic,
+    ):
+        self.config = config
+        self.host = API_HOSTS[config.environment]
+        self.transport = transport
+        self.clock = clock
+        self._token: str | None = None
+        self._token_expires_at = 0.0
+
+    def access_token(self) -> str:
+        if self._token is not None and self.clock() < self._token_expires_at:
+            return self._token
+
+        credentials = f"{self.config.app_id}:{self.config.cert_id}".encode()
+        request = urllib.request.Request(
+            f"{self.host}/identity/v1/oauth2/token",
+            data=urllib.parse.urlencode({
+                "grant_type": "client_credentials",
+                "scope": BROWSE_SCOPE,
+            }).encode(),
+            headers={
+                "Authorization": "Basic " + base64.b64encode(credentials).decode(),
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            method="POST",
+        )
+
+        status, body = self.transport(request)
+        if status != 200:
+            raise EbayError(status, body)
+
+        payload = json.loads(body)
+        self._token = payload["access_token"]
+        self._token_expires_at = (
+            self.clock() + payload["expires_in"] - TOKEN_EXPIRY_MARGIN
+        )
+        return self._token
+
+    def search(self, query: str, limit: int = PAGE_LIMIT) -> list[EbayItem]:
+        """Return the newest Buy It Now card listings matching a query."""
+        params = urllib.parse.urlencode({
+            "q": query,
+            "category_ids": CCG_INDIVIDUAL_CARDS_CATEGORY,
+            "filter": (
+                "buyingOptions:{FIXED_PRICE},"
+                f"price:[..{MAX_PRICE_USD}],priceCurrency:USD"
+            ),
+            "sort": "newlyListed",
+            "limit": str(limit),
+        })
+        url = f"{self.host}/buy/browse/v1/item_summary/search?{params}"
+
+        status, body = self._get(url)
+        if status == 401:
+            # The token may have been revoked early; retry once with a new one.
+            self._token = None
+            status, body = self._get(url)
+        if status != 200:
+            raise EbayError(status, body)
+
+        summaries = json.loads(body).get("itemSummaries", [])
+        return [item for item in map(parse_item, summaries) if item is not None]
+
+    def _get(self, url: str) -> tuple[int, bytes]:
+        request = urllib.request.Request(
+            url,
+            headers={
+                "Authorization": f"Bearer {self.access_token()}",
+                "X-EBAY-C-MARKETPLACE-ID": MARKETPLACE_ID,
+            },
+        )
+        return self.transport(request)

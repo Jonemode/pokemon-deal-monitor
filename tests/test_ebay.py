@@ -1,0 +1,165 @@
+import base64
+import urllib.parse
+import unittest
+
+from pokemon_deal_monitor.config import EbayConfig
+from pokemon_deal_monitor.ebay import (
+    EbayClient,
+    EbayError,
+    parse_item,
+    to_cents,
+)
+
+from .fakes import (
+    CONFIG,
+    FakeTransport,
+    item_summary,
+    search_response,
+    token_response,
+)
+
+
+class FakeClock:
+
+    def __init__(self):
+        self.now = 1000.0
+
+    def __call__(self):
+        return self.now
+
+
+class TestParsing(unittest.TestCase):
+
+    def test_to_cents(self):
+        self.assertEqual(to_cents("1234.56"), 123456)
+        self.assertEqual(to_cents("5"), 500)
+        self.assertEqual(to_cents("0.995"), 100)
+
+    def test_parse_item(self):
+        item = parse_item(item_summary("v1|1|0", "Lugia 9/111", "999.99", "4.50"))
+
+        self.assertEqual(item.item_id, "v1|1|0")
+        self.assertEqual(item.price_cents, 99999)
+        self.assertEqual(item.shipping_cents, 450)
+        self.assertEqual(item.condition, "Ungraded")
+        self.assertEqual(item.image_url, "https://i.ebayimg.com/v1|1|0.jpg")
+
+    def test_cheapest_shipping_option(self):
+        summary = item_summary("1", "Lugia")
+        summary["shippingOptions"].append({
+            "shippingCostType": "FIXED",
+            "shippingCost": {"value": "1.25", "currency": "USD"},
+        })
+        self.assertEqual(parse_item(summary).shipping_cents, 125)
+
+    def test_unknown_shipping(self):
+        item = parse_item(item_summary("1", "Lugia", shipping=None))
+        self.assertIsNone(item.shipping_cents)
+        self.assertEqual(item.to_listing().shipping_cents, 0)
+
+    def test_missing_price_is_skipped(self):
+        summary = item_summary("1", "Lugia")
+        del summary["price"]
+        self.assertIsNone(parse_item(summary))
+
+
+class TestEbayClient(unittest.TestCase):
+
+    def test_token_request(self):
+        transport = FakeTransport()
+        EbayClient(CONFIG, transport=transport).access_token()
+
+        (request,) = transport.token_requests
+        self.assertEqual(
+            request.full_url, "https://api.ebay.com/identity/v1/oauth2/token"
+        )
+        expected = base64.b64encode(b"test-app:test-cert").decode()
+        self.assertEqual(request.get_header("Authorization"), f"Basic {expected}")
+        body = urllib.parse.parse_qs(request.data.decode())
+        self.assertEqual(body["grant_type"], ["client_credentials"])
+
+    def test_token_is_cached_until_expiry(self):
+        transport = FakeTransport()
+        clock = FakeClock()
+        client = EbayClient(CONFIG, transport=transport, clock=clock)
+
+        client.access_token()
+        clock.now += 7000
+        client.access_token()
+        self.assertEqual(len(transport.token_requests), 1)
+
+        # Within the refresh margin of the 7200 second expiry.
+        clock.now += 150
+        client.access_token()
+        self.assertEqual(len(transport.token_requests), 2)
+
+    def test_token_failure(self):
+        transport = FakeTransport(token=(401, b'{"error": "invalid_client"}'))
+        with self.assertRaises(EbayError) as context:
+            EbayClient(CONFIG, transport=transport).access_token()
+        self.assertEqual(context.exception.status, 401)
+
+    def test_search_request(self):
+        transport = FakeTransport({
+            "pokemon aquapolis": search_response(
+                item_summary("1", "Umbreon H29/H32 Aquapolis Holo"),
+            ),
+        })
+        items = EbayClient(CONFIG, transport=transport).search("pokemon aquapolis")
+
+        self.assertEqual([item.title for item in items],
+                         ["Umbreon H29/H32 Aquapolis Holo"])
+
+        (request,) = transport.search_requests
+        params = urllib.parse.parse_qs(urllib.parse.urlsplit(request.full_url).query)
+        self.assertEqual(params["category_ids"], ["183454"])
+        self.assertEqual(params["sort"], ["newlyListed"])
+        self.assertIn("buyingOptions:{FIXED_PRICE}", params["filter"][0])
+        self.assertIn("price:[..5000]", params["filter"][0])
+        self.assertEqual(request.get_header("Authorization"), "Bearer token-1")
+        self.assertEqual(
+            request.get_header("X-ebay-c-marketplace-id"), "EBAY_US"
+        )
+
+    def test_search_with_no_results(self):
+        transport = FakeTransport({"q": (200, b"{}")})
+        self.assertEqual(EbayClient(CONFIG, transport=transport).search("q"), [])
+
+    def test_search_retries_once_after_401(self):
+        transport = FakeTransport({
+            "q": [(401, b"expired"), search_response(item_summary("1", "Lugia"))],
+        })
+        items = EbayClient(CONFIG, transport=transport).search("q")
+
+        self.assertEqual(len(items), 1)
+        self.assertEqual(len(transport.token_requests), 2)
+
+    def test_search_failure(self):
+        transport = FakeTransport({"q": (429, b"rate limited")})
+        with self.assertRaises(EbayError) as context:
+            EbayClient(CONFIG, transport=transport).search("q")
+        self.assertEqual(context.exception.status, 429)
+
+    def test_sandbox_host(self):
+        transport = FakeTransport()
+        config = EbayConfig("app", "cert", environment="sandbox")
+        EbayClient(config, transport=transport).access_token()
+        self.assertTrue(
+            transport.token_requests[0].full_url.startswith(
+                "https://api.sandbox.ebay.com/"
+            )
+        )
+
+    def test_expires_in_drives_refresh(self):
+        transport = FakeTransport(token=token_response(expires_in=120))
+        clock = FakeClock()
+        client = EbayClient(CONFIG, transport=transport, clock=clock)
+
+        client.access_token()
+        clock.now += 61
+        client.access_token()
+        self.assertEqual(len(transport.token_requests), 2)
+
+
+if __name__ == "__main__":
+    unittest.main()
