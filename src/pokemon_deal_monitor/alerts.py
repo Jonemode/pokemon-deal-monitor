@@ -5,7 +5,7 @@ import logging
 from collections.abc import Callable
 from datetime import datetime
 
-from .catalog import CARDS, PokemonCard, Variant
+from .catalog import CARDS
 from .ebay import EbayItem, ItemDetails
 from .matcher import Match
 from .monitor import Candidate, PollResult
@@ -16,57 +16,21 @@ from .valuation import PRICECHARTING, TCGPLAYER, evaluate_deal, value_card
 
 logger = logging.getLogger(__name__)
 
-SOURCE_LABELS = {
-    PRICECHARTING: "PriceCharting",
-    TCGPLAYER: "TCGplayer",
-    "pricecharting_grade_5": "PriceCharting grade 5 estimate",
-}
-
-
 def format_dollars(cents: int) -> str:
     return f"${cents / 100:,.2f}"
 
 
-def describe_card(card: PokemonCard) -> str:
-    """Return e.g. "Lugia 9/111 · Neo Genesis · 1st Edition Holo"."""
-    printing = "Reverse Holo" if card.variant == Variant.REVERSE_HOLO else "Holo"
-    if card.first_edition_required:
-        printing = f"1st Edition {printing}"
-    return f"{card.name} {card.number} · {card.set_name} · {printing}"
-
-
 def format_alert(candidate: Candidate) -> str:
-    """Return a Telegram HTML message for a qualifying deal."""
-    item = candidate.item
+    """Return a short Telegram HTML message: card, discount, total, link."""
+    card = candidate.match.card
     deal = candidate.deal
-    valuation = deal.valuation
-    shipping = item.shipping_cents or 0
-
-    sources = " · ".join(
-        f"{SOURCE_LABELS.get(source, source)} {format_dollars(cents)}"
-        for source, cents in valuation.estimates.items()
+    url = html.escape(candidate.item.url)
+    return (
+        f"<b>{html.escape(card.name)}</b> · {html.escape(card.set_name)}\n"
+        f"<b>{deal.discount:.0%} off</b> · "
+        f"{format_dollars(deal.total_cents)} with shipping\n"
+        f'<a href="{url}">{url}</a>'
     )
-    lines = [
-        f"<b>{deal.discount:.0%} below value</b>",
-        f"<b>{html.escape(describe_card(candidate.match.card))}</b>",
-        f"{format_dollars(item.price_cents)} + {format_dollars(shipping)} shipping"
-        f" = <b>{format_dollars(deal.total_cents)}</b>",
-        f"Value {format_dollars(valuation.value_cents)} ({sources})",
-    ]
-    lines.extend(f"⚠️ {html.escape(warning)}" for warning in valuation.warnings)
-    if candidate.result == UpsertResult.PRICE_CHANGED:
-        lines.append("Price dropped since last seen")
-    details = candidate.details
-    if details is not None:
-        condition = details.card_condition or "not specified"
-        language = details.language or "not specified, check the photos"
-        lines.append(f"Condition: {html.escape(condition)}")
-        lines.append(f"Language: {html.escape(language)}")
-    elif item.condition:
-        lines.append(f"Condition: {html.escape(item.condition)}")
-    lines.append(f"<i>{html.escape(item.title)}</i>")
-    lines.append(f'<a href="{html.escape(item.url)}">View on eBay</a>')
-    return "\n".join(lines)
 
 
 def send_alerts(
