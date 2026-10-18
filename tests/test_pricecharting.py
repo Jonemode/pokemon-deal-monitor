@@ -45,7 +45,10 @@ class FakeTransport:
 
     def __call__(self, request):
         self.requests.append(request)
-        status, payload = self.responses.pop(0)
+        response = self.responses.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        status, payload = response
         if isinstance(payload, bytes):
             return status, payload
         return status, json.dumps(payload).encode()
@@ -228,6 +231,28 @@ class TestClient(unittest.TestCase):
             client.search("a")
         self.assertEqual(context.exception.status, 429)
         self.assertIn("rate limited", str(context.exception))
+        self.assertEqual(clock.slept, [30.0, 60.0, 120.0, 240.0])
+
+    def test_dropped_connection_is_retried(self):
+        clock = FakeClock()
+        transport = FakeTransport((200, EMPTY_SEARCH))
+        transport.responses.insert(0, OSError("EOF occurred in violation of protocol"))
+        client = PriceChartingClient(
+            "tok", transport=transport, clock=clock, sleep=clock.sleep
+        )
+
+        self.assertEqual(client.search("a"), [])
+        self.assertEqual(clock.slept, [30.0])
+
+    def test_repeated_dropped_connections_raise(self):
+        clock = FakeClock()
+        transport = FakeTransport(*[OSError("connection reset")] * 5)
+        client = PriceChartingClient(
+            "tok", transport=transport, clock=clock, sleep=clock.sleep
+        )
+
+        with self.assertRaises(OSError):
+            client.search("a")
         self.assertEqual(clock.slept, [30.0, 60.0, 120.0, 240.0])
 
     def test_other_errors_are_not_retried(self):

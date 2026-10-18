@@ -20,7 +20,8 @@ API_URL = "https://www.pricecharting.com/api"
 MIN_SECONDS_BETWEEN_CALLS = 1.0
 
 # Cloudflare in front of PriceCharting answers sustained bursts with HTTP
-# 429 even within the documented limit. Back off and retry: 30s, 60s, ...
+# 429 even within the documented limit, or sometimes by dropping the
+# connection. Back off and retry either: 30s, 60s, ...
 RATE_LIMIT_RETRIES = 4
 RATE_LIMIT_BACKOFF_SECONDS = 30.0
 
@@ -176,9 +177,15 @@ class PriceChartingClient:
         url = f"{API_URL}/{endpoint}?{query}"
 
         for attempt in range(RATE_LIMIT_RETRIES + 1):
-            status, body = self._send(url)
-            if status != 429 or attempt == RATE_LIMIT_RETRIES:
-                break
+            last_attempt = attempt == RATE_LIMIT_RETRIES
+            try:
+                status, body = self._send(url)
+            except OSError:
+                if last_attempt:
+                    raise
+            else:
+                if status != 429 or last_attempt:
+                    break
             self.sleep(RATE_LIMIT_BACKOFF_SECONDS * 2 ** attempt)
 
         try:
