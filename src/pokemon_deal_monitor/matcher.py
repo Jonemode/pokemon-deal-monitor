@@ -65,7 +65,7 @@ REJECT_PATTERNS = [
     # Grade labels copied from a slab, e.g. "NM-MT 8" or "GEM MINT 10".
     r"\b(?:nm mt|gem mt|gem mint|mint) \d{1,2}\b(?!/)",
     # Modern reprints of vintage cards.
-    r"\b(?:celebrations|classic collection|evolutions|25th|reprint)\b",
+    r"\b(?:celebrations|classic collection|evolutions|25th|30th|reprint)\b",
     # Non-English printings.
     r"\b(?:japanese|japan|jpn|korean|chinese|german|french|italian"
     r"|spanish|portuguese|dutch|jp|ita|foreign)\b",

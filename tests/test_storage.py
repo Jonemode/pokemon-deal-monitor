@@ -11,6 +11,7 @@ from pokemon_deal_monitor.storage import (
     DB_PATH_ENV_VAR,
     MIGRATIONS,
     Listing,
+    PriceRecord,
     Storage,
     UpsertResult,
     default_db_path,
@@ -201,6 +202,39 @@ class TestStorage(unittest.TestCase):
         stored = self.storage.get_listing(LUGIA.item_id)
         self.assertEqual(stored.first_seen_at.utcoffset(), timedelta(0))
         self.assertEqual(stored.first_seen_at, START)
+
+
+class TestPriceCache(unittest.TestCase):
+
+    def setUp(self):
+        self.storage = Storage(":memory:")
+        self.addCleanup(self.storage.close)
+
+    def test_save_and_get_prices(self):
+        record = PriceRecord("card", "pricecharting", START, raw_cents=100,
+                             grade_5_cents=150, grade_7_cents=200,
+                             sales_volume=12)
+        self.storage.save_price(record)
+        self.storage.save_price(PriceRecord("card", "tcgplayer", START,
+                                            raw_cents=90))
+
+        prices = self.storage.get_prices("card")
+        self.assertEqual(prices["pricecharting"], record)
+        self.assertEqual(prices["tcgplayer"].raw_cents, 90)
+        self.assertEqual(self.storage.get_prices("other"), {})
+
+    def test_save_replaces_existing_price(self):
+        self.storage.save_price(PriceRecord("card", "tcgplayer", START,
+                                            raw_cents=90))
+        later = START + timedelta(days=1)
+        self.storage.save_price(PriceRecord("card", "tcgplayer", later,
+                                            raw_cents=95))
+
+        self.assertEqual(self.storage.get_prices("card")["tcgplayer"].raw_cents, 95)
+        self.assertEqual(self.storage.latest_price_fetch("tcgplayer"), later)
+
+    def test_latest_fetch_without_prices(self):
+        self.assertIsNone(self.storage.latest_price_fetch("tcgplayer"))
 
 
 class TestDefaultDbPath(unittest.TestCase):

@@ -3,7 +3,8 @@ from datetime import datetime, timedelta, timezone
 
 from pokemon_deal_monitor.ebay import EbayClient
 from pokemon_deal_monitor.monitor import poll_once
-from pokemon_deal_monitor.storage import Storage, UpsertResult
+from pokemon_deal_monitor.storage import PriceRecord, Storage, UpsertResult
+from pokemon_deal_monitor.valuation import PRICECHARTING, TCGPLAYER, value_card
 
 from .fakes import CONFIG, FakeTransport, item_summary, search_response
 
@@ -109,6 +110,33 @@ class TestPollOnce(unittest.TestCase):
         poll = poll_once(client, self.storage, queries=["neo", "aquapolis"])
 
         self.assertEqual(len(poll.errors), 1)
+
+    def test_candidates_are_valued(self):
+        class FixedPricer:
+            def valuation(self, card, now=None):
+                return value_card({
+                    source: PriceRecord(card.identifier, source, START,
+                                        raw_cents=200000)
+                    for source in (PRICECHARTING, TCGPLAYER)
+                })
+
+        client = EbayClient(CONFIG, transport=FakeTransport({
+            "neo": search_response(
+                item_summary("1", LUGIA, "1400.00", "5.00"),
+                item_summary("2", UMBREON, "1900.00", "5.00"),
+            ),
+        }))
+        poll = poll_once(client, self.storage, queries=["neo"], now=START,
+                         pricer=FixedPricer())
+
+        deals = {c.item.item_id: c.deal for c in poll.candidates}
+        self.assertTrue(deals["1"].qualifies)
+        self.assertAlmostEqual(deals["1"].discount, 0.2975)
+        self.assertFalse(deals["2"].qualifies)
+
+    def test_candidates_without_pricer_have_no_deal(self):
+        poll = self.poll({"neo": search_response(item_summary("1", LUGIA))})
+        self.assertIsNone(poll.candidates[0].deal)
 
     def test_long_unseen_listing_is_ended(self):
         self.poll({"neo": search_response(item_summary("1", LUGIA))})

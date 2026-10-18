@@ -46,6 +46,18 @@ MIGRATIONS = [
     ALTER TABLE listings ADD COLUMN condition TEXT;
     ALTER TABLE listings ADD COLUMN shipping_known INTEGER NOT NULL DEFAULT 1;
     """,
+    """
+    CREATE TABLE prices (
+        card_identifier TEXT NOT NULL,
+        source TEXT NOT NULL,
+        raw_cents INTEGER,
+        grade_5_cents INTEGER,
+        grade_7_cents INTEGER,
+        sales_volume INTEGER,
+        fetched_at TEXT NOT NULL,
+        PRIMARY KEY (card_identifier, source)
+    );
+    """,
 ]
 
 
@@ -74,6 +86,19 @@ class StoredListing(Listing):
     first_seen_at: datetime | None = None
     last_seen_at: datetime | None = None
     ended_at: datetime | None = None
+
+
+@dataclass(frozen=True)
+class PriceRecord:
+    """One source's price for a catalog card. All prices are optional because
+    a source may know a card without having a value for every grade."""
+    card_identifier: str
+    source: str
+    fetched_at: datetime
+    raw_cents: int | None = None
+    grade_5_cents: int | None = None
+    grade_7_cents: int | None = None
+    sales_volume: int | None = None
 
 
 class UpsertResult(str, Enum):
@@ -246,3 +271,37 @@ class Storage:
                 (format_time(now or utc_now()), format_time(not_seen_since)),
             )
         return cursor.rowcount
+
+    def save_price(self, record: PriceRecord) -> None:
+        with self.connection:
+            self.connection.execute(
+                """
+                INSERT OR REPLACE INTO prices (
+                    card_identifier, source, raw_cents, grade_5_cents,
+                    grade_7_cents, sales_volume, fetched_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    record.card_identifier, record.source, record.raw_cents,
+                    record.grade_5_cents, record.grade_7_cents,
+                    record.sales_volume, format_time(record.fetched_at),
+                ),
+            )
+
+    def get_prices(self, card_identifier: str) -> dict[str, PriceRecord]:
+        """Return the cached price from each source for a card."""
+        rows = self.connection.execute(
+            "SELECT * FROM prices WHERE card_identifier = ?", (card_identifier,)
+        ).fetchall()
+        records = {}
+        for row in rows:
+            fields = dict(row)
+            fields["fetched_at"] = parse_time(fields["fetched_at"])
+            records[row["source"]] = PriceRecord(**fields)
+        return records
+
+    def latest_price_fetch(self, source: str) -> datetime | None:
+        row = self.connection.execute(
+            "SELECT MAX(fetched_at) FROM prices WHERE source = ?", (source,)
+        ).fetchone()
+        return parse_time(row[0])

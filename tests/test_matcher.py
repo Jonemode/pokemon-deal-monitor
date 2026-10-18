@@ -121,6 +121,7 @@ REJECTED_TITLES = [
     "PSA 7 Lugia Neo Genesis 1st Edition Holo",
     "CGC 9 Charizard 4/102 Base Set 1st Edition",
     "Charizard 4/102 Celebrations Classic Collection",
+    " Lugia 149/147 Holo Rare English Aquapolis Pokemon TCG 30th Anniversary ",
     "Charizard 4/130 Base Set 2 Holo",
     "Charizard Base Set 2 Holo Rare",
     "Dark Charizard Team Rocket 1st Edition Holo",

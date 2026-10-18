@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 
 from .ebay import EbayClient, EbayError, EbayItem
 from .matcher import Match, match_listing
-from .storage import Storage, UpsertResult, utc_now
+from .storage import Listing, Storage, UpsertResult, utc_now
+from .valuation import Deal, Pricer, evaluate_deal
 
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,8 @@ class Candidate:
     item: EbayItem
     match: Match
     result: UpsertResult
+    # None when no pricer was given or the card has no known value.
+    deal: Deal | None = None
 
 
 @dataclass
@@ -49,11 +52,23 @@ def is_graded(item: EbayItem) -> bool:
     return (item.condition or "").strip().lower() == "graded"
 
 
+def value_listing(
+    pricer: Pricer | None, match: Match, listing: Listing, now: datetime
+) -> Deal | None:
+    if pricer is None:
+        return None
+    valuation = pricer.valuation(match.card, now=now)
+    if valuation is None:
+        return None
+    return evaluate_deal(listing.total_cents, listing.shipping_known, valuation)
+
+
 def poll_once(
     client: EbayClient,
     storage: Storage,
     queries: list[str] = SEARCH_QUERIES,
     now: datetime | None = None,
+    pricer: Pricer | None = None,
 ) -> PollResult:
     """Search eBay once, store every listing, and return alert candidates.
 
@@ -95,7 +110,9 @@ def poll_once(
                 and result != UpsertResult.UNCHANGED
                 and storage.should_alert(item.item_id)
             ):
-                poll.candidates.append(Candidate(item, best, result))
+                poll.candidates.append(Candidate(
+                    item, best, result, value_listing(pricer, best, listing, now)
+                ))
 
     poll.items_seen = len(seen)
     storage.mark_ended(not_seen_since=now - ENDED_AFTER, now=now)

@@ -1,0 +1,223 @@
+import unittest
+from datetime import datetime, timedelta, timezone
+
+from pokemon_deal_monitor.catalog import Edition, PokemonCard, Rarity, Variant
+from pokemon_deal_monitor.pricecharting import PriceChartingError, PriceChartingPrice
+from pokemon_deal_monitor.storage import PriceRecord, Storage
+from pokemon_deal_monitor.tcgcsv import TcgPrice
+from pokemon_deal_monitor.valuation import (
+    PRICECHARTING,
+    TCGPLAYER,
+    Pricer,
+    evaluate_deal,
+    value_card,
+)
+
+
+START = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
+
+LUGIA = PokemonCard("Lugia", "Neo Genesis", "9/111", Variant.HOLO,
+                    Edition.FIRST_EDITION, Rarity.HOLO_RARE)
+
+
+def record(source, raw=None, grade_5=None, grade_7=None, fetched_at=START):
+    return PriceRecord(
+        card_identifier=LUGIA.identifier, source=source, fetched_at=fetched_at,
+        raw_cents=raw, grade_5_cents=grade_5, grade_7_cents=grade_7,
+    )
+
+
+class TestValueCard(unittest.TestCase):
+
+    def test_agreeing_sources_are_confident(self):
+        valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, raw=250000),
+            TCGPLAYER: record(TCGPLAYER, raw=220000),
+        })
+        self.assertEqual(valuation.value_cents, 220000)
+        self.assertTrue(valuation.confident)
+        self.assertEqual(valuation.estimates,
+                         {PRICECHARTING: 250000, TCGPLAYER: 220000})
+
+    def test_disagreeing_sources_are_not_confident(self):
+        valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, raw=400000),
+            TCGPLAYER: record(TCGPLAYER, raw=130000),
+        })
+        self.assertEqual(valuation.value_cents, 130000)
+        self.assertFalse(valuation.confident)
+        self.assertIn("sources disagree by 3.1x", valuation.notes)
+
+    def test_single_source_is_not_confident(self):
+        valuation = value_card({TCGPLAYER: record(TCGPLAYER, raw=130000)})
+        self.assertEqual(valuation.value_cents, 130000)
+        self.assertFalse(valuation.confident)
+
+    def test_capped_at_grade_7(self):
+        valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, raw=250000, grade_7=200000),
+            TCGPLAYER: record(TCGPLAYER, raw=240000),
+        })
+        self.assertEqual(valuation.value_cents, 200000)
+        self.assertIn("capped at grade 7 price", valuation.notes)
+
+    def test_grade_5_fallback(self):
+        valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, grade_5=100000),
+        })
+        self.assertEqual(valuation.value_cents, 80000)
+        self.assertFalse(valuation.confident)
+
+    def test_no_prices(self):
+        self.assertIsNone(value_card({}))
+        self.assertIsNone(value_card({PRICECHARTING: record(PRICECHARTING)}))
+
+
+class TestEvaluateDeal(unittest.TestCase):
+
+    def setUp(self):
+        self.valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, raw=200000),
+            TCGPLAYER: record(TCGPLAYER, raw=200000),
+        })
+
+    def test_qualifying_deal(self):
+        deal = evaluate_deal(150000, True, self.valuation)
+        self.assertAlmostEqual(deal.discount, 0.25)
+        self.assertTrue(deal.qualifies)
+        self.assertEqual(deal.reasons, ())
+
+    def test_discount_too_small(self):
+        deal = evaluate_deal(150001, True, self.valuation)
+        self.assertFalse(deal.qualifies)
+        self.assertEqual(deal.reasons, ("discount below 25%",))
+
+    def test_unknown_shipping(self):
+        deal = evaluate_deal(100000, False, self.valuation)
+        self.assertFalse(deal.qualifies)
+        self.assertIn("shipping cost unknown", deal.reasons)
+
+    def test_value_not_confident(self):
+        valuation = value_card({TCGPLAYER: record(TCGPLAYER, raw=200000)})
+        deal = evaluate_deal(100000, True, valuation)
+        self.assertFalse(deal.qualifies)
+        self.assertIn("value not confident", deal.reasons)
+
+
+class FakePriceCharting:
+
+    def __init__(self, price=None, error=None):
+        self.price = price
+        self.error = error
+        self.calls = []
+
+    def product(self, product_id):
+        self.calls.append(product_id)
+        if self.error:
+            raise self.error
+        return self.price
+
+
+class FakeTcgplayer:
+
+    def __init__(self, prices=None, error=None):
+        self.prices = prices or {}
+        self.error = error
+        self.calls = 0
+
+    def __call__(self, cards):
+        self.calls += 1
+        if self.error:
+            raise self.error
+        return self.prices
+
+
+PC_PRICE = PriceChartingPrice(
+    product_id="6910", product_name="Lugia [1st Edition] #9",
+    ungraded_cents=250000, grade_5_cents=300000, grade_7_cents=450000,
+    sales_volume=37,
+)
+
+
+class TestPricer(unittest.TestCase):
+
+    def setUp(self):
+        self.storage = Storage(":memory:")
+        self.addCleanup(self.storage.close)
+        self.pricecharting = FakePriceCharting(PC_PRICE)
+        self.tcgplayer = FakeTcgplayer(
+            {LUGIA.identifier: TcgPrice(product_id=86903, market_cents=230000)}
+        )
+
+    def pricer(self, product_ids=None):
+        return Pricer(
+            self.storage,
+            self.pricecharting,
+            {LUGIA.identifier: "6910"} if product_ids is None else product_ids,
+            fetch_tcgplayer=self.tcgplayer,
+            cards=[LUGIA],
+        )
+
+    def test_values_from_both_sources(self):
+        valuation = self.pricer().valuation(LUGIA, now=START)
+
+        self.assertEqual(valuation.value_cents, 230000)
+        self.assertTrue(valuation.confident)
+        self.assertEqual(self.pricecharting.calls, ["6910"])
+        self.assertEqual(
+            self.storage.get_prices(LUGIA.identifier)[PRICECHARTING].sales_volume,
+            37,
+        )
+
+    def test_prices_are_cached_for_a_day(self):
+        pricer = self.pricer()
+        pricer.valuation(LUGIA, now=START)
+        pricer.valuation(LUGIA, now=START + timedelta(hours=23))
+        self.assertEqual(self.tcgplayer.calls, 1)
+        self.assertEqual(len(self.pricecharting.calls), 1)
+
+        pricer.valuation(LUGIA, now=START + timedelta(hours=25))
+        self.assertEqual(self.tcgplayer.calls, 2)
+        self.assertEqual(len(self.pricecharting.calls), 2)
+
+    def test_unmapped_card_uses_tcgplayer_only(self):
+        valuation = self.pricer(product_ids={}).valuation(LUGIA, now=START)
+
+        self.assertEqual(self.pricecharting.calls, [])
+        self.assertEqual(valuation.estimates, {TCGPLAYER: 230000})
+        self.assertFalse(valuation.confident)
+
+    def test_failed_refresh_uses_cached_prices(self):
+        self.pricer().valuation(LUGIA, now=START)
+        self.pricecharting.error = PriceChartingError(500, "down")
+        self.tcgplayer.error = OSError("down")
+
+        valuation = self.pricer().valuation(
+            LUGIA, now=START + timedelta(days=2)
+        )
+        self.assertTrue(valuation.confident)
+
+    def test_prices_past_stale_limit_are_ignored(self):
+        self.pricer().valuation(LUGIA, now=START)
+        self.pricecharting.error = PriceChartingError(500, "down")
+        self.tcgplayer.error = OSError("down")
+
+        valuation = self.pricer().valuation(
+            LUGIA, now=START + timedelta(days=8)
+        )
+        self.assertIsNone(valuation)
+
+    def test_failed_tcgplayer_refresh_retried_hourly(self):
+        self.tcgplayer.error = OSError("down")
+        pricer = self.pricer()
+
+        pricer.valuation(LUGIA, now=START)
+        pricer.valuation(LUGIA, now=START + timedelta(minutes=30))
+        self.assertEqual(self.tcgplayer.calls, 1)
+
+        pricer.valuation(LUGIA, now=START + timedelta(minutes=61))
+        self.assertEqual(self.tcgplayer.calls, 2)
+
+
+if __name__ == "__main__":
+    unittest.main()

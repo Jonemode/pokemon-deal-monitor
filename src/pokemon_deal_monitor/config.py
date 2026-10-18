@@ -35,6 +35,24 @@ def read_env_file(path: Path) -> dict[str, str]:
     return values
 
 
+def load_settings(
+    env_path: Path | None = None,
+    environ: dict[str, str] | None = None,
+) -> dict[str, str]:
+    """Merge .env values with the environment, which takes precedence."""
+    values = read_env_file(env_path if env_path is not None else DEFAULT_ENV_PATH)
+    values.update(os.environ if environ is None else environ)
+    return values
+
+
+def load_pricecharting_token(
+    env_path: Path | None = None,
+    environ: dict[str, str] | None = None,
+) -> str | None:
+    """Return the PriceCharting API token, or None if it isn't configured."""
+    return load_settings(env_path, environ).get("PRICECHARTING_TOKEN") or None
+
+
 def load_ebay_config(
     env_path: Path | None = None,
     environ: dict[str, str] | None = None,
@@ -44,8 +62,7 @@ def load_ebay_config(
     Real environment variables take precedence, so the VPS can set them
     directly without a .env file.
     """
-    values = read_env_file(env_path if env_path is not None else DEFAULT_ENV_PATH)
-    values.update(os.environ if environ is None else environ)
+    values = load_settings(env_path, environ)
 
     missing = [key for key in ("EBAY_APP_ID", "EBAY_CERT_ID") if not values.get(key)]
     if missing:
