@@ -25,6 +25,13 @@ TCGPLAYER_RETRY_AFTER = timedelta(hours=1)
 
 # A listing qualifies when its total is at least this far below value.
 MIN_DISCOUNT = 0.10
+# Cards often sold as reprints under the original set's name, with nothing
+# in the listing to tell them apart. A discount beyond the limit is taken to
+# mean a reprint rather than a bargain.
+MAX_PLAUSIBLE_DISCOUNTS = {
+    # 30th Anniversary Lugia reprints listed as Aquapolis.
+    "Aquapolis:149/147:holo:unlimited": 0.50,
+}
 # A TCGplayer price this many times below PriceCharting's is flagged as a
 # warning on the alert, since it can mean a mismatched or stale product.
 MAX_SOURCE_RATIO = 1.5
@@ -112,7 +119,10 @@ def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
 
 
 def evaluate_deal(
-    total_cents: int, shipping_known: bool, valuation: Valuation
+    total_cents: int,
+    shipping_known: bool,
+    valuation: Valuation,
+    card_identifier: str | None = None,
 ) -> Deal:
     """Judge a listing against a card's value.
 
@@ -127,6 +137,14 @@ def evaluate_deal(
     # Compared in cents, since 1 - 0.9 in floating point is just under 0.1.
     if total_cents > round(valuation.value_cents * (1 - MIN_DISCOUNT)):
         reasons.append(f"discount below {MIN_DISCOUNT:.0%}")
+    max_discount = MAX_PLAUSIBLE_DISCOUNTS.get(card_identifier)
+    if (
+        max_discount is not None
+        and total_cents < round(valuation.value_cents * (1 - max_discount))
+    ):
+        reasons.append(
+            f"discount above {max_discount:.0%}, likely a misrepresented reprint"
+        )
 
     return Deal(
         total_cents=total_cents,

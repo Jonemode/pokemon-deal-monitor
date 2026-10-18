@@ -86,7 +86,8 @@ def value_listing(
     valuation = pricer.valuation(match.card, now=now)
     if valuation is None:
         return None
-    return evaluate_deal(listing.total_cents, listing.shipping_known, valuation)
+    return evaluate_deal(listing.total_cents, listing.shipping_known, valuation,
+                         match.card.identifier)
 
 
 def poll_once(

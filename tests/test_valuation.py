@@ -112,6 +112,22 @@ class TestEvaluateDeal(unittest.TestCase):
         self.assertTrue(deal.qualifies)
         self.assertAlmostEqual(deal.discount, 0.5)
 
+    def test_implausible_discount_on_reprinted_card(self):
+        lugia = "Aquapolis:149/147:holo:unlimited"
+        at_limit = evaluate_deal(100000, True, self.valuation, lugia)
+        self.assertTrue(at_limit.qualifies)
+
+        too_cheap = evaluate_deal(99999, True, self.valuation, lugia)
+        self.assertFalse(too_cheap.qualifies)
+        self.assertEqual(
+            too_cheap.reasons,
+            ("discount above 50%, likely a misrepresented reprint",),
+        )
+
+    def test_other_cards_have_no_discount_ceiling(self):
+        deal = evaluate_deal(20000, True, self.valuation, LUGIA.identifier)
+        self.assertTrue(deal.qualifies)
+
     def test_value_not_confident(self):
         valuation = value_card({TCGPLAYER: record(TCGPLAYER, raw=200000)})
         deal = evaluate_deal(100000, True, valuation)
