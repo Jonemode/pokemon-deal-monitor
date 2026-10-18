@@ -80,6 +80,8 @@ MATCHING_TITLES = [
      ["Skyridge:146/144:holo:unlimited"]),
     ("Gengar H9/H32 Skyridge Holo NM",
      ["Skyridge:H9/H32:holo:unlimited"]),
+    ("Poliwrath #9 Neo Discovery 1st Edition Holo",
+     ["Neo Discovery:9/75:holo:1st"]),
     # Wizards Black Star Promos: the number tells the four Pikachus apart.
     ("Pokemon Mewtwo #3 Black Star Promo WOTC Movie",
      ["Wizards Black Star Promos:3/53:normal:unlimited"]),
@@ -183,6 +185,8 @@ REJECTED_TITLES = [
     "Nintendo Pokemon TCG Expedition Typhlosion 65/165 Holo Rare 2002 100HP",
     "Ninetales 12/102 Base Set Shadowless Holo Pokemon vintage (Not 1st edition)LP-MP",
     "WOTC Magnemite 91/147 Aquapolis Reverse Holo foreign 🇮🇹 ITA",
+    # The non-holo Poliwrath; the holo is 9/75.
+    "Poliwrath 1st Ed. Pokemon Neo Discovery #28 2001",
     # Promos: no number, a stamped version, or a modern Black Star Promo.
     "Pikachu Black Star Promo WOTC Vintage",
     "Mewtwo #3 Black Star Promo Prerelease Stamp",

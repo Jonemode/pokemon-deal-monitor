@@ -247,11 +247,15 @@ def score_card(
     full, numerator = card_number_key(card.number)
     confidence = NAME_WEIGHT
 
+    # A stated number that isn't the card's rules it out, e.g. "#28" is the
+    # non-holo Poliwrath, not the 9/75 holo.
     if title_full_numbers:
         if full not in title_full_numbers:
             return None
         confidence += FULL_NUMBER_WEIGHT
-    elif numerator in title_partial_numbers:
+    elif title_partial_numbers:
+        if numerator not in title_partial_numbers:
+            return None
         confidence += PARTIAL_NUMBER_WEIGHT
     elif card.set_name in NUMBER_REQUIRED_SETS:
         return None
