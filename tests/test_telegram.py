@@ -47,6 +47,12 @@ class TestTelegramClient(unittest.TestCase):
         self.assertIn("chat not found", str(context.exception))
         self.assertNotIn("secret", str(context.exception))
 
+    def test_updates_confirm_earlier_ones(self):
+        transport = FakeTransport((200, {"ok": True, "result": []}))
+        TelegramClient("t", transport=transport).updates(offset=8, timeout=20)
+        self.assertEqual(json.loads(transport.requests[0].data),
+                         {"timeout": 20, "offset": 8})
+
     def test_chats_from_updates(self):
         transport = FakeTransport((200, {"ok": True, "result": [
             {"message": {"chat": {"id": 42, "username": "jonemode"}}},

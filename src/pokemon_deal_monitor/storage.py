@@ -290,6 +290,12 @@ class Storage:
                 (item_id, listing.total_cents, format_time(now or utc_now())),
             )
 
+    def count_alerts_since(self, since: datetime) -> int:
+        row = self.connection.execute(
+            "SELECT COUNT(*) FROM alerts WHERE sent_at >= ?", (format_time(since),)
+        ).fetchone()
+        return row[0]
+
     def mark_ended(
         self, not_seen_since: datetime, now: datetime | None = None
     ) -> int:

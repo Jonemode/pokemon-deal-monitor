@@ -137,6 +137,15 @@ class TestStorage(unittest.TestCase):
 
         self.assertFalse(self.storage.should_alert(LUGIA.item_id))
 
+    def test_count_alerts_since(self):
+        self.storage.upsert_listing(LUGIA, now=START)
+        self.storage.record_alert(LUGIA.item_id, now=START)
+        self.storage.record_alert(LUGIA.item_id, now=START + timedelta(hours=2))
+
+        self.assertEqual(self.storage.count_alerts_since(START), 2)
+        self.assertEqual(
+            self.storage.count_alerts_since(START + timedelta(hours=1)), 1)
+
     def test_small_price_drop_does_not_realert(self):
         self.storage.upsert_listing(LUGIA, now=START)
         self.storage.record_alert(LUGIA.item_id, now=START)

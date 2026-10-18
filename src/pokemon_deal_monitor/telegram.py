@@ -32,13 +32,24 @@ class TelegramClient:
             "disable_notification": silent,
         })
 
+    def updates(self, offset: int | None = None, timeout: int = 0) -> list[dict]:
+        """Return new updates, waiting up to timeout seconds for one.
+
+        Passing the last update_id + 1 as offset confirms the earlier ones,
+        so Telegram stops returning them.
+        """
+        params = {"timeout": timeout}
+        if offset is not None:
+            params["offset"] = offset
+        return self._call("getUpdates", params)
+
     def chats(self) -> list[dict]:
         """Return the chats that have recently messaged the bot.
 
         Each chat is {"id", "name"}. Telegram keeps updates for 24 hours.
         """
         chats = {}
-        for update in self._call("getUpdates", {}):
+        for update in self.updates():
             message = update.get("message") or update.get("my_chat_member") or {}
             chat = message.get("chat")
             if chat:

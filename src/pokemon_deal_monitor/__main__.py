@@ -3,6 +3,7 @@ import logging
 import sys
 import time
 from collections.abc import Callable
+from datetime import timedelta
 
 from .alerts import format_dollars, format_time_left, sample_alert, send_alerts
 from .config import (
@@ -19,12 +20,17 @@ from .monitor import (
     poll_once,
 )
 from .pricecharting import PriceChartingClient, load_product_ids
+from .status import CommandListener, MonitorStatus, format_status
 from .storage import Storage, utc_now
 from .telegram import TelegramClient, TelegramError
 from .valuation import Pricer
 
 
 logger = logging.getLogger("pokemon_deal_monitor")
+
+# Between polls, Telegram is long-polled for commands this long at a time,
+# within the transport's 30 second timeout.
+COMMAND_WAIT_SECONDS = 20
 
 
 def describe_deal(candidate) -> str:
@@ -126,13 +132,45 @@ def build_notifier() -> Callable[[str], None] | None:
     )
 
 
-def poll_and_alert(client, storage, pricer, notify, auctions=False) -> None:
+def build_listener(
+    storage: Storage, status: MonitorStatus
+) -> CommandListener | None:
+    config = telegram_config()
+    if config is None or config.chat_id is None:
+        return None
+
+    def status_text() -> str:
+        now = utc_now()
+        alerts = storage.count_alerts_since(now - timedelta(days=1))
+        return format_status(status, alerts, now)
+
+    return CommandListener(TelegramClient(config.bot_token), config.chat_id,
+                           status_text, started_at=status.started_at)
+
+
+def wait_until(deadline: float, listener: CommandListener | None) -> None:
+    """Sleep until a time.monotonic() deadline, answering Telegram commands
+    meanwhile."""
+    while (remaining := deadline - time.monotonic()) > 0:
+        if listener is None or remaining < 1:
+            time.sleep(remaining)
+            continue
+        try:
+            listener.check(timeout=min(int(remaining), COMMAND_WAIT_SECONDS))
+        except Exception as error:
+            # Commands are a convenience; never let them stop polling.
+            logger.warning("Checking Telegram commands failed: %s", error)
+            time.sleep(min(remaining, COMMAND_WAIT_SECONDS))
+
+
+def poll_and_alert(client, storage, pricer, notify, auctions=False) -> PollResult:
     poll = poll_once(client, storage, pricer=pricer, auctions=auctions)
     report(poll)
     if notify is not None:
         sent = send_alerts(poll, storage, notify)
         if sent:
             logger.info("Sent %d alerts", sent)
+    return poll
 
 
 def main() -> None:
@@ -186,6 +224,8 @@ def main() -> None:
 
         # Auctions are searched on every third poll at the default interval,
         # with a second's leeway in case a sleep wakes slightly early.
+        status = MonitorStatus(started_at=utc_now())
+        listener = build_listener(storage, status)
         last_auction_poll = None
         while True:
             started = time.monotonic()
@@ -195,14 +235,18 @@ def main() -> None:
                 >= AUCTION_POLL_INTERVAL.total_seconds() - 1
             )
             try:
-                poll_and_alert(client, storage, pricer, notify)
+                poll = poll_and_alert(client, storage, pricer, notify)
+                status.record(poll, auctions=False, now=utc_now())
                 if auctions_due:
                     last_auction_poll = started
-                    poll_and_alert(client, storage, pricer, notify, auctions=True)
+                    poll = poll_and_alert(client, storage, pricer, notify,
+                                          auctions=True)
+                    status.record(poll, auctions=True, now=utc_now())
             except Exception:
                 # Keep the monitor alive through transient network failures.
                 logger.exception("Poll failed")
-            time.sleep(max(0, args.interval - (time.monotonic() - started)))
+                status.record_failure(utc_now())
+            wait_until(started + args.interval, listener)
 
 
 if __name__ == "__main__":
