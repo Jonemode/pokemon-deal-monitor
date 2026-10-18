@@ -1,0 +1,25 @@
+# systemd service for the monitor on a server, installed by deploy/README.md.
+[Unit]
+Description=Pokemon deal monitor
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=monitor
+Group=monitor
+WorkingDirectory=/opt/pokemon-deal-monitor
+Environment=PYTHONPATH=src
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 -m pokemon_deal_monitor run
+Restart=always
+RestartSec=60
+
+# The monitor only needs to write its database.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/opt/pokemon-deal-monitor/data
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
