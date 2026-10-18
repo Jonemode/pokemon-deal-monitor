@@ -134,6 +134,33 @@ class TestPollOnce(unittest.TestCase):
         self.assertAlmostEqual(deals["1"].discount, 0.2975)
         self.assertFalse(deals["2"].qualifies)
 
+    def test_unsent_deal_stays_candidate_until_alerted(self):
+        class FixedPricer:
+            def valuation(self, card, now=None):
+                return value_card({
+                    source: PriceRecord(card.identifier, source, START,
+                                        raw_cents=200000)
+                    for source in (PRICECHARTING, TCGPLAYER)
+                })
+
+        def poll():
+            client = EbayClient(CONFIG, transport=FakeTransport({
+                "neo": search_response(
+                    item_summary("1", LUGIA, "1400.00", "5.00"),
+                    item_summary("2", UMBREON, "1900.00", "5.00"),
+                ),
+            }))
+            return poll_once(client, self.storage, queries=["neo"], now=START,
+                             pricer=FixedPricer())
+
+        poll()
+        repeat = poll()
+        self.assertEqual([c.item.item_id for c in repeat.candidates], ["1"])
+        self.assertEqual(repeat.candidates[0].result, UpsertResult.UNCHANGED)
+
+        self.storage.record_alert("1", now=START)
+        self.assertEqual(poll().candidates, [])
+
     def test_candidates_without_pricer_have_no_deal(self):
         poll = self.poll({"neo": search_response(item_summary("1", LUGIA))})
         self.assertIsNone(poll.candidates[0].deal)

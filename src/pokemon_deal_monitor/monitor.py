@@ -72,8 +72,9 @@ def poll_once(
 ) -> PollResult:
     """Search eBay once, store every listing, and return alert candidates.
 
-    A candidate is a matched listing that is new or changed price and has
-    not already been alerted on at this price.
+    A candidate is a matched listing not yet alerted on at this price that
+    is new, changed price, or qualifies as a deal. Unchanged deals stay
+    candidates so an alert that failed to send is retried.
     """
     now = now or utc_now()
     poll = PollResult()
@@ -105,14 +106,11 @@ def poll_once(
             )
             result = storage.upsert_listing(listing, now=now)
 
-            if (
-                best is not None
-                and result != UpsertResult.UNCHANGED
-                and storage.should_alert(item.item_id)
-            ):
-                poll.candidates.append(Candidate(
-                    item, best, result, value_listing(pricer, best, listing, now)
-                ))
+            if best is None or not storage.should_alert(item.item_id):
+                continue
+            deal = value_listing(pricer, best, listing, now)
+            if result != UpsertResult.UNCHANGED or (deal and deal.qualifies):
+                poll.candidates.append(Candidate(item, best, result, deal))
 
     poll.items_seen = len(seen)
     storage.mark_ended(not_seen_since=now - ENDED_AFTER, now=now)

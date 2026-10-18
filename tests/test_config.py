@@ -2,7 +2,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from pokemon_deal_monitor.config import load_ebay_config, read_env_file
+from pokemon_deal_monitor.config import (
+    load_ebay_config,
+    load_telegram_config,
+    read_env_file,
+)
 
 
 class TestConfig(unittest.TestCase):
@@ -61,6 +65,20 @@ class TestConfig(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             load_ebay_config(env_path=path, environ={})
+
+
+    def test_telegram_config(self):
+        path = self.write_env("TELEGRAM_BOT_TOKEN=tok\nTELEGRAM_CHAT_ID=42\n")
+        config = load_telegram_config(env_path=path, environ={})
+        self.assertEqual((config.bot_token, config.chat_id), ("tok", "42"))
+
+    def test_telegram_without_chat_id(self):
+        path = self.write_env("TELEGRAM_BOT_TOKEN=tok\n")
+        self.assertIsNone(load_telegram_config(env_path=path, environ={}).chat_id)
+
+    def test_telegram_not_configured(self):
+        path = self.write_env("TELEGRAM_BOT_TOKEN=\n")
+        self.assertIsNone(load_telegram_config(env_path=path, environ={}))
 
 
 if __name__ == "__main__":

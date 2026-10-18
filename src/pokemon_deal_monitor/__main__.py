@@ -1,20 +1,20 @@
 import argparse
 import logging
+import sys
 import time
+from collections.abc import Callable
 
-from .config import load_ebay_config, load_pricecharting_token
+from .alerts import format_dollars, sample_alert, send_alerts
+from .config import load_ebay_config, load_pricecharting_token, load_telegram_config
 from .ebay import EbayClient
 from .monitor import DEFAULT_POLL_INTERVAL_SECONDS, PollResult, poll_once
 from .pricecharting import PriceChartingClient, load_product_ids
 from .storage import Storage
+from .telegram import TelegramClient, TelegramError
 from .valuation import Pricer
 
 
 logger = logging.getLogger("pokemon_deal_monitor")
-
-
-def format_dollars(cents: int) -> str:
-    return f"${cents / 100:,.2f}"
 
 
 def describe_deal(candidate) -> str:
@@ -59,10 +59,60 @@ def report(poll: PollResult) -> None:
         logger.info("    %s", describe_deal(candidate))
 
 
+def telegram_client() -> tuple[TelegramClient, str | None]:
+    config = load_telegram_config()
+    if config is None:
+        sys.exit("Set TELEGRAM_BOT_TOKEN in .env first.")
+    return TelegramClient(config.bot_token), config.chat_id
+
+
+def show_chat_ids() -> None:
+    client, _ = telegram_client()
+    chats = client.chats()
+    if not chats:
+        sys.exit("No messages found. Send your bot a message in Telegram, "
+                 "then run this again.")
+    for chat in chats:
+        print(f"TELEGRAM_CHAT_ID={chat['id']}  ({chat['name']})")
+    print("Add the line for your chat to .env.")
+
+
+def send_test_alert() -> None:
+    client, chat_id = telegram_client()
+    if chat_id is None:
+        sys.exit("Set TELEGRAM_CHAT_ID in .env first; run make telegram-chat-id.")
+    try:
+        client.send_message(chat_id, sample_alert())
+    except TelegramError as error:
+        sys.exit(str(error))
+    print("Test alert sent.")
+
+
+def build_notifier() -> Callable[[str], None] | None:
+    config = load_telegram_config()
+    if config is None or config.chat_id is None:
+        logger.warning("Telegram not configured; deals are only logged")
+        return None
+    client = TelegramClient(config.bot_token)
+    return lambda text: client.send_message(config.chat_id, text)
+
+
+def poll_and_alert(client, storage, pricer, notify) -> None:
+    poll = poll_once(client, storage, pricer=pricer)
+    report(poll)
+    if notify is not None:
+        sent = send_alerts(poll, storage, notify)
+        if sent:
+            logger.info("Sent %d alerts", sent)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="pokemon_deal_monitor")
     subcommands = parser.add_subparsers(dest="command", required=True)
     subcommands.add_parser("poll", help="Search eBay once and report candidates")
+    subcommands.add_parser("telegram-chat-id",
+                           help="List chats that have messaged the bot")
+    subcommands.add_parser("test-alert", help="Send a sample Telegram alert")
     run = subcommands.add_parser("run", help="Poll eBay continuously")
     run.add_argument(
         "--interval", type=int, default=DEFAULT_POLL_INTERVAL_SECONDS,
@@ -73,6 +123,11 @@ def main() -> None:
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
     )
+
+    if args.command == "telegram-chat-id":
+        return show_chat_ids()
+    if args.command == "test-alert":
+        return send_test_alert()
 
     try:
         config = load_ebay_config()
@@ -87,6 +142,8 @@ def main() -> None:
     if token is not None and not product_ids:
         logger.warning("No PriceCharting product IDs; run make pricecharting-ids")
 
+    notify = build_notifier()
+
     with Storage() as storage:
         pricer = Pricer(
             storage,
@@ -94,13 +151,13 @@ def main() -> None:
             product_ids,
         )
         if args.command == "poll":
-            report(poll_once(client, storage, pricer=pricer))
+            poll_and_alert(client, storage, pricer, notify)
             return
 
         while True:
             started = time.monotonic()
             try:
-                report(poll_once(client, storage, pricer=pricer))
+                poll_and_alert(client, storage, pricer, notify)
             except Exception:
                 # Keep the monitor alive through transient network failures.
                 logger.exception("Poll failed")

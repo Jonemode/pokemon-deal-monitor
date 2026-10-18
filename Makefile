@@ -1,5 +1,5 @@
 
-.PHONY: help test catalog pricecharting-ids poll run clean
+.PHONY: help test catalog pricecharting-ids telegram-chat-id test-alert poll run clean
 
 PYTHON ?= python3
 
@@ -8,7 +8,9 @@ help:
 	@echo "  make test    - Run all unit tests"
 	@echo "  make catalog - Regenerate data/cards.json from source data"
 	@echo "  make pricecharting-ids - Map catalog cards to PriceCharting products"
-	@echo "  make poll    - Search eBay once and report candidates"
+	@echo "  make telegram-chat-id - Show the chat ID to send alerts to"
+	@echo "  make test-alert - Send a sample alert to Telegram"
+	@echo "  make poll    - Search eBay once, report candidates, send alerts"
 	@echo "  make run     - Poll eBay continuously"
 	@echo "  make clean   - Remove Python cache files"
 
@@ -20,6 +22,12 @@ catalog:
 
 pricecharting-ids:
 	PYTHONPATH=src $(PYTHON) scripts/map_pricecharting.py
+
+telegram-chat-id:
+	PYTHONPATH=src $(PYTHON) -m pokemon_deal_monitor telegram-chat-id
+
+test-alert:
+	PYTHONPATH=src $(PYTHON) -m pokemon_deal_monitor test-alert
 
 poll:
 	PYTHONPATH=src $(PYTHON) -m pokemon_deal_monitor poll

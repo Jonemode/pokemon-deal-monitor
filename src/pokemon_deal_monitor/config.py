@@ -15,6 +15,13 @@ class EbayConfig:
     environment: str = "production"
 
 
+@dataclass(frozen=True)
+class TelegramConfig:
+    bot_token: str
+    # None until the chat ID has been looked up; see make telegram-chat-id.
+    chat_id: str | None = None
+
+
 def read_env_file(path: Path) -> dict[str, str]:
     """Parse KEY=VALUE lines, skipping blanks and # comments."""
     if not path.exists():
@@ -51,6 +58,20 @@ def load_pricecharting_token(
 ) -> str | None:
     """Return the PriceCharting API token, or None if it isn't configured."""
     return load_settings(env_path, environ).get("PRICECHARTING_TOKEN") or None
+
+
+def load_telegram_config(
+    env_path: Path | None = None,
+    environ: dict[str, str] | None = None,
+) -> TelegramConfig | None:
+    """Return Telegram settings, or None if no bot token is configured."""
+    values = load_settings(env_path, environ)
+    if not values.get("TELEGRAM_BOT_TOKEN"):
+        return None
+    return TelegramConfig(
+        bot_token=values["TELEGRAM_BOT_TOKEN"],
+        chat_id=values.get("TELEGRAM_CHAT_ID") or None,
+    )
 
 
 def load_ebay_config(
