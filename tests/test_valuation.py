@@ -97,20 +97,20 @@ class TestEvaluateDeal(unittest.TestCase):
         })
 
     def test_qualifying_deal(self):
-        deal = evaluate_deal(150000, True, self.valuation)
-        self.assertAlmostEqual(deal.discount, 0.25)
+        deal = evaluate_deal(180000, True, self.valuation)
+        self.assertAlmostEqual(deal.discount, 0.10)
         self.assertTrue(deal.qualifies)
         self.assertEqual(deal.reasons, ())
 
     def test_discount_too_small(self):
-        deal = evaluate_deal(150001, True, self.valuation)
+        deal = evaluate_deal(180001, True, self.valuation)
         self.assertFalse(deal.qualifies)
-        self.assertEqual(deal.reasons, ("discount below 25%",))
+        self.assertEqual(deal.reasons, ("discount below 10%",))
 
-    def test_unknown_shipping(self):
+    def test_unknown_shipping_still_qualifies(self):
         deal = evaluate_deal(100000, False, self.valuation)
-        self.assertFalse(deal.qualifies)
-        self.assertIn("shipping cost unknown", deal.reasons)
+        self.assertTrue(deal.qualifies)
+        self.assertAlmostEqual(deal.discount, 0.5)
 
     def test_value_not_confident(self):
         valuation = value_card({TCGPLAYER: record(TCGPLAYER, raw=200000)})

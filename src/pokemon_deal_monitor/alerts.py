@@ -25,10 +25,13 @@ def format_alert(candidate: Candidate) -> str:
     card = candidate.match.card
     deal = candidate.deal
     url = html.escape(candidate.item.url)
+    if candidate.item.shipping_cents is None:
+        price = f"{format_dollars(deal.total_cents)} + unknown shipping"
+    else:
+        price = f"{format_dollars(deal.total_cents)} with shipping"
     return (
         f"<b>{html.escape(card.name)}</b> · {html.escape(card.set_name)}\n"
-        f"<b>{deal.discount:.0%} off</b> · "
-        f"{format_dollars(deal.total_cents)} with shipping\n"
+        f"<b>{deal.discount:.0%} off</b> · {price}\n"
         f'<a href="{url}">{url}</a>'
     )
 

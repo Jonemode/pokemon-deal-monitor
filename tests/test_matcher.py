@@ -66,8 +66,17 @@ MATCHING_TITLES = [
      ["Aquapolis:148/147:holo:unlimited"]),
     ("Lugia 149/147 Aquapolis Secret Rare",
      ["Aquapolis:149/147:holo:unlimited"]),
+    # Crystals without the word: the number, or a name no holo shares.
+    ("Kingdra 148/147 Aquapolis Holo",
+     ["Aquapolis:148/147:holo:unlimited"]),
+    ("Lugia Aquapolis Pokemon Card NM",
+     ["Aquapolis:149/147:holo:unlimited"]),
+    ("Kabutops Skyridge Holo Rare",
+     ["Skyridge:H13/H32:holo:unlimited"]),
     # Skyridge
     ("Crystal Charizard Skyridge Pokemon Card NM",
+     ["Skyridge:146/144:holo:unlimited"]),
+    ("Charizard Skyridge Holo WOTC 2003",
      ["Skyridge:146/144:holo:unlimited"]),
     ("Gengar H9/H32 Skyridge Holo NM",
      ["Skyridge:H9/H32:holo:unlimited"]),
@@ -79,6 +88,10 @@ MATCHING_TITLES = [
     # Southern Islands
     ("Southern Islands Mew 01/18 Reverse Holo Promo",
      ["Southern Islands:1/18:reverse_holo:unlimited"]),
+    ("Mew 1/18 Southern Islands Promo",
+     ["Southern Islands:1/18:reverse_holo:unlimited"]),
+    ("Togepi Southern Islands WOTC 2001",
+     ["Southern Islands:4/18:reverse_holo:unlimited"]),
     ("Marill 11/18 Southern Islands Holo",
      ["Southern Islands:11/18:reverse_holo:unlimited"]),
     ("Mew 1/18 Southern Islands Reverse Cosmo Holo WOTC 2001",
@@ -153,8 +166,7 @@ REJECTED_TITLES = [
     "Nintendo Pokemon TCG Expedition Typhlosion 65/165 Holo Rare 2002 100HP",
     "Ninetales 12/102 Base Set Shadowless Holo Pokemon vintage (Not 1st edition)LP-MP",
     "WOTC Magnemite 91/147 Aquapolis Reverse Holo foreign 🇮🇹 ITA",
-    # Southern Islands Regular versions, or titles that don't say which.
-    "Mew 1/18 Southern Islands Promo",
+    # Southern Islands cards that only come as non-holo, or "Regular".
     "Butterfree 09/18 Southern Islands Regular",
     "Pidgeot 02/18 Southern Islands - Pokemon TCG Vintage",
     "Pokémon TCG Pidgeot Southern Islands Regular Stage 2 70 HP English 2/18 2001",

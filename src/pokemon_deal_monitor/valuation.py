@@ -24,7 +24,7 @@ PRICE_STALE_LIMIT = timedelta(days=7)
 TCGPLAYER_RETRY_AFTER = timedelta(hours=1)
 
 # A listing qualifies when its total is at least this far below value.
-MIN_DISCOUNT = 0.25
+MIN_DISCOUNT = 0.10
 # A TCGplayer price this many times below PriceCharting's is flagged as a
 # warning on the alert, since it can mean a mismatched or stale product.
 MAX_SOURCE_RATIO = 1.5
@@ -114,14 +114,18 @@ def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
 def evaluate_deal(
     total_cents: int, shipping_known: bool, valuation: Valuation
 ) -> Deal:
+    """Judge a listing against a card's value.
+
+    When shipping is unknown the total is the item price alone, and the
+    alert says so rather than the listing being skipped.
+    """
     discount = 1 - total_cents / valuation.value_cents
 
     reasons = []
     if not valuation.confident:
         reasons.append("value not confident")
-    if not shipping_known:
-        reasons.append("shipping cost unknown")
-    if discount < MIN_DISCOUNT:
+    # Compared in cents, since 1 - 0.9 in floating point is just under 0.1.
+    if total_cents > round(valuation.value_cents * (1 - MIN_DISCOUNT)):
         reasons.append(f"discount below {MIN_DISCOUNT:.0%}")
 
     return Deal(

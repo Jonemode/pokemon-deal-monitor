@@ -54,9 +54,25 @@ NAME_PREFIXES = ("dark ", "light ", "shining ")
 # a card number must say it is the holo.
 SETS_WITH_NON_HOLO_DUPLICATES = {"Expedition", "Aquapolis", "Skyridge"}
 
-# Southern Islands only exists as Regular and Reverse Holo, so sellers who
-# just say "holo" mean the reverse holo.
-HOLO_MEANS_REVERSE_SETS = {"Southern Islands"}
+# Crystal cards sharing a name with a regular holo in the same set, such as
+# Aquapolis Kingdra. Sellers rarely write "crystal", so without that word
+# these need their number; otherwise the cheaper holo is assumed, which can
+# undervalue a crystal but never makes a holo look like a crystal bargain.
+CRYSTAL_NAME_CLASHES = {
+    (card.set_name, card.name)
+    for card in CARDS
+    if card.rarity == Rarity.CRYSTAL
+    and any(
+        other.set_name == card.set_name and other.name == card.name
+        and other.rarity != Rarity.CRYSTAL
+        for other in CARDS
+    )
+}
+
+# Sets where each targeted card has a single English printing, so the
+# title needn't say holo or reverse holo. In Southern Islands the six
+# targeted cards only exist as reverse holos.
+SINGLE_PRINTING_SETS = {"Southern Islands"}
 
 REJECT_PATTERNS = [
     # Graded cards, including grades written without a space ("PSA7").
@@ -217,19 +233,24 @@ def score_card(
 
     mentions_reverse = bool(REVERSE_HOLO_PATTERN.search(text))
     if card.variant == Variant.REVERSE_HOLO:
-        if card.set_name in HOLO_MEANS_REVERSE_SETS:
-            mentions_reverse = mentions_reverse or bool(HOLO_PATTERN.search(text))
+        if card.set_name in SINGLE_PRINTING_SETS:
+            mentions_reverse = True
         if not mentions_reverse or REGULAR_PATTERN.search(text):
             return None
     elif mentions_reverse:
         return None
 
     is_crystal = card.rarity == Rarity.CRYSTAL
-    if bool(CRYSTAL_PATTERN.search(text)) != is_crystal:
-        # The number alone identifies a crystal even when the seller
-        # leaves the word out.
-        if not (is_crystal and full in title_full_numbers):
+    says_crystal = bool(CRYSTAL_PATTERN.search(text))
+    if is_crystal:
+        if (
+            not says_crystal
+            and full not in title_full_numbers
+            and (card.set_name, card.name) in CRYSTAL_NAME_CLASHES
+        ):
             return None
+    elif says_crystal:
+        return None
 
     if (
         card.set_name in SETS_WITH_NON_HOLO_DUPLICATES

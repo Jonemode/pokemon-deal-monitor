@@ -42,6 +42,13 @@ class TestFormatAlert(unittest.TestCase):
             '<a href="https://www.ebay.com/itm/1">https://www.ebay.com/itm/1</a>',
         )
 
+    def test_unknown_shipping(self):
+        c = candidate("1", 140000)
+        item = EbayItem(**{**c.item.__dict__, "shipping_cents": None})
+        deal = evaluate_deal(140000, False, c.deal.valuation)
+        text = format_alert(Candidate(item, c.match, c.result, deal))
+        self.assertIn("<b>30% off</b> · $1,400.00 + unknown shipping", text)
+
     def test_url_is_escaped(self):
         c = candidate("1", 140000)
         c = Candidate(EbayItem(**{**c.item.__dict__,
