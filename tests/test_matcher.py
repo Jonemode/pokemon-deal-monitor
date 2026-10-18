@@ -85,6 +85,13 @@ MATCHING_TITLES = [
      ["Legendary Collection:4/110:reverse_holo:unlimited"]),
     ("Pikachu Legendary Collection Reverse Holo Pokemon",
      ["Legendary Collection:86/110:reverse_holo:unlimited"]),
+    # Real eBay titles
+    ("2002 Pokemon Legendary Collection Zapdos Reverse Holo #19/110",
+     ["Legendary Collection:19/110:reverse_holo:unlimited"]),
+    ("Jolteon 14/110 Legendary Collection Reverse Holo Rare Vintage Pokemon",
+     ["Legendary Collection:14/110:reverse_holo:unlimited"]),
+    ("2002 Pokemon Legendary Collection Flareon Reverse Holo #10/110",
+     ["Legendary Collection:10/110:reverse_holo:unlimited"]),
 ]
 
 # Titles that must not match any catalog card.
@@ -111,6 +118,8 @@ REJECTED_TITLES = [
     "Lugia 9/111 Neo Genesis 1st Edition Holo HP",
     "Lugia 1st Edition Holo",
     "Charizard 1st Edition Holo Pokemon",
+    # Real eBay titles
+    "Mew 019/165 Expedition Base Set Reverse Holo Rare - NM/MINT",
 ]
 
 
