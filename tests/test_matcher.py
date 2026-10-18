@@ -1,52 +1,157 @@
-
 import unittest
 
-from pokemon_deal_monitor.matcher import match_listing
+from pokemon_deal_monitor.matcher import match_listing, normalize
+
+
+# Realistic eBay titles and the catalog identifiers they should match.
+MATCHING_TITLES = [
+    # Base Set
+    ("Charizard 4/102 Base Set 1st Edition Holo NM",
+     ["Base Set:4/102:holo:1st"]),
+    ("1999 Pokemon Base Set 1st Edition Shadowless Charizard 4/102 Holo",
+     ["Base Set:4/102:holo:1st"]),
+    ("Blastoise 2/102 1st-Edition Base Set Holo Rare",
+     ["Base Set:2/102:holo:1st"]),
+    ("Pokemon 1st Edition Base Mewtwo Holo #10 LP",
+     ["Base Set:10/102:holo:1st"]),
+    # Neo Genesis
+    ("Pokemon Lugia 9/111 Neo Genesis 1st Edition Holo LP",
+     ["Neo Genesis:9/111:holo:1st"]),
+    ("1st Edition Lugia Neo Genesis Holo Rare WOTC 2000",
+     ["Neo Genesis:9/111:holo:1st"]),
+    ("Lugia 9/111 1st Ed Holo Pokemon Card",
+     ["Neo Genesis:9/111:holo:1st"]),
+    ("LUGIA 009/111 NEO GENESIS 1ST EDITION HOLO NM",
+     ["Neo Genesis:9/111:holo:1st"]),
+    ("Pokémon 1st Edition Neo Gen Lugia Holo #9",
+     ["Neo Genesis:9/111:holo:1st"]),
+    ("Typhlosion 17/111 Neo Genesis 1st Edition Holo",
+     ["Neo Genesis:17/111:holo:1st"]),
+    ("Feraligatr Neo Genesis 1st Edition Holo Rare",
+     ["Neo Genesis:4/111:holo:1st", "Neo Genesis:5/111:holo:1st"]),
+    # Neo Discovery
+    ("Unown [A] 14/75 Neo Discovery 1st Edition Holo",
+     ["Neo Discovery:14/75:holo:1st"]),
+    ("Umbreon 13/75 Neo Discovery 1st Edition Holo Rare WOTC",
+     ["Neo Discovery:13/75:holo:1st"]),
+    # Neo Revelation
+    ("Ho-oh 7/64 Neo Revelation 1st Edition Holo",
+     ["Neo Revelation:7/64:holo:1st"]),
+    ("1st Edition Hooh Neo Revelation Holo Rare",
+     ["Neo Revelation:7/64:holo:1st"]),
+    ("Shining Gyarados 65/64 Neo Revelation 1st Edition",
+     ["Neo Revelation:65/64:holo:1st"]),
+    ("Porygon2 Neo Revelation 1st Edition Holo 12/64",
+     ["Neo Revelation:12/64:holo:1st"]),
+    # Neo Destiny
+    ("Shining Charizard 107/105 1st Edition Neo Destiny",
+     ["Neo Destiny:107/105:holo:1st"]),
+    ("1st Edition Dark Tyranitar Neo Destiny Holo",
+     ["Neo Destiny:11/105:holo:1st"]),
+    ("Light Dragonite 14/105 Neo Destiny 1st Edition Holo",
+     ["Neo Destiny:14/105:holo:1st"]),
+    # Expedition
+    ("Charizard 6/165 Expedition Base Set Holo LP",
+     ["Expedition:6/165:holo:unlimited"]),
+    ("Expedition Charizard Holo Rare Pokemon",
+     ["Expedition:6/165:holo:unlimited"]),
+    # Aquapolis
+    ("Umbreon H29/H32 Aquapolis Holo LP",
+     ["Aquapolis:H29/H32:holo:unlimited"]),
+    ("Aquapolis Umbreon H29 Holo",
+     ["Aquapolis:H29/H32:holo:unlimited"]),
+    ("Kingdra Aquapolis Holo Rare",
+     ["Aquapolis:H14/H32:holo:unlimited"]),
+    ("Crystal Kingdra Aquapolis Pokemon Card",
+     ["Aquapolis:148/147:holo:unlimited"]),
+    ("Lugia 149/147 Aquapolis Secret Rare",
+     ["Aquapolis:149/147:holo:unlimited"]),
+    # Skyridge
+    ("Crystal Charizard Skyridge Pokemon Card NM",
+     ["Skyridge:146/144:holo:unlimited"]),
+    ("Gengar H9/H32 Skyridge Holo NM",
+     ["Skyridge:H9/H32:holo:unlimited"]),
+    # Southern Islands
+    ("Mew 1/18 Southern Islands Promo",
+     ["Southern Islands:1/18:holo:unlimited"]),
+    ("Southern Islands Mew 01/18 Reverse Holo Promo",
+     ["Southern Islands:1/18:holo:unlimited"]),
+    ("Marill 11/18 Southern Islands Holo",
+     ["Southern Islands:11/18:holo:unlimited"]),
+    # Legendary Collection
+    ("Charizard 3/110 Legendary Collection Reverse Holo",
+     ["Legendary Collection:3/110:reverse_holo:unlimited"]),
+    ("Legendary Collection Dark Blastoise 4/110 Reverse Foil",
+     ["Legendary Collection:4/110:reverse_holo:unlimited"]),
+    ("Pikachu Legendary Collection Reverse Holo Pokemon",
+     ["Legendary Collection:86/110:reverse_holo:unlimited"]),
+]
+
+# Titles that must not match any catalog card.
+REJECTED_TITLES = [
+    "Pokemon Lugia 9/111 Neo Genesis Unlimited Holo",
+    "No 1st Edition Lugia 9/111 Neo Genesis Holo",
+    "Charizard 4/102 Base Set Holo Shadowless",
+    "Charizard 4/102 Base Set Unlimited Holo",
+    "PSA 7 Lugia Neo Genesis 1st Edition Holo",
+    "CGC 9 Charizard 4/102 Base Set 1st Edition",
+    "Charizard 4/102 Celebrations Classic Collection",
+    "Charizard 4/130 Base Set 2 Holo",
+    "Charizard Base Set 2 Holo Rare",
+    "Dark Charizard Team Rocket 1st Edition Holo",
+    "Charizard Neo Destiny 1st Edition",
+    "Charizard 3/110 Legendary Collection Holo",
+    "Charizard 40/165 Expedition Non Holo",
+    "Charizard Expedition Pokemon Card Rare",
+    "Umbreon H29/H32 Aquapolis Reverse Holo",
+    "Japanese Lugia Neo Genesis 1st Edition Holo",
+    "Lugia 9/111 Neo Genesis 1st Edition Holo Proxy",
+    "Pokemon Neo Genesis 1st Edition Holo Lot x5",
+    "Lugia Neo Genesis 1st Edition Holo Damaged",
+    "Lugia 9/111 Neo Genesis 1st Edition Holo HP",
+    "Lugia 1st Edition Holo",
+    "Charizard 1st Edition Holo Pokemon",
+]
 
 
 class TestListingMatcher(unittest.TestCase):
 
-    def test_first_edition_lugia(self):
-        title = "Pokemon Lugia 9/111 Neo Genesis 1st Edition Holo LP"
-        matches = match_listing(title)
+    def test_matching_titles(self):
+        for title, expected in MATCHING_TITLES:
+            with self.subTest(title=title):
+                matches = match_listing(title)
+                self.assertEqual(
+                    sorted(match.card.identifier for match in matches),
+                    sorted(expected),
+                )
 
-        self.assertEqual(len(matches), 1)
-        self.assertEqual(matches[0].name, "Lugia")
+    def test_rejected_titles(self):
+        for title in REJECTED_TITLES:
+            with self.subTest(title=title):
+                self.assertEqual(match_listing(title), [])
 
-    def test_unlimited_lugia_rejected(self):
-        title = "Pokemon Lugia 9/111 Neo Genesis Unlimited Holo"
-        self.assertEqual(match_listing(title), [])
+    def test_confidence_with_all_evidence(self):
+        (match,) = match_listing("Lugia 9/111 Neo Genesis 1st Edition Holo")
+        self.assertEqual(match.confidence, 1.0)
 
-    def test_graded_card_rejected(self):
-        title = "PSA 7 Lugia Neo Genesis 1st Edition Holo"
-        self.assertEqual(match_listing(title), [])
+    def test_confidence_without_set(self):
+        (match,) = match_listing("Lugia 9/111 1st Edition Holo")
+        self.assertEqual(match.confidence, 0.7)
 
-    def test_base_set_charizard(self):
-        title = "Charizard 4/102 Base Set 1st Edition Holo NM"
-        matches = match_listing(title)
+    def test_confidence_without_number(self):
+        (match,) = match_listing("Lugia Neo Genesis 1st Edition Holo")
+        self.assertEqual(match.confidence, 0.6)
 
-        self.assertEqual(len(matches), 1)
-        self.assertEqual(matches[0].name, "Charizard")
+    def test_unexpected_first_edition_lowers_confidence(self):
+        (match,) = match_listing("Umbreon H29/H32 Aquapolis 1st Edition Holo")
+        self.assertEqual(match.confidence, 0.8)
 
-    def test_aquapolis_umbreon(self):
-        title = "Umbreon H29/H32 Aquapolis Holo LP"
-        matches = match_listing(title)
-
-        self.assertEqual(len(matches), 1)
-        self.assertEqual(matches[0].set_name, "Aquapolis")
-
-    def test_legendary_collection_reverse(self):
-        title = "Charizard 3/110 Legendary Collection Reverse Holo"
-        matches = match_listing(title)
-
-        self.assertEqual(len(matches), 1)
-        self.assertEqual(matches[0].set_name, "Legendary Collection")
-
-    def test_regular_holo_not_reverse(self):
-        title = "Charizard 3/110 Legendary Collection Holo"
-        self.assertEqual(match_listing(title), [])
+    def test_normalize(self):
+        self.assertEqual(
+            normalize("Pokémon  Ho-Oh [1st-Edition] #7"),
+            "pokemon ho oh 1st edition #7",
+        )
 
 
 if __name__ == "__main__":
     unittest.main()
-
