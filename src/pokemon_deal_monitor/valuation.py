@@ -182,6 +182,7 @@ class Pricer:
             return
         self._tcgplayer_attempted_at = now
 
+        logger.info("Refreshing TCGplayer prices")
         try:
             prices = self.fetch_tcgplayer(self.cards)
         except Exception as error:
@@ -205,6 +206,7 @@ class Pricer:
         if cached is not None and now - cached.fetched_at < PRICE_MAX_AGE:
             return
 
+        logger.info("Fetching PriceCharting price for %s", card.identifier)
         try:
             price = self.pricecharting.product(product_id)
         except (PriceChartingError, OSError) as error:

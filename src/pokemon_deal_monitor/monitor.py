@@ -109,7 +109,9 @@ def poll_once(
     # rest would fail too. Listings without details wait for the next poll.
     can_fetch_details = True
 
-    for query in queries:
+    for index, query in enumerate(queries, 1):
+        progress = f"[{index}/{len(queries)}]"
+        logger.info("%s Searching %r", progress, query)
         try:
             items = client.search(query)
         except EbayError as error:
@@ -121,10 +123,15 @@ def poll_once(
                 break
             continue
 
+        # Per-search counts, logged as progress once the search is processed.
+        new_items = matched = looked_up = 0
+        candidates_before = len(poll.candidates)
+
         for item in items:
             if item.item_id in seen:
                 continue
             seen.add(item.item_id)
+            new_items += 1
 
             matches = [] if is_graded(item) else match_listing(item.title)
             best = matches[0] if matches else None
@@ -137,6 +144,7 @@ def poll_once(
 
             if best is None or not storage.should_alert(item.item_id):
                 continue
+            matched += 1
 
             # Each listing's details are fetched once, then read from storage.
             details = stored_details(storage, item.item_id)
@@ -151,6 +159,7 @@ def poll_once(
                     if error.status in (401, 429):
                         can_fetch_details = False
                     continue
+                looked_up += 1
                 storage.save_details(item.item_id, details.card_condition,
                                      details.language, now=now)
             if details_rejection(details) is not None:
@@ -161,6 +170,12 @@ def poll_once(
                 poll.candidates.append(
                     Candidate(item, best, result, deal, details)
                 )
+
+        logger.info(
+            "%s %d listings, %d matched cards, %d detail lookups, %d candidates",
+            progress, new_items, matched, looked_up,
+            len(poll.candidates) - candidates_before,
+        )
 
     poll.items_seen = len(seen)
     storage.mark_ended(not_seen_since=now - ENDED_AFTER, now=now)
