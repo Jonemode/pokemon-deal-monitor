@@ -45,6 +45,8 @@ def describe_deal(candidate) -> str:
     )
     if deal.max_bid_cents is not None:
         summary += f", max bid {format_dollars(deal.max_bid_cents)}"
+    if deal.offer_cents is not None:
+        summary += f", offer {format_dollars(deal.offer_cents)}"
     if valuation.warnings:
         summary += f" [warning: {', '.join(valuation.warnings)}]"
     if deal.qualifies:

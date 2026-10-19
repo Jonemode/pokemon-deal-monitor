@@ -16,8 +16,9 @@ def token_response(expires_in=7200):
 
 
 def item_summary(item_id, title, price="100.00", shipping="5.00",
-                 condition="Ungraded"):
+                 condition="Ungraded", best_offer=False):
     summary = {
+        "buyingOptions": ["FIXED_PRICE"] + (["BEST_OFFER"] if best_offer else []),
         "itemId": item_id,
         "title": title,
         "itemWebUrl": f"https://www.ebay.com/itm/{item_id}",

@@ -222,6 +222,32 @@ class TestPollOnce(unittest.TestCase):
         self.assertAlmostEqual(deals["1"].discount, 0.2975)
         self.assertFalse(deals["2"].qualifies)
 
+    def test_best_offer_listings(self):
+        client = EbayClient(CONFIG, transport=FakeTransport({
+            "neo": search_response(
+                # $2,000 value: a deal outright, near value with offers,
+                # near value without, and too far over.
+                item_summary("1", LUGIA, "1700.00", "5.00", best_offer=True),
+                item_summary("2", LUGIA + " ", "2100.00", "5.00", best_offer=True),
+                item_summary("3", LUGIA + "  ", "2100.00", "5.00"),
+                item_summary("4", UMBREON, "2300.00", "5.00", best_offer=True),
+                # Too cheap to be the real card.
+                item_summary("5", "Lugia 149/147 Aquapolis Holo", "200.00", "5.00",
+                             best_offer=True),
+            ),
+        }))
+        poll = poll_once(client, self.storage, queries=["neo"], now=START,
+                         pricer=FixedPricer())
+
+        deals = {c.item.item_id: c.deal for c in poll.candidates}
+        self.assertTrue(deals["1"].qualifies)
+        self.assertIsNone(deals["1"].offer_cents)
+        self.assertTrue(deals["2"].qualifies)
+        self.assertEqual(deals["2"].offer_cents, 179500)
+        self.assertFalse(deals["3"].qualifies)
+        self.assertFalse(deals["4"].qualifies)
+        self.assertFalse(deals["5"].qualifies)
+
     def test_auctions_ending_soon(self):
         transport = FakeTransport({
             "auction:neo": search_response(

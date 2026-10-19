@@ -66,6 +66,8 @@ class EbayItem:
     auction: bool = False
     ends_at: datetime | None = None
     bid_count: int | None = None
+    # A Buy It Now listing that also takes offers.
+    best_offer: bool = False
 
     def to_listing(
         self,
@@ -190,6 +192,7 @@ def parse_item(summary: dict, auction: bool = False) -> EbayItem | None:
         auction=auction,
         ends_at=parse_time(summary.get("itemEndDate")) if auction else None,
         bid_count=summary.get("bidCount") if auction else None,
+        best_offer=not auction and "BEST_OFFER" in summary.get("buyingOptions", []),
     )
 
 

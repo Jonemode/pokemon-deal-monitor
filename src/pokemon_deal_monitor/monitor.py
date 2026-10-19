@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from .ebay import EbayClient, EbayError, EbayItem, ItemDetails
 from .matcher import Match, match_listing
 from .storage import Listing, Storage, UpsertResult, utc_now
-from .valuation import Deal, Pricer, evaluate_auction, evaluate_deal
+from .valuation import Deal, Pricer, evaluate_auction, evaluate_deal, evaluate_offer
 
 
 logger = logging.getLogger(__name__)
@@ -101,8 +101,14 @@ def value_listing(
     if item.auction:
         return evaluate_auction(listing.total_cents, listing.shipping_cents,
                                 valuation, match.card)
-    return evaluate_deal(listing.total_cents, listing.shipping_known, valuation,
+    deal = evaluate_deal(listing.total_cents, listing.shipping_known, valuation,
                          match.card)
+    if item.best_offer and not deal.qualifies:
+        offer = evaluate_offer(listing.total_cents, listing.shipping_cents,
+                               valuation, match.card)
+        if offer.qualifies:
+            return offer
+    return deal
 
 
 def poll_once(

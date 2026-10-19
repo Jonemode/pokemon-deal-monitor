@@ -11,6 +11,7 @@ from pokemon_deal_monitor.valuation import (
     Pricer,
     evaluate_auction,
     evaluate_deal,
+    evaluate_offer,
     value_card,
 )
 
@@ -142,6 +143,23 @@ class TestEvaluateDeal(unittest.TestCase):
 
         at_minimum = value_card({PRICECHARTING: record(PRICECHARTING, raw=5000)})
         self.assertTrue(evaluate_deal(4000, True, at_minimum, mewtwo).qualifies)
+
+    def test_offer_on_listing_up_to_10_percent_over_value(self):
+        deal = evaluate_offer(220000, 500, self.valuation)
+        self.assertTrue(deal.qualifies)
+        self.assertAlmostEqual(deal.discount, -0.10)
+        # 10% under the $2,000 value, less $5 shipping.
+        self.assertEqual(deal.offer_cents, 179500)
+
+    def test_no_offer_on_listing_further_over_value(self):
+        deal = evaluate_offer(220001, 500, self.valuation)
+        self.assertFalse(deal.qualifies)
+        self.assertEqual(deal.reasons, ("price more than 10% over value",))
+
+    def test_no_offer_on_listing_already_below_the_offer(self):
+        deal = evaluate_offer(180000, 500, self.valuation)
+        self.assertFalse(deal.qualifies)
+        self.assertEqual(deal.reasons, ("price already at or below the offer",))
 
     def test_auction_current_bid_well_below_value(self):
         deal = evaluate_auction(120000, 500, self.valuation)

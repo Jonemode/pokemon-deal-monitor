@@ -31,6 +31,9 @@ MIN_DISCOUNT = 0.10
 MIN_AUCTION_DISCOUNT = 0.40
 # The most a suggested maximum bid can be, matching the eBay price filter.
 MAX_BID_CENTS = 500000
+# A Best Offer listing priced up to this far over value is worth an offer
+# of MIN_DISCOUNT below value, which the seller may accept.
+MAX_OFFER_PREMIUM = 0.10
 # Sets with a minimum card value to alert on, in cents, to skip the many
 # promos worth only a few dollars.
 MIN_VALUE_CENTS = {
@@ -74,6 +77,9 @@ class Deal:
     # For an auction, the most to bid so the total stays MIN_DISCOUNT below
     # value. Without known shipping it leaves no room for shipping.
     max_bid_cents: int | None = None
+    # For a Best Offer listing, the offer that keeps the total MIN_DISCOUNT
+    # below value, likewise before any unknown shipping.
+    offer_cents: int | None = None
 
 
 def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
@@ -170,6 +176,40 @@ def evaluate_deal(
         discount=discount,
         qualifies=not reasons,
         reasons=tuple(reasons),
+    )
+
+
+def evaluate_offer(
+    total_cents: int,
+    shipping_cents: int,
+    valuation: Valuation,
+    card: PokemonCard | None = None,
+) -> Deal:
+    """Judge a Best Offer listing that isn't a deal at its price, and
+    suggest an offer that would make it one."""
+    discount = 1 - total_cents / valuation.value_cents
+    target_cents = round(valuation.value_cents * (1 - MIN_DISCOUNT))
+
+    reasons = []
+    if not valuation.confident:
+        reasons.append("value not confident")
+    if total_cents > round(valuation.value_cents * (1 + MAX_OFFER_PREMIUM)):
+        reasons.append(f"price more than {MAX_OFFER_PREMIUM:.0%} over value")
+    # A listing already this cheap failed as a deal for another reason, such
+    # as a likely reprint, which an offer doesn't change.
+    if total_cents <= target_cents:
+        reasons.append("price already at or below the offer")
+    min_value = MIN_VALUE_CENTS.get(card.set_name) if card else None
+    if min_value is not None and valuation.value_cents < min_value:
+        reasons.append(f"value below ${min_value / 100:,.0f}")
+
+    return Deal(
+        total_cents=total_cents,
+        valuation=valuation,
+        discount=discount,
+        qualifies=not reasons,
+        reasons=tuple(reasons),
+        offer_cents=target_cents - shipping_cents,
     )
 
 

@@ -248,6 +248,14 @@ class TestEbayClient(unittest.TestCase):
         )
         self.assertEqual(item.price_cents, 25000)
 
+    def test_best_offer(self):
+        transport = FakeTransport({"q": search_response(
+            item_summary("1", "Lugia", best_offer=True),
+            item_summary("2", "Lugia"),
+        )})
+        items = EbayClient(CONFIG, transport=transport).search("q")
+        self.assertEqual([i.best_offer for i in items], [True, False])
+
     def test_reserve_met(self):
         transport = FakeTransport(items={"1": item_response(reserve_met=False),
                                          "2": item_response()})

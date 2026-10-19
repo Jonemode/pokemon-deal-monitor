@@ -13,6 +13,7 @@ from pokemon_deal_monitor.valuation import (
     TCGPLAYER,
     evaluate_auction,
     evaluate_deal,
+    evaluate_offer,
     value_card,
 )
 
@@ -54,6 +55,22 @@ def auction_candidate(bid_cents, shipping_cents=500, bids=3,
 
 
 class TestFormatAlert(unittest.TestCase):
+
+    def test_best_offer_alert(self):
+        valuation = value_card({PRICECHARTING: PriceRecord(
+            LUGIA.identifier, PRICECHARTING, START, raw_cents=200000)})
+        item = EbayItem(item_id="1", title="Lugia 9/111 Neo Genesis 1st Edition",
+                        url="https://www.ebay.com/itm/1", price_cents=209500,
+                        currency="USD", shipping_cents=500, best_offer=True)
+        candidate = Candidate(item, Match(LUGIA, 1.0), UpsertResult.NEW,
+                              evaluate_offer(210000, 500, valuation))
+        self.assertEqual(
+            format_alert(candidate),
+            "<b>Lugia</b> · Neo Genesis\n"
+            "<b>Best Offer</b> · listed $2,100.00 with shipping · 5% over value\n"
+            "<b>Offer $1,795.00</b> to pay 10% under the $2,000.00 value\n"
+            '<a href="https://www.ebay.com/itm/1">https://www.ebay.com/itm/1</a>',
+        )
 
     def test_auction_alert(self):
         self.assertEqual(

@@ -38,7 +38,8 @@ def format_alert(candidate: Candidate, now: datetime | None = None) -> str:
     """Return a short Telegram HTML message: card, discount, total, link.
 
     An auction's alert gives the time left, bids and current bid, and leads
-    with the suggested maximum bid.
+    with the suggested maximum bid. A Best Offer alert gives the suggested
+    offer.
     """
     card = candidate.match.card
     deal = candidate.deal
@@ -50,6 +51,18 @@ def format_alert(candidate: Candidate, now: datetime | None = None) -> str:
         price = f"{format_dollars(deal.total_cents)} with shipping"
     heading = f"<b>{html.escape(card.name)}</b> · {html.escape(card.set_name)}\n"
     link = f'<a href="{url}">{url}</a>'
+    if deal.offer_cents is not None:
+        if deal.discount < 0:
+            versus = f"{-deal.discount:.0%} over value"
+        else:
+            versus = f"{deal.discount:.0%} under value"
+        return heading + "\n".join([
+            f"<b>Best Offer</b> · listed {price} · {versus}",
+            f"<b>Offer {format_dollars(deal.offer_cents)}</b> to pay"
+            f" {MIN_DISCOUNT:.0%} under the"
+            f" {format_dollars(deal.valuation.value_cents)} value"
+            + ("" if item.shipping_cents is not None else ", before shipping"),
+        ]) + "\n" + link
     if not item.auction:
         return heading + f"<b>{deal.discount:.0%} off</b> · {price}\n" + link
 
