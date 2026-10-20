@@ -41,21 +41,22 @@ class TestFormatStatus(unittest.TestCase):
                       now=START + timedelta(days=3, hours=4, minutes=53))
         self.assertEqual(
             format_status(status, 2, START + timedelta(days=3, hours=5)),
-            "✅ <b>Monitor running</b> for 3d 5h\n"
-            "Last poll 2m ago: 345 listings, 1 error\n"
-            "Last auction search 7m ago\n"
-            "Alerts in the last 24h: 2",
+            "✅ Running 3d 5h · last poll 2m ago, 1 error\n"
+            "Auctions 7m ago · 2 alerts in 24h",
         )
 
     def test_before_first_poll(self):
-        text = format_status(MonitorStatus(started_at=START), 0, START)
-        self.assertIn("running</b> for under 1m\nFirst poll in progress", text)
+        self.assertEqual(
+            format_status(MonitorStatus(started_at=START), 1, START),
+            "✅ Running under 1m · first poll in progress\n1 alert in 24h",
+        )
 
     def test_failed_poll(self):
         status = MonitorStatus(started_at=START)
         status.record_failure(START + timedelta(minutes=1))
         text = format_status(status, 0, START + timedelta(hours=1, minutes=1))
-        self.assertIn("⚠️ Last poll failed 1h 0m ago", text)
+        self.assertTrue(text.startswith(
+            "⚠️ Running 1h 1m · last poll failed 1h 0m ago\n"))
 
 
 class TestCommandListener(unittest.TestCase):

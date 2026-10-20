@@ -2,6 +2,7 @@
 
 import html
 import logging
+import urllib.parse
 from collections.abc import Callable
 from datetime import datetime
 
@@ -26,6 +27,13 @@ def format_dollars(cents: int) -> str:
     return f"${cents / 100:,.2f}"
 
 
+def listing_url(url: str) -> str:
+    """Drop the search tracking eBay adds, e.g. "?_skw=...&hash=...", which
+    the listing doesn't need."""
+    return urllib.parse.urlunsplit(urllib.parse.urlsplit(url)._replace(
+        query="", fragment=""))
+
+
 def format_time_left(ends_at: datetime | None, now: datetime) -> str:
     if ends_at is None:
         return "end time unknown"
@@ -35,50 +43,42 @@ def format_time_left(ends_at: datetime | None, now: datetime) -> str:
 
 
 def format_alert(candidate: Candidate, now: datetime | None = None) -> str:
-    """Return a short Telegram HTML message: card, discount, total, link.
+    """Return a two-line Telegram HTML message: the card and set, linked to
+    the listing, then the price against value.
 
-    An auction's alert gives the time left, bids and current bid, and leads
-    with the suggested maximum bid. A Best Offer alert gives the suggested
-    offer.
+    Prices include shipping, as the value comparison does. An auction gives
+    its current bid, time left and suggested maximum bid; a Best Offer
+    listing its asking price against value.
     """
     card = candidate.match.card
     deal = candidate.deal
     item = candidate.item
-    url = html.escape(item.url)
-    if item.shipping_cents is None:
-        price = f"{format_dollars(deal.total_cents)} + unknown shipping"
-    else:
-        price = f"{format_dollars(deal.total_cents)} with shipping"
-    heading = f"<b>{html.escape(card.name)}</b> · {html.escape(card.set_name)}\n"
-    link = f'<a href="{url}">{url}</a>'
-    if deal.offer_cents is not None:
+    url = html.escape(listing_url(item.url))
+    heading = (
+        f'<a href="{url}"><b>{html.escape(card.name)} · '
+        f"{html.escape(card.set_name)}</b></a>"
+    )
+    total = format_dollars(deal.total_cents)
+    shipping_known = item.shipping_cents is not None
+
+    if item.auction:
+        under = f"{MIN_DISCOUNT:.0%} under" + ("" if shipping_known else " before shipping")
+        bid = total if shipping_known else f"{total} + shipping"
+        line = (
+            f"Bid {bid}, {format_time_left(item.ends_at, now or utc_now())}"
+            f" · max bid {format_dollars(deal.max_bid_cents)} ({under})"
+        )
+    elif deal.offer_cents is not None:
         if deal.discount < 0:
             versus = f"{-deal.discount:.0%} over value"
         else:
             versus = f"{deal.discount:.0%} under value"
-        return heading + "\n".join([
-            f"<b>Best Offer</b> · listed {price} · {versus}",
-            f"<b>Offer {format_dollars(deal.offer_cents)}</b> to pay"
-            f" {MIN_DISCOUNT:.0%} under the"
-            f" {format_dollars(deal.valuation.value_cents)} value"
-            + ("" if item.shipping_cents is not None else ", before shipping"),
-        ]) + "\n" + link
-    if not item.auction:
-        return heading + f"<b>{deal.discount:.0%} off</b> · {price}\n" + link
-
-    bids = f"{item.bid_count} bid{'' if item.bid_count == 1 else 's'}"
-    lines = [
-        f"<b>Auction</b> · {format_time_left(item.ends_at, now or utc_now())}"
-        f" · {bids}",
-        f"Current bid {price} · {deal.discount:.0%} under value",
-        f"<b>Max bid {format_dollars(deal.max_bid_cents)}</b> to pay"
-        f" {MIN_DISCOUNT:.0%} under the"
-        f" {format_dollars(deal.valuation.value_cents)} value"
-        + ("" if item.shipping_cents is not None else ", before shipping"),
-    ]
-    if candidate.details is not None and candidate.details.reserve_met is False:
-        lines.append("Reserve not met")
-    return heading + "\n".join(lines) + "\n" + link
+        asking = total if shipping_known else f"{total} + shipping"
+        line = f"Asking {asking} or best offer, {versus}"
+    else:
+        price = f"{total} with shipping" if shipping_known else f"{total} + shipping"
+        line = f"{deal.discount:.0%} off · {price}"
+    return f"{heading}\n{line}"
 
 
 def send_alerts(
@@ -138,4 +138,4 @@ def sample_alert() -> str:
         deal=evaluate_deal(170500, True, valuation),
         details=ItemDetails("Near mint or better", "English"),
     )
-    return "🧪 <b>Test alert</b>, not a real listing\n\n" + format_alert(candidate)
+    return "🧪 <b>Test alert</b>, not a real listing\n" + format_alert(candidate)

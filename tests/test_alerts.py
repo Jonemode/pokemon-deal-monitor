@@ -54,7 +54,23 @@ def auction_candidate(bid_cents, shipping_cents=500, bids=3,
                      ItemDetails(reserve_met=reserve_met))
 
 
+HEADING = '<a href="https://www.ebay.com/itm/1"><b>Lugia · Neo Genesis</b></a>\n'
+
+
 class TestFormatAlert(unittest.TestCase):
+
+    def test_alert_contents(self):
+        self.assertEqual(
+            format_alert(candidate("1", 140000)),
+            HEADING + "30% off · $1,405.00 with shipping",
+        )
+
+    def test_unknown_shipping(self):
+        c = candidate("1", 140000)
+        item = EbayItem(**{**c.item.__dict__, "shipping_cents": None})
+        deal = evaluate_deal(140000, False, c.deal.valuation)
+        text = format_alert(Candidate(item, c.match, c.result, deal))
+        self.assertTrue(text.endswith("\n30% off · $1,400.00 + shipping"))
 
     def test_best_offer_alert(self):
         valuation = value_card({PRICECHARTING: PriceRecord(
@@ -66,51 +82,36 @@ class TestFormatAlert(unittest.TestCase):
                               evaluate_offer(210000, 500, valuation))
         self.assertEqual(
             format_alert(candidate),
-            "<b>Lugia</b> · Neo Genesis\n"
-            "<b>Best Offer</b> · listed $2,100.00 with shipping · 5% over value\n"
-            "<b>Offer $1,795.00</b> to pay 10% under the $2,000.00 value\n"
-            '<a href="https://www.ebay.com/itm/1">https://www.ebay.com/itm/1</a>',
+            HEADING + "Asking $2,100.00 or best offer, 5% over value",
         )
 
     def test_auction_alert(self):
         self.assertEqual(
             format_alert(auction_candidate(80000), now=START),
-            "<b>Lugia</b> · Neo Genesis\n"
-            "<b>Auction</b> · ends in 1h 25m · 3 bids\n"
-            "Current bid $805.00 with shipping · 60% under value\n"
-            "<b>Max bid $1,795.00</b> to pay 10% under the $2,000.00 value\n"
-            '<a href="https://www.ebay.com/itm/1">https://www.ebay.com/itm/1</a>',
+            HEADING + "Bid $805.00, ends in 1h 25m · max bid $1,795.00 (10% under)",
         )
 
-    def test_auction_alert_without_shipping_or_reserve(self):
-        text = format_alert(auction_candidate(80000, None, bids=1,
-                                              reserve_met=False), now=START)
-        self.assertIn("· 1 bid\n", text)
-        self.assertIn("$800.00 + unknown shipping", text)
-        self.assertIn("$2,000.00 value, before shipping\n", text)
-        self.assertIn("Reserve not met\n", text)
+    def test_auction_alert_without_shipping(self):
+        text = format_alert(auction_candidate(80000, None), now=START)
+        self.assertTrue(text.endswith(
+            "\nBid $800.00 + shipping, ends in 1h 25m"
+            " · max bid $1,800.00 (10% under before shipping)"
+        ))
 
-    def test_alert_contents(self):
-        self.assertEqual(
-            format_alert(candidate("1", 140000)),
-            "<b>Lugia</b> · Neo Genesis\n"
-            "<b>30% off</b> · $1,405.00 with shipping\n"
-            '<a href="https://www.ebay.com/itm/1">https://www.ebay.com/itm/1</a>',
-        )
+    def test_alerts_are_two_lines(self):
+        for text in (format_alert(candidate("1", 140000)),
+                     format_alert(auction_candidate(80000), now=START),
+                     sample_alert().split("\n", 1)[1]):
+            self.assertEqual(len(text.split("\n")), 2, text)
 
-    def test_unknown_shipping(self):
+    def test_search_tracking_is_dropped_from_link(self):
         c = candidate("1", 140000)
-        item = EbayItem(**{**c.item.__dict__, "shipping_cents": None})
-        deal = evaluate_deal(140000, False, c.deal.valuation)
-        text = format_alert(Candidate(item, c.match, c.result, deal))
-        self.assertIn("<b>30% off</b> · $1,400.00 + unknown shipping", text)
-
-    def test_url_is_escaped(self):
-        c = candidate("1", 140000)
-        c = Candidate(EbayItem(**{**c.item.__dict__,
-                                  "url": "https://www.ebay.com/itm/1?a=1&b=2"}),
+        url = ("https://www.ebay.com/itm/198707140511?_skw=pokemon+base+set"
+               "&hash=item2e43de579f:g:9HoAAeSwXgVqy8VZ")
+        c = Candidate(EbayItem(**{**c.item.__dict__, "url": url}),
                       c.match, c.result, c.deal)
-        self.assertIn('href="https://www.ebay.com/itm/1?a=1&amp;b=2"', format_alert(c))
+        self.assertTrue(format_alert(c).startswith(
+            '<a href="https://www.ebay.com/itm/198707140511">'))
 
     def test_sample_alert(self):
         self.assertIn("Test alert", sample_alert())

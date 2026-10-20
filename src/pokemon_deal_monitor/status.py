@@ -19,7 +19,6 @@ STATUS_COMMAND = "/status"
 class MonitorStatus:
     started_at: datetime
     last_poll_at: datetime | None = None
-    last_poll_listings: int = 0
     last_poll_errors: int = 0
     last_poll_failed: bool = False
     last_auction_poll_at: datetime | None = None
@@ -29,7 +28,6 @@ class MonitorStatus:
             self.last_auction_poll_at = now
             return
         self.last_poll_at = now
-        self.last_poll_listings = poll.items_seen
         self.last_poll_errors = len(poll.errors)
         self.last_poll_failed = False
 
@@ -50,24 +48,27 @@ def format_duration(duration: timedelta) -> str:
 
 
 def format_status(status: MonitorStatus, alerts_last_day: int, now: datetime) -> str:
-    lines = [f"✅ <b>Monitor running</b> for {format_duration(now - status.started_at)}"]
+    """Return a two-line status: uptime and the last poll, then the last
+    auction search and recent alerts."""
+    uptime = format_duration(now - status.started_at)
     if status.last_poll_at is None:
-        lines.append("First poll in progress")
+        first = f"✅ Running {uptime} · first poll in progress"
     else:
         ago = format_duration(now - status.last_poll_at)
         if status.last_poll_failed:
-            lines.append(f"⚠️ Last poll failed {ago} ago; see make logs")
+            first = f"⚠️ Running {uptime} · last poll failed {ago} ago"
         else:
             errors = status.last_poll_errors
-            lines.append(
-                f"Last poll {ago} ago: {status.last_poll_listings} listings, "
-                f"{errors} error{'' if errors == 1 else 's'}"
-            )
-    if status.last_auction_poll_at is not None:
+            first = (f"✅ Running {uptime} · last poll {ago} ago, "
+                     f"{errors} error{'' if errors == 1 else 's'}")
+
+    alerts = f"{alerts_last_day} alert{'' if alerts_last_day == 1 else 's'} in 24h"
+    if status.last_auction_poll_at is None:
+        second = alerts
+    else:
         ago = format_duration(now - status.last_auction_poll_at)
-        lines.append(f"Last auction search {ago} ago")
-    lines.append(f"Alerts in the last 24h: {alerts_last_day}")
-    return "\n".join(lines)
+        second = f"Auctions {ago} ago · {alerts}"
+    return f"{first}\n{second}"
 
 
 class CommandListener:
