@@ -1,7 +1,12 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from pokemon_deal_monitor.alerts import format_alert, sample_alert, send_alerts
+from pokemon_deal_monitor.alerts import (
+    format_alert,
+    format_whole_dollars,
+    sample_alert,
+    send_alerts,
+)
 from pokemon_deal_monitor.catalog import Edition, PokemonCard, Rarity, Variant
 from pokemon_deal_monitor.ebay import EbayItem, ItemDetails
 from pokemon_deal_monitor.matcher import Match
@@ -62,7 +67,7 @@ class TestFormatAlert(unittest.TestCase):
     def test_alert_contents(self):
         self.assertEqual(
             format_alert(candidate("1", 140000)),
-            HEADING + "30% off · $1,405.00 with shipping",
+            HEADING + "30% off · $1,405 with shipping",
         )
 
     def test_unknown_shipping(self):
@@ -70,7 +75,7 @@ class TestFormatAlert(unittest.TestCase):
         item = EbayItem(**{**c.item.__dict__, "shipping_cents": None})
         deal = evaluate_deal(140000, False, c.deal.valuation)
         text = format_alert(Candidate(item, c.match, c.result, deal))
-        self.assertTrue(text.endswith("\n30% off · $1,400.00 + shipping"))
+        self.assertTrue(text.endswith("\n30% off · $1,400 + shipping"))
 
     def test_best_offer_alert(self):
         valuation = value_card({PRICECHARTING: PriceRecord(
@@ -82,21 +87,26 @@ class TestFormatAlert(unittest.TestCase):
                               evaluate_offer(210000, 500, valuation))
         self.assertEqual(
             format_alert(candidate),
-            HEADING + "Asking $2,100.00 or best offer, 5% over value",
+            HEADING + "Asking $2,100 or best offer, 5% over value",
         )
 
     def test_auction_alert(self):
         self.assertEqual(
             format_alert(auction_candidate(80000), now=START),
-            HEADING + "Bid $805.00, ends in 1h 25m · max bid $1,795.00 (10% under)",
+            HEADING + "Bid $805, ends in 1h 25m · max bid $1,795 (-10%)",
         )
 
     def test_auction_alert_without_shipping(self):
         text = format_alert(auction_candidate(80000, None), now=START)
         self.assertTrue(text.endswith(
-            "\nBid $800.00 + shipping, ends in 1h 25m"
-            " · max bid $1,800.00 (10% under before shipping)"
+            "\nBid $800 + shipping, ends in 1h 25m"
+            " · max bid $1,800 (-10% before shipping)"
         ))
+
+    def test_whole_dollars(self):
+        self.assertEqual(format_whole_dollars(140549), "$1,405")
+        self.assertEqual(format_whole_dollars(140550), "$1,406")
+        self.assertEqual(format_whole_dollars(140599, round_down=True), "$1,405")
 
     def test_alerts_are_two_lines(self):
         for text in (format_alert(candidate("1", 140000)),

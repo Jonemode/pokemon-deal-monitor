@@ -27,6 +27,13 @@ def format_dollars(cents: int) -> str:
     return f"${cents / 100:,.2f}"
 
 
+def format_whole_dollars(cents: int, round_down: bool = False) -> str:
+    """Dollars without cents, for alerts. Rounds to the nearest dollar, or
+    down, so a suggested maximum never rounds up past its target."""
+    dollars = cents // 100 if round_down else (cents + 50) // 100
+    return f"${dollars:,}"
+
+
 def listing_url(url: str) -> str:
     """Drop the search tracking eBay adds, e.g. "?_skw=...&hash=...", which
     the listing doesn't need."""
@@ -58,15 +65,16 @@ def format_alert(candidate: Candidate, now: datetime | None = None) -> str:
         f'<a href="{url}"><b>{html.escape(card.name)} · '
         f"{html.escape(card.set_name)}</b></a>"
     )
-    total = format_dollars(deal.total_cents)
+    total = format_whole_dollars(deal.total_cents)
     shipping_known = item.shipping_cents is not None
 
     if item.auction:
-        under = f"{MIN_DISCOUNT:.0%} under" + ("" if shipping_known else " before shipping")
+        under = f"-{MIN_DISCOUNT:.0%}" + ("" if shipping_known else " before shipping")
         bid = total if shipping_known else f"{total} + shipping"
+        max_bid = format_whole_dollars(deal.max_bid_cents, round_down=True)
         line = (
             f"Bid {bid}, {format_time_left(item.ends_at, now or utc_now())}"
-            f" · max bid {format_dollars(deal.max_bid_cents)} ({under})"
+            f" · max bid {max_bid} ({under})"
         )
     elif deal.offer_cents is not None:
         if deal.discount < 0:
