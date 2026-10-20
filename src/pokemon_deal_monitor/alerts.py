@@ -85,7 +85,11 @@ def format_alert(candidate: Candidate, now: datetime | None = None) -> str:
         line = f"Asking {asking} or best offer, {versus}"
     else:
         price = f"{total} with shipping" if shipping_known else f"{total} + shipping"
-        line = f"{deal.discount:.0%} off · {price}"
+        # Sets allowed over value can alert on a price above it.
+        if deal.discount < 0:
+            line = f"{-deal.discount:.0%} over value · {price}"
+        else:
+            line = f"{deal.discount:.0%} off · {price}"
     return f"{heading}\n{line}"
 
 

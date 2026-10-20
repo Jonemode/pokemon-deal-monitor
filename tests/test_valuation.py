@@ -127,6 +127,18 @@ class TestEvaluateDeal(unittest.TestCase):
             ("discount above 50%, likely a misrepresented reprint",),
         )
 
+    def test_sets_allowed_over_value(self):
+        mewtwo = PokemonCard("Mewtwo", "Wizards Black Star Promos", "3/53",
+                             Variant.NORMAL, Edition.UNLIMITED, Rarity.PROMO)
+        self.assertTrue(evaluate_deal(210000, True, self.valuation, mewtwo).qualifies)
+
+        too_high = evaluate_deal(210001, True, self.valuation, mewtwo)
+        self.assertFalse(too_high.qualifies)
+        self.assertEqual(too_high.reasons, ("price more than 5% over value",))
+
+        # Other sets still need 10% below value.
+        self.assertFalse(evaluate_deal(190000, True, self.valuation, LUGIA).qualifies)
+
     def test_other_cards_have_no_discount_ceiling(self):
         deal = evaluate_deal(20000, True, self.valuation, LUGIA)
         self.assertTrue(deal.qualifies)

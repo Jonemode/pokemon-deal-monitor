@@ -70,6 +70,12 @@ class TestFormatAlert(unittest.TestCase):
             HEADING + "30% off · $1,405 with shipping",
         )
 
+    def test_over_value_alert(self):
+        c = candidate("1", 205000)
+        deal = evaluate_deal(205500, True, c.deal.valuation)
+        text = format_alert(Candidate(c.item, c.match, c.result, deal))
+        self.assertTrue(text.endswith("\n3% over value · $2,055 with shipping"))
+
     def test_unknown_shipping(self):
         c = candidate("1", 140000)
         item = EbayItem(**{**c.item.__dict__, "shipping_cents": None})

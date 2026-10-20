@@ -25,6 +25,12 @@ TCGPLAYER_RETRY_AFTER = timedelta(hours=1)
 
 # A listing qualifies when its total is at least this far below value.
 MIN_DISCOUNT = 0.10
+# Sets with their own minimum discount for Buy It Now listings. Negative
+# allows a total up to that far over value.
+MIN_DISCOUNTS = {
+    "Wizards Black Star Promos": -0.05,
+    "Legendary Collection": -0.05,
+}
 # An auction's current bid will rise before it ends, so it qualifies only
 # when the current total is this far below value. The suggested maximum bid
 # still keeps the final total MIN_DISCOUNT below value.
@@ -152,12 +158,19 @@ def evaluate_deal(
     """
     discount = 1 - total_cents / valuation.value_cents
 
+    min_discount = MIN_DISCOUNT
+    if card is not None:
+        min_discount = MIN_DISCOUNTS.get(card.set_name, MIN_DISCOUNT)
+
     reasons = []
     if not valuation.confident:
         reasons.append("value not confident")
     # Compared in cents, since 1 - 0.9 in floating point is just under 0.1.
-    if total_cents > round(valuation.value_cents * (1 - MIN_DISCOUNT)):
-        reasons.append(f"discount below {MIN_DISCOUNT:.0%}")
+    if total_cents > round(valuation.value_cents * (1 - min_discount)):
+        if min_discount < 0:
+            reasons.append(f"price more than {-min_discount:.0%} over value")
+        else:
+            reasons.append(f"discount below {min_discount:.0%}")
     min_value = MIN_VALUE_CENTS.get(card.set_name) if card else None
     if min_value is not None and valuation.value_cents < min_value:
         reasons.append(f"value below ${min_value / 100:,.0f}")
