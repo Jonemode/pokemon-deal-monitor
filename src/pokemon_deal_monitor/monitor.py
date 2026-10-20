@@ -67,6 +67,12 @@ class PollResult:
     errors: list[str] = field(default_factory=list)
 
 
+def stops_requests(error: Exception) -> bool:
+    """Whether an error means further eBay calls this poll would fail too:
+    bad credentials or rate limiting. A network error affects one call."""
+    return isinstance(error, EbayError) and error.status in (401, 429)
+
+
 def is_graded(item: EbayItem) -> bool:
     return (item.condition or "").strip().lower() == "graded"
 
@@ -142,12 +148,10 @@ def poll_once(
         logger.info("%s Searching %s %r", progress, kind, query)
         try:
             items = client.search(query, auctions_ending_before=ending_before)
-        except EbayError as error:
+        except (EbayError, OSError) as error:
             logger.warning("Search %r failed: %s", query, error)
             poll.errors.append(f"{query}: {error}")
-            if error.status in (401, 429):
-                # Bad credentials or rate limited: further searches this
-                # poll would fail too.
+            if stops_requests(error):
                 break
             continue
 
@@ -181,10 +185,10 @@ def poll_once(
                     continue
                 try:
                     details = client.item_details(item.item_id)
-                except EbayError as error:
+                except (EbayError, OSError) as error:
                     logger.warning("Details for %s failed: %s", item.item_id, error)
                     poll.errors.append(f"details {item.item_id}: {error}")
-                    if error.status in (401, 429):
+                    if stops_requests(error):
                         can_fetch_details = False
                     continue
                 looked_up += 1

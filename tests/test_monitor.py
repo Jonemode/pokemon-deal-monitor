@@ -1,5 +1,6 @@
 import json
 import unittest
+import urllib.error
 import urllib.parse
 from datetime import datetime, timedelta, timezone
 
@@ -185,6 +186,22 @@ class TestPollOnce(unittest.TestCase):
             "neo": (500, b"server error"),
             "aquapolis": search_response(item_summary("2", UMBREON)),
         })
+
+        self.assertEqual(len(poll.errors), 1)
+        self.assertEqual(len(poll.candidates), 1)
+
+    def test_network_error_skips_only_that_search(self):
+        fake = FakeTransport({
+            "aquapolis": search_response(item_summary("2", UMBREON)),
+        })
+
+        def transport(request):
+            if "q=neo" in request.full_url:
+                raise urllib.error.URLError(ConnectionResetError(104, "reset"))
+            return fake(request)
+
+        client = EbayClient(CONFIG, transport=transport)
+        poll = poll_once(client, self.storage, queries=["neo", "aquapolis"])
 
         self.assertEqual(len(poll.errors), 1)
         self.assertEqual(len(poll.candidates), 1)

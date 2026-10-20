@@ -41,11 +41,11 @@ run:
 	PYTHONPATH=src $(PYTHON) -m pokemon_deal_monitor run
 
 # Copies the last commit, not uncommitted changes. The server's .env and
-# database are left alone.
+# database are left alone. Files are extracted as the monitor user, so the
+# running service never finds its data directory owned by root.
 deploy:
 	@git diff --quiet HEAD || echo "Warning: uncommitted changes are not deployed."
-	git archive HEAD | ssh $(DEPLOY_HOST) 'tar -x -C $(DEPLOY_DIR) \
-		&& chown -R monitor:monitor $(DEPLOY_DIR) \
+	git archive HEAD | ssh $(DEPLOY_HOST) 'sudo -u monitor tar -x --no-overwrite-dir -C $(DEPLOY_DIR) \
 		&& install -m 644 $(DEPLOY_DIR)/deploy/pokemon-deal-monitor.service /etc/systemd/system/ \
 		&& systemctl daemon-reload \
 		&& systemctl restart pokemon-deal-monitor \
