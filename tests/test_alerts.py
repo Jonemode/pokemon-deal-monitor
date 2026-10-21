@@ -8,7 +8,7 @@ from pokemon_deal_monitor.alerts import (
     sample_alert,
     send_alerts,
 )
-from pokemon_deal_monitor.catalog import Edition, PokemonCard, Rarity, Variant
+from pokemon_deal_monitor.games.pokemon.catalog import Edition, PokemonCard, Rarity, Variant
 from pokemon_deal_monitor.ebay import EbayItem, ItemDetails
 from pokemon_deal_monitor.matcher import Match
 from pokemon_deal_monitor.monitor import Candidate, PollResult

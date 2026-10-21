@@ -3,7 +3,7 @@ import unicodedata
 from dataclasses import dataclass
 from functools import lru_cache
 
-from .catalog import CARDS, PokemonCard, Rarity, Variant
+from .games.pokemon.catalog import CARDS, PokemonCard, Rarity, Variant
 
 
 @dataclass(frozen=True)

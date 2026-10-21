@@ -1,4 +1,4 @@
-"""Build data/pricecharting_ids.json, mapping catalog cards to products.
+"""Build data/pokemon/pricecharting_ids.json, mapping catalog cards to products.
 
 Run with `make pricecharting-ids` once PRICECHARTING_TOKEN is set. Searches
 one card every few seconds to stay clear of Cloudflare's rate limiting, so a
@@ -14,7 +14,7 @@ import argparse
 import json
 import sys
 
-from pokemon_deal_monitor.catalog import CARDS
+from pokemon_deal_monitor.games.pokemon.catalog import CARDS
 from pokemon_deal_monitor.config import load_pricecharting_token
 from pokemon_deal_monitor.pricecharting import (
     PRODUCT_IDS_PATH,

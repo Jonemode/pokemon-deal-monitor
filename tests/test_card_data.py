@@ -1,7 +1,7 @@
 import unittest
 from collections import Counter
 
-from pokemon_deal_monitor.catalog import Edition, Rarity, Variant, load_catalog
+from pokemon_deal_monitor.games.pokemon.catalog import Edition, Rarity, Variant, load_catalog
 
 
 EXPECTED_SET_COUNTS = {
@@ -30,7 +30,7 @@ FIRST_EDITION_SETS = {
 
 
 class TestCardData(unittest.TestCase):
-    """Integrity checks for the shipped data/cards.json catalog."""
+    """Integrity checks for the shipped data/pokemon/cards.json catalog."""
 
     @classmethod
     def setUpClass(cls):

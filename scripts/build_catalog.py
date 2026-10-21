@@ -1,4 +1,4 @@
-"""Generate data/cards.json from the PokemonTCG/pokemon-tcg-data repository.
+"""Generate data/pokemon/cards.json from the PokemonTCG/pokemon-tcg-data repository.
 
 Run with `make catalog`. The source data is pinned to a commit so the
 generated catalog is reproducible; bump SOURCE_COMMIT to pick up fixes.
@@ -14,7 +14,7 @@ SOURCE_URL = (
     f"{SOURCE_COMMIT}"
 )
 
-OUTPUT_PATH = Path(__file__).resolve().parents[1] / "data" / "cards.json"
+OUTPUT_PATH = Path(__file__).resolve().parents[1] / "data" / "pokemon" / "cards.json"
 
 RARITY_MAP = {
     "Common": "common",

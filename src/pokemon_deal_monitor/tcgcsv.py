@@ -6,8 +6,8 @@ import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from .catalog import PokemonCard, Variant
 from .ebay import USER_AGENT, to_cents
+from .games.pokemon.catalog import PokemonCard, Variant
 from .matcher import full_numbers, normalize, card_number_key
 
 

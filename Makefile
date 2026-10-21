@@ -9,7 +9,7 @@ DEPLOY_DIR = /opt/pokemon-deal-monitor
 help:
 	@echo "Available commands:"
 	@echo "  make test    - Run all unit tests"
-	@echo "  make catalog - Regenerate data/cards.json from source data"
+	@echo "  make catalog - Regenerate data/pokemon/cards.json from source data"
 	@echo "  make pricecharting-ids - Map catalog cards to PriceCharting products"
 	@echo "  make telegram-chat-id - Show the chat ID to send alerts to"
 	@echo "  make test-alert - Send a sample alert to Telegram"

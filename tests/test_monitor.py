@@ -140,11 +140,11 @@ class TestPollOnce(unittest.TestCase):
         (candidate,) = poll.candidates
         self.assertEqual(candidate.result, UpsertResult.NEW)
         self.assertEqual(
-            candidate.match.card.identifier, "Neo Genesis:9/111:holo:1st"
+            candidate.match.card.identifier, "pokemon:Neo Genesis:9/111:holo:1st"
         )
 
         stored = self.storage.get_listing("1")
-        self.assertEqual(stored.card_identifier, "Neo Genesis:9/111:holo:1st")
+        self.assertEqual(stored.card_identifier, "pokemon:Neo Genesis:9/111:holo:1st")
         self.assertEqual(stored.match_confidence, 1.0)
 
     def test_unmatched_listing_is_stored_but_not_candidate(self):

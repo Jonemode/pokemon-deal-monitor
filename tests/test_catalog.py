@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from pokemon_deal_monitor.catalog import (
+from pokemon_deal_monitor.games.pokemon.catalog import (
     Edition,
     PokemonCard,
     Rarity,
@@ -119,7 +119,7 @@ class TestCatalog(unittest.TestCase):
 
         self.assertEqual(
             card.identifier,
-            "Neo Genesis:9/111:holo:1st",
+            "pokemon:Neo Genesis:9/111:holo:1st",
         )
 
 

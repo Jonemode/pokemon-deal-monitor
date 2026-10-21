@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from pokemon_deal_monitor.catalog import Edition, PokemonCard, Rarity, Variant
+from pokemon_deal_monitor.games.pokemon.catalog import Edition, PokemonCard, Rarity, Variant
 from pokemon_deal_monitor.pricecharting import PriceChartingError, PriceChartingPrice
 from pokemon_deal_monitor.storage import PriceRecord, Storage
 from pokemon_deal_monitor.tcgcsv import TcgPrice

@@ -4,7 +4,7 @@ import unittest
 import urllib.parse
 from pathlib import Path
 
-from pokemon_deal_monitor.catalog import Edition, PokemonCard, Rarity, Variant
+from pokemon_deal_monitor.games.pokemon.catalog import Edition, PokemonCard, Rarity, Variant
 from pokemon_deal_monitor.pricecharting import (
     PriceChartingClient,
     PriceChartingError,

@@ -5,7 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from .catalog import CARDS, PokemonCard
+from .games.pokemon.catalog import CARDS, PokemonCard
 from .pricecharting import PriceChartingClient, PriceChartingError
 from .storage import PriceRecord, Storage, utc_now
 from .tcgcsv import TcgPrice, fetch_prices
@@ -51,7 +51,7 @@ MIN_VALUE_CENTS = {
 # since a low current bid says nothing about whether it's a reprint.
 MAX_PLAUSIBLE_DISCOUNTS = {
     # 30th Anniversary Lugia reprints listed as Aquapolis.
-    "Aquapolis:149/147:holo:unlimited": 0.50,
+    "pokemon:Aquapolis:149/147:holo:unlimited": 0.50,
 }
 # A TCGplayer price this many times below PriceCharting's is flagged as a
 # warning on the alert, since it can mean a mismatched or stale product.

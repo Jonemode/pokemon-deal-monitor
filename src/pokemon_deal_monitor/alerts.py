@@ -6,8 +6,8 @@ import urllib.parse
 from collections.abc import Callable
 from datetime import datetime, tzinfo
 
-from .catalog import CARDS
 from .ebay import EbayItem, ItemDetails
+from .games.pokemon.catalog import CARDS
 from .matcher import Match
 from .monitor import AUCTION_WINDOW, Candidate, PollResult
 from .storage import PriceRecord, Storage, UpsertResult, utc_now
@@ -180,7 +180,8 @@ def send_watch_alerts(
 
 def sample_alert() -> str:
     """Return an example alert built from made-up prices, for testing setup."""
-    card = next(c for c in CARDS if c.identifier == "Neo Genesis:9/111:holo:1st")
+    card = next(c for c in CARDS
+                if c.identifier == "pokemon:Neo Genesis:9/111:holo:1st")
     now = utc_now()
     valuation = value_card({
         PRICECHARTING: PriceRecord(card.identifier, PRICECHARTING, now,

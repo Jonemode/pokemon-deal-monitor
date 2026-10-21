@@ -69,6 +69,13 @@ MIGRATIONS = [
     UPDATE listings SET details_fetched_at = NULL
     WHERE card_condition IS NULL AND language IS NULL;
     """,
+    # Card identifiers start with their game, all Pokémon until now.
+    # Watched cards keep their "watch:" identifiers.
+    """
+    UPDATE listings SET card_identifier = 'pokemon:' || card_identifier
+    WHERE card_identifier IS NOT NULL AND card_identifier NOT LIKE 'watch:%';
+    UPDATE prices SET card_identifier = 'pokemon:' || card_identifier;
+    """,
 ]
 
 

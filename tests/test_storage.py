@@ -26,7 +26,7 @@ LUGIA = Listing(
     url="https://www.ebay.com/itm/123456789",
     price_cents=100_000,
     shipping_cents=500,
-    card_identifier="Neo Genesis:9/111:holo:1st",
+    card_identifier="pokemon:Neo Genesis:9/111:holo:1st",
     match_confidence=1.0,
 )
 
@@ -71,6 +71,38 @@ class TestStorage(unittest.TestCase):
                 stored = storage.get_listing("1")
                 self.assertIsNone(stored.condition)
                 self.assertTrue(stored.shipping_known)
+
+    def test_identifiers_gain_their_game(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "monitor.db"
+            connection = sqlite3.connect(path)
+            connection.executescript(
+                "".join(MIGRATIONS[:5]) + " PRAGMA user_version = 5;"
+            )
+            for item_id, identifier in (("1", "Neo Genesis:9/111:holo:1st"),
+                                        ("2", "watch:Cornholio"), ("3", None)):
+                connection.execute(
+                    "INSERT INTO listings (item_id, title, url, price_cents, "
+                    "shipping_cents, currency, card_identifier, first_seen_at, "
+                    "last_seen_at) VALUES (?, 't', 'u', 100, 0, 'USD', ?, ?, ?)",
+                    (item_id, identifier, START.isoformat(), START.isoformat()),
+                )
+            connection.execute(
+                "INSERT INTO prices (card_identifier, source, raw_cents, "
+                "fetched_at) VALUES ('Neo Genesis:9/111:holo:1st', "
+                "'tcgplayer', 100, ?)", (START.isoformat(),),
+            )
+            connection.commit()
+            connection.close()
+
+            with Storage(path) as storage:
+                self.assertEqual(
+                    [storage.get_listing(i).card_identifier for i in "123"],
+                    ["pokemon:Neo Genesis:9/111:holo:1st", "watch:Cornholio",
+                     None],
+                )
+                self.assertIn("tcgplayer", storage.get_prices(
+                    "pokemon:Neo Genesis:9/111:holo:1st"))
 
     def test_condition_and_unknown_shipping(self):
         listing = replace(LUGIA, condition="Ungraded", shipping_known=False)

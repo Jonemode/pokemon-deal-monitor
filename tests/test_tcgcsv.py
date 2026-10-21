@@ -1,6 +1,6 @@
 import unittest
 
-from pokemon_deal_monitor.catalog import Edition, PokemonCard, Rarity, Variant
+from pokemon_deal_monitor.games.pokemon.catalog import Edition, PokemonCard, Rarity, Variant
 from pokemon_deal_monitor.tcgcsv import TCGCSV_URL, fetch_prices, sub_type_name
 
 
