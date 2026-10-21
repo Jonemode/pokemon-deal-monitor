@@ -89,7 +89,7 @@ class FakeTransport:
 
         params = urllib.parse.parse_qs(urllib.parse.urlsplit(request.full_url).query)
         query = params["q"][0]
-        if "AUCTION" in params["filter"][0]:
+        if "buyingOptions:{AUCTION}" in params.get("filter", [""])[0]:
             query = "auction:" + query
         response = self.searches.get(query, search_response())
         if isinstance(response, list):

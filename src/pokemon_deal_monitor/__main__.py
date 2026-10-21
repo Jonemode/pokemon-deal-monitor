@@ -5,7 +5,13 @@ import time
 from collections.abc import Callable
 from datetime import timedelta
 
-from .alerts import format_dollars, format_time_left, sample_alert, send_alerts
+from .alerts import (
+    format_dollars,
+    format_time_left,
+    sample_alert,
+    send_alerts,
+    send_watch_alerts,
+)
 from .config import (
     TelegramConfig,
     load_ebay_config,
@@ -24,6 +30,7 @@ from .status import CommandListener, MonitorStatus, format_status
 from .storage import Storage, utc_now
 from .telegram import TelegramClient, TelegramError
 from .valuation import Pricer
+from .watch import poll_watches
 
 
 logger = logging.getLogger("pokemon_deal_monitor")
@@ -165,14 +172,29 @@ def wait_until(deadline: float, listener: CommandListener | None) -> None:
             time.sleep(min(remaining, COMMAND_WAIT_SECONDS))
 
 
-def poll_and_alert(client, storage, pricer, notify, auctions=False) -> PollResult:
-    poll = poll_once(client, storage, pricer=pricer, auctions=auctions)
+def poll_and_alert(client, storage, pricer, notify, auctions=False,
+                   quiet_hours=None) -> PollResult:
+    poll = poll_once(client, storage, pricer=pricer, auctions=auctions,
+                     quiet_hours=quiet_hours)
     report(poll)
     if notify is not None:
-        sent = send_alerts(poll, storage, notify)
+        timezone = quiet_hours.timezone if quiet_hours else None
+        sent = send_alerts(poll, storage, notify, timezone=timezone)
         if sent:
             logger.info("Sent %d alerts", sent)
     return poll
+
+
+def watch_and_alert(client, storage, notify) -> None:
+    result = poll_watches(client, storage)
+    for hit in result.hits:
+        logger.info("[watch] %s | %s | %s", hit.watch.name,
+                    format_dollars(hit.item.price_cents), hit.item.url)
+        logger.info("    %s", hit.item.title)
+    if notify is not None:
+        sent = send_watch_alerts(result.hits, storage, notify)
+        if sent:
+            logger.info("Sent %d watch alerts", sent)
 
 
 def main() -> None:
@@ -212,6 +234,9 @@ def main() -> None:
         logger.warning("No PriceCharting product IDs; run make pricecharting-ids")
 
     notify = build_notifier()
+    telegram = telegram_config()
+    # Auctions ending during quiet hours are searched for in the evening.
+    quiet_hours = telegram.quiet_hours if telegram else None
 
     with Storage() as storage:
         pricer = Pricer(
@@ -221,7 +246,9 @@ def main() -> None:
         )
         if args.command == "poll":
             poll_and_alert(client, storage, pricer, notify)
-            poll_and_alert(client, storage, pricer, notify, auctions=True)
+            poll_and_alert(client, storage, pricer, notify, auctions=True,
+                           quiet_hours=quiet_hours)
+            watch_and_alert(client, storage, notify)
             return
 
         # Auctions are searched on every third poll at the default interval,
@@ -242,8 +269,12 @@ def main() -> None:
                 if auctions_due:
                     last_auction_poll = started
                     poll = poll_and_alert(client, storage, pricer, notify,
-                                          auctions=True)
+                                          auctions=True,
+                                          quiet_hours=quiet_hours)
                     status.record(poll, auctions=True, now=utc_now())
+                    # Watched cards share the auctions' schedule, keeping
+                    # eBay calls under the daily limit.
+                    watch_and_alert(client, storage, notify)
             except Exception:
                 # Keep the monitor alive through transient network failures.
                 logger.exception("Poll failed")

@@ -1,7 +1,7 @@
 import os
 import re
 from dataclasses import dataclass
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -30,6 +30,18 @@ class QuietHours:
         if self.start <= self.end:
             return self.start <= local < self.end
         return local >= self.start or local < self.end
+
+    def next_window(self, moment: datetime) -> tuple[datetime, datetime]:
+        """Return the start and end of the next window starting after
+        moment."""
+        local = moment.astimezone(self.timezone)
+        start = datetime.combine(local.date(), self.start, self.timezone)
+        if start <= local:
+            start += timedelta(days=1)
+        end = datetime.combine(start.date(), self.end, self.timezone)
+        if end <= start:
+            end += timedelta(days=1)
+        return start, end
 
 
 @dataclass(frozen=True)

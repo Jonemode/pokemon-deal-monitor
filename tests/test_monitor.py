@@ -2,10 +2,12 @@ import json
 import unittest
 import urllib.error
 import urllib.parse
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from pokemon_deal_monitor.ebay import EbayClient
-from pokemon_deal_monitor.monitor import poll_once
+from pokemon_deal_monitor.config import QuietHours
+from pokemon_deal_monitor.monitor import auction_cutoff, poll_once
 from pokemon_deal_monitor.storage import PriceRecord, Storage, UpsertResult
 from pokemon_deal_monitor.valuation import PRICECHARTING, TCGPLAYER, value_card
 
@@ -23,6 +25,13 @@ START = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
 
 LUGIA = "Lugia 9/111 Neo Genesis 1st Edition Holo LP"
 UMBREON = "Umbreon H29/H32 Aquapolis Holo LP"
+
+PACIFIC = ZoneInfo("America/Los_Angeles")
+QUIET = QuietHours(time(22), time(7), PACIFIC)
+
+
+def pacific(day, hour, minute=0):
+    return datetime(2026, 10, day, hour, minute, tzinfo=PACIFIC)
 
 
 class FixedPricer:
@@ -283,6 +292,16 @@ class TestPollOnce(unittest.TestCase):
         self.assertEqual(deals["1"].max_bid_cents, 179500)
         self.assertFalse(deals["2"].qualifies)
 
+    def test_evening_sweep_searches_auctions_ending_overnight(self):
+        transport = FakeTransport()
+        client = EbayClient(CONFIG, transport=transport)
+        poll_once(client, self.storage, queries=["neo"], now=pacific(17, 20, 30),
+                  pricer=FixedPricer(), auctions=True, quiet_hours=QUIET)
+
+        # 07:00 Pacific daylight time.
+        self.assertIn("itemEndDate:[..2026-10-18T14:00:00Z]",
+                      urllib.parse.unquote(transport.search_requests[0].full_url))
+
     def test_auction_alerted_once_as_bids_rise(self):
         def poll(bid, now):
             client = EbayClient(CONFIG, transport=FakeTransport({
@@ -325,6 +344,23 @@ class TestPollOnce(unittest.TestCase):
         self.poll({"neo": search_response()}, now=START + timedelta(hours=25))
 
         self.assertIsNotNone(self.storage.get_listing("1").ended_at)
+
+
+class TestAuctionCutoff(unittest.TestCase):
+
+    def test_two_hours_ahead_by_default(self):
+        now = pacific(17, 20, 30)
+        self.assertEqual(auction_cutoff(now), now + timedelta(hours=2))
+
+    def test_evening_extends_to_end_of_quiet_hours(self):
+        for now in (pacific(17, 20), pacific(17, 21, 59)):
+            self.assertEqual(auction_cutoff(now, QUIET), pacific(18, 7))
+
+    def test_daytime_and_night_keep_two_hours(self):
+        for now in (pacific(17, 19, 59), pacific(17, 22), pacific(18, 3),
+                    pacific(18, 12)):
+            self.assertEqual(auction_cutoff(now, QUIET),
+                             now + timedelta(hours=2), now)
 
 
 if __name__ == "__main__":

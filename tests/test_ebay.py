@@ -239,6 +239,30 @@ class TestEbayClient(unittest.TestCase):
         self.assertEqual(item.ends_at,
                          datetime(2026, 10, 17, 13, 30, tzinfo=timezone.utc))
 
+    def test_full_auction_pages_fetch_the_next(self):
+        transport = FakeTransport({"auction:q": [
+            search_response(auction_summary("1", "Lugia"),
+                            auction_summary("2", "Lugia")),
+            search_response(auction_summary("3", "Lugia")),
+        ]})
+        items = EbayClient(CONFIG, transport=transport).search(
+            "q", limit=2,
+            auctions_ending_before=datetime(2026, 10, 17, tzinfo=timezone.utc),
+        )
+
+        self.assertEqual([i.item_id for i in items], ["1", "2", "3"])
+        offsets = [
+            urllib.parse.parse_qs(urllib.parse.urlsplit(r.full_url).query)
+            .get("offset") for r in transport.search_requests
+        ]
+        self.assertEqual(offsets, [None, ["2"]])
+
+    def test_buy_it_now_search_takes_one_page(self):
+        transport = FakeTransport({"q": search_response(
+            item_summary("1", "Lugia"), item_summary("2", "Lugia"))})
+        EbayClient(CONFIG, transport=transport).search("q", limit=2)
+        self.assertEqual(len(transport.search_requests), 1)
+
     def test_auction_current_bid_not_buy_it_now_price(self):
         summary = auction_summary("1", "Lugia", bid="250.00")
         summary["price"] = {"value": "900.00", "currency": "USD"}

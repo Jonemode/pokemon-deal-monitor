@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from pokemon_deal_monitor.alerts import (
     format_alert,
@@ -67,21 +68,21 @@ class TestFormatAlert(unittest.TestCase):
     def test_alert_contents(self):
         self.assertEqual(
             format_alert(candidate("1", 140000)),
-            HEADING + "30% off · $1,405 with shipping",
+            HEADING + "30% off · $1,405 shipped",
         )
 
     def test_over_value_alert(self):
         c = candidate("1", 205000)
         deal = evaluate_deal(205500, True, c.deal.valuation)
         text = format_alert(Candidate(c.item, c.match, c.result, deal))
-        self.assertTrue(text.endswith("\n3% over value · $2,055 with shipping"))
+        self.assertTrue(text.endswith("\n3% over · $2,055 shipped"))
 
     def test_unknown_shipping(self):
         c = candidate("1", 140000)
         item = EbayItem(**{**c.item.__dict__, "shipping_cents": None})
         deal = evaluate_deal(140000, False, c.deal.valuation)
         text = format_alert(Candidate(item, c.match, c.result, deal))
-        self.assertTrue(text.endswith("\n30% off · $1,400 + shipping"))
+        self.assertTrue(text.endswith("\n30% off · $1,400 + ship"))
 
     def test_best_offer_alert(self):
         valuation = value_card({PRICECHARTING: PriceRecord(
@@ -93,20 +94,34 @@ class TestFormatAlert(unittest.TestCase):
                               evaluate_offer(210000, 500, valuation))
         self.assertEqual(
             format_alert(candidate),
-            HEADING + "Asking $2,100 or best offer, 5% over value",
+            HEADING + "$2,100 obo · 5% over",
         )
 
     def test_auction_alert(self):
         self.assertEqual(
             format_alert(auction_candidate(80000), now=START),
-            HEADING + "Bid $805, ends in 1h 25m · max bid $1,795 (-10%)",
+            HEADING + "Bid $805 · 1h 25m left · max $1,795",
         )
+
+    def test_overnight_auction_gives_local_end_time(self):
+        c = auction_candidate(80000)
+        item = EbayItem(**{**c.item.__dict__,
+                           "ends_at": START + timedelta(hours=10, minutes=10)})
+        text = format_alert(Candidate(item, c.match, c.result, c.deal),
+                            now=START, timezone=ZoneInfo("America/Los_Angeles"))
+        # 22:10 UTC is 3:10pm Pacific daylight time.
+        self.assertTrue(text.endswith("\nBid $805 · ends 3:10pm"
+                                      " · max $1,795"), text)
+
+    def test_auction_ending_soon_keeps_time_left(self):
+        text = format_alert(auction_candidate(80000), now=START,
+                            timezone=ZoneInfo("America/Los_Angeles"))
+        self.assertIn("1h 25m left", text)
 
     def test_auction_alert_without_shipping(self):
         text = format_alert(auction_candidate(80000, None), now=START)
         self.assertTrue(text.endswith(
-            "\nBid $800 + shipping, ends in 1h 25m"
-            " · max bid $1,800 (-10% before shipping)"
+            "\nBid $800 + ship · 1h 25m left · max $1,800 + ship"
         ))
 
     def test_whole_dollars(self):

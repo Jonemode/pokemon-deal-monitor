@@ -2,6 +2,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
+from .config import QuietHours
 from .ebay import EbayClient, EbayError, EbayItem, ItemDetails
 from .matcher import Match, match_listing
 from .storage import Listing, Storage, UpsertResult, utc_now
@@ -35,6 +36,10 @@ DEFAULT_POLL_INTERVAL_SECONDS = 300
 # current bid means something, early enough to place a bid.
 AUCTION_POLL_INTERVAL = timedelta(minutes=15)
 AUCTION_WINDOW = timedelta(hours=2)
+# In the evening, this long before quiet hours start, auctions ending any
+# time during quiet hours are searched too, so bids can be placed before
+# going to sleep.
+EVENING_SWEEP = timedelta(hours=2)
 
 # Searches only return the newest listings, so a listing missing from one
 # poll may still be live. Only treat it as ended after this long unseen.
@@ -117,6 +122,21 @@ def value_listing(
     return deal
 
 
+def auction_cutoff(
+    now: datetime, quiet_hours: QuietHours | None = None
+) -> datetime:
+    """Return when the auctions to search must end by: within
+    AUCTION_WINDOW, or during the evening sweep, by the end of the coming
+    quiet hours."""
+    cutoff = now + AUCTION_WINDOW
+    if quiet_hours is None or quiet_hours.contains(now):
+        return cutoff
+    start, end = quiet_hours.next_window(now)
+    if start - now > EVENING_SWEEP:
+        return cutoff
+    return max(cutoff, end)
+
+
 def poll_once(
     client: EbayClient,
     storage: Storage,
@@ -124,11 +144,12 @@ def poll_once(
     now: datetime | None = None,
     pricer: Pricer | None = None,
     auctions: bool = False,
+    quiet_hours: QuietHours | None = None,
 ) -> PollResult:
     """Search eBay once, store every listing, and return alert candidates.
 
     Searches Buy It Now listings, or with auctions, auctions ending within
-    AUCTION_WINDOW.
+    AUCTION_WINDOW, or in the evening before quiet hours, by their end.
 
     A candidate is a matched listing not yet alerted on at this price that
     is new, changed price, or qualifies as a deal. Unchanged deals stay
@@ -140,7 +161,10 @@ def poll_once(
     # Cleared when eBay rate limits or rejects a details lookup, since the
     # rest would fail too. Listings without details wait for the next poll.
     can_fetch_details = True
-    ending_before = now + AUCTION_WINDOW if auctions else None
+    ending_before = auction_cutoff(now, quiet_hours) if auctions else None
+    if ending_before is not None and ending_before > now + AUCTION_WINDOW:
+        logger.info("Including auctions ending overnight, by %s",
+                    ending_before.isoformat(timespec="minutes"))
     kind = "auctions" if auctions else "Buy It Now"
 
     for index, query in enumerate(queries, 1):

@@ -22,6 +22,9 @@ MARKETPLACE_ID = "EBAY_US"
 CCG_INDIVIDUAL_CARDS_CATEGORY = "183454"
 MAX_PRICE_USD = 5000
 PAGE_LIMIT = 200
+# An evening auction search spans the night and can fill a page; later
+# pages are fetched up to this many in all.
+MAX_AUCTION_PAGES = 5
 
 # Refresh the access token this many seconds before eBay says it expires.
 TOKEN_EXPIRY_MARGIN = 60
@@ -248,7 +251,8 @@ class EbayClient:
         auctions_ending_before: datetime | None = None,
     ) -> list[EbayItem]:
         """Return the newest Buy It Now card listings matching a query, or
-        with auctions_ending_before, auctions ending by then, soonest first."""
+        with auctions_ending_before, auctions ending by then, soonest first,
+        from up to MAX_AUCTION_PAGES pages."""
         if auctions_ending_before is None:
             buying_filter = "buyingOptions:{FIXED_PRICE}"
             sort = "newlyListed"
@@ -258,21 +262,48 @@ class EbayClient:
                 f"itemEndDate:[..{format_time(auctions_ending_before)}]"
             )
             sort = "endingSoonest"
+        auction = auctions_ending_before is not None
+        summaries = []
+        for page in range(MAX_AUCTION_PAGES if auction else 1):
+            params = urllib.parse.urlencode({
+                "q": query,
+                "category_ids": CCG_INDIVIDUAL_CARDS_CATEGORY,
+                "filter": (
+                    f"{buying_filter},"
+                    f"price:[..{MAX_PRICE_USD}],priceCurrency:USD"
+                ),
+                "sort": sort,
+                "limit": str(limit),
+                **({"offset": str(page * limit)} if page else {}),
+            })
+            url = f"{self.host}/buy/browse/v1/item_summary/search?{params}"
+            page_summaries = self._get_json(url).get("itemSummaries", [])
+            summaries += page_summaries
+            if len(page_summaries) < limit:
+                break
+
+        items = (parse_item(summary, auction) for summary in summaries)
+        return [item for item in items if item is not None]
+
+    def search_everywhere(
+        self, query: str, limit: int = PAGE_LIMIT
+    ) -> list[EbayItem]:
+        """Return the newest listings matching a query in any category, at
+        any price, Buy It Now or auction. For watched cards outside the
+        Pokémon catalog."""
         params = urllib.parse.urlencode({
             "q": query,
-            "category_ids": CCG_INDIVIDUAL_CARDS_CATEGORY,
-            "filter": (
-                f"{buying_filter},"
-                f"price:[..{MAX_PRICE_USD}],priceCurrency:USD"
-            ),
-            "sort": sort,
+            "filter": "buyingOptions:{FIXED_PRICE|AUCTION}",
+            "sort": "newlyListed",
             "limit": str(limit),
         })
         url = f"{self.host}/buy/browse/v1/item_summary/search?{params}"
 
-        auction = auctions_ending_before is not None
         summaries = self._get_json(url).get("itemSummaries", [])
-        items = (parse_item(summary, auction) for summary in summaries)
+        items = (
+            parse_item(summary, "AUCTION" in summary.get("buyingOptions", []))
+            for summary in summaries
+        )
         return [item for item in items if item is not None]
 
     def item_details(self, item_id: str) -> ItemDetails:
