@@ -1,6 +1,7 @@
 import unittest
 
-from pokemon_deal_monitor.matcher import match_listing, normalize
+from pokemon_deal_monitor.games.pokemon.matcher import RULES
+from pokemon_deal_monitor.matcher import normalize
 
 
 # Realistic eBay titles and the catalog identifiers they should match.
@@ -209,7 +210,7 @@ class TestListingMatcher(unittest.TestCase):
     def test_matching_titles(self):
         for title, expected in MATCHING_TITLES:
             with self.subTest(title=title):
-                matches = match_listing(title)
+                matches = RULES.match(title)
                 self.assertEqual(
                     sorted(match.card.identifier for match in matches),
                     sorted(expected),
@@ -218,22 +219,22 @@ class TestListingMatcher(unittest.TestCase):
     def test_rejected_titles(self):
         for title in REJECTED_TITLES:
             with self.subTest(title=title):
-                self.assertEqual(match_listing(title), [])
+                self.assertEqual(RULES.match(title), [])
 
     def test_confidence_with_all_evidence(self):
-        (match,) = match_listing("Lugia 9/111 Neo Genesis 1st Edition Holo")
+        (match,) = RULES.match("Lugia 9/111 Neo Genesis 1st Edition Holo")
         self.assertEqual(match.confidence, 1.0)
 
     def test_confidence_without_set(self):
-        (match,) = match_listing("Lugia 9/111 1st Edition Holo")
+        (match,) = RULES.match("Lugia 9/111 1st Edition Holo")
         self.assertEqual(match.confidence, 0.7)
 
     def test_confidence_without_number(self):
-        (match,) = match_listing("Lugia Neo Genesis 1st Edition Holo")
+        (match,) = RULES.match("Lugia Neo Genesis 1st Edition Holo")
         self.assertEqual(match.confidence, 0.6)
 
     def test_unexpected_first_edition_lowers_confidence(self):
-        (match,) = match_listing("Umbreon H29/H32 Aquapolis 1st Edition Holo")
+        (match,) = RULES.match("Umbreon H29/H32 Aquapolis 1st Edition Holo")
         self.assertEqual(match.confidence, 0.8)
 
     def test_normalize(self):

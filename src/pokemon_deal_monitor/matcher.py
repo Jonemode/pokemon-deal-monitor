@@ -1,14 +1,20 @@
+"""Matching eBay titles to catalog cards.
+
+The engine here weighs the evidence every game's titles carry: the card's
+name, its number and its set. Each game subclasses TitleRules with how its
+sellers write those, and with checks for the printings it tells apart.
+"""
+
 import re
 import unicodedata
 from dataclasses import dataclass
-from functools import lru_cache
 
-from .games.pokemon.catalog import CARDS, PokemonCard, Rarity, Variant
+from .catalog import Card
 
 
 @dataclass(frozen=True)
 class Match:
-    card: PokemonCard
+    card: Card
     confidence: float
 
 
@@ -18,135 +24,27 @@ NAME_WEIGHT = 0.3
 FULL_NUMBER_WEIGHT = 0.4
 PARTIAL_NUMBER_WEIGHT = 0.2
 SET_WEIGHT = 0.3
-UNEXPECTED_FIRST_EDITION_PENALTY = 0.2
 MIN_CONFIDENCE = 0.5
 
-SET_ALIASES = {
-    "Base Set": ["base set", "base"],
-    "Neo Genesis": ["neo genesis", "neo gen", "genesis"],
-    "Neo Discovery": ["neo discovery", "discovery"],
-    "Neo Revelation": ["neo revelation", "neo rev", "revelation"],
-    "Neo Destiny": ["neo destiny", "destiny"],
-    "Expedition": ["expedition base set", "expedition"],
-    "Aquapolis": ["aquapolis"],
-    "Skyridge": ["skyridge", "sky ridge"],
-    "Southern Islands": ["southern islands", "southern island"],
-    "Legendary Collection": ["legendary collection", "legendary coll"],
-    "Wizards Black Star Promos": [
-        "wizards black star promos", "wizards black star promo",
-        "wotc black star promos", "wotc black star promo",
-        "black star promos", "black star promo",
-        "wizards promo", "wotc promos", "wotc promo",
-    ],
-}
+# A title naming this many different catalog cards is a multi-card listing.
+MAX_DISTINCT_NAMES = 2
 
-# Vintage sets outside the target list. A title naming one of these and no
-# target set is about some other card.
-OTHER_SET_ALIASES = [
-    "base set 2", "base 2", "jungle", "fossil", "team rocket",
-    "gym heroes", "gym challenge",
-    "nintendo black star promo", "nintendo promo",
-]
-
-NAME_ALIASES = {
-    "Ho-Oh": ["hooh"],
-    "Porygon2": ["porygon 2"],
-    # Printed as "_____'s Pikachu", which normalizes to "s pikachu".
-    "Birthday Pikachu": ["s pikachu"],
-}
-
-# Cards are named with these prefixes in the catalog, so "Dark Charizard"
-# must not count as evidence for plain Charizard, nor "Team Rocket's
-# Meowth" ("team rocket s meowth") for plain Meowth.
-NAME_PREFIXES = (
-    "dark ", "light ", "shining ", "s ", "cool ", "flying ", "surfing ",
-    "birthday ",
-)
-
-WORD_PREFIXES = tuple(" " + prefix for prefix in NAME_PREFIXES)
-
-# Sets where the same Pokemon also has a non-holo rare, so a title without
-# a card number must say it is the holo.
-SETS_WITH_NON_HOLO_DUPLICATES = {"Expedition", "Aquapolis", "Skyridge"}
-
-# Crystal cards sharing a name with a regular holo in the same set, such as
-# Aquapolis Kingdra. Sellers rarely write "crystal", so without that word
-# these need their number; otherwise the cheaper holo is assumed, which can
-# undervalue a crystal but never makes a holo look like a crystal bargain.
-CRYSTAL_NAME_CLASHES = {
-    (card.set_name, card.name)
-    for card in CARDS
-    if card.rarity == Rarity.CRYSTAL
-    and any(
-        other.set_name == card.set_name and other.name == card.name
-        and other.rarity != Rarity.CRYSTAL
-        for other in CARDS
-    )
-}
-
-# Sets where each targeted card has a single English printing, so the
-# title needn't say holo or reverse holo. In Southern Islands the six
-# targeted cards only exist as reverse holos.
-SINGLE_PRINTING_SETS = {"Southern Islands", "Wizards Black Star Promos"}
-
-# Sets whose titles must include the card's number. Promos repeat names
-# (four Pikachus) and modern Black Star Promos reuse the set name, so the
-# number is the only reliable way to tell them apart.
-NUMBER_REQUIRED_SETS = {"Wizards Black Star Promos"}
-
+# Titles of listings that are never a single raw card, in any game.
 REJECT_PATTERNS = [
     # Graded cards, including grades written without a space ("PSA7").
     r"\b(?:psa|bgs|cgc|sgc|beckett|graded|slabbed|slab)\b",
     r"\b(?:psa|bgs|cgc|sgc)\d",
     # Grade labels copied from a slab, e.g. "NM-MT 8" or "GEM MINT 10".
     r"\b(?:nm mt|gem mt|gem mint|mint) \d{1,2}\b(?!/)",
-    # Modern reprints of vintage cards.
-    r"\b(?:celebrations|classic collection|evolutions|25th|30th|reprint)\b",
-    # Non-English printings.
-    r"\b(?:japanese|japan|jpn|korean|chinese|german|french|italian"
-    r"|spanish|portuguese|dutch|jp|ita|foreign)\b",
-    # Markers seen on Japanese listings sold as "Southern Island" and similar.
-    r"\b(?:old back|pokeca|commemorati)",
     # Fakes and customs.
     r"\b(?:proxy|custom|orica|fake|replica)\b",
     # Multi-card listings.
     # Not "sealed": 1st Edition Machamp is commonly sold still in its
     # starter deck shrink wrap.
     r"\b(?:lot|bundle|complete set|\d+ card set)\b",
-    # Stamped and special promo versions, priced apart from the plain card.
-    # A "1st Edition stamp" is the edition mark, not a special version.
-    r"\b(?:prerelease|pre release|winner)\b",
-    r"(?<!edition )(?<!1st ed )(?<!1st )\bstamp(?:ed)?\b",
-    # Modern promo codes such as SWSH050, SM210 or SVP 085.
-    r"\b(?:swsh|sm|xy|bw|dp|hgss|svp|sv|mep) ?\d{1,3}\b",
-    # Mega Evolutions, and the Mega Evolution series, came long after WotC.
-    r"\bmega\b",
     # Condition is deliberately not judged from titles, where "HP" usually
     # means hit points; eBay's Card Condition field is used instead.
 ]
-REJECT_PATTERN = re.compile("|".join(f"(?:{p})" for p in REJECT_PATTERNS))
-
-# A title naming this many different catalog cards is a multi-card listing.
-MAX_DISTINCT_NAMES = 2
-
-FIRST_EDITION_PATTERN = re.compile(r"\b(?:1st|first ed|1 ?ed\b)")
-NOT_FIRST_EDITION_PATTERN = re.compile(r"\b(?:no|not|non) (?:1st|first)\b")
-UNLIMITED_PATTERN = re.compile(r"\b(?:unlimited|unl)\b")
-NON_HOLO_PATTERN = re.compile(r"\bnon ?holo|\bno holo\b")
-REVERSE_HOLO_PATTERN = re.compile(
-    r"\breverse\b|\brev holo\b|\bfirework|\bswirl|\bcosmo"
-)
-# Sellers label the non-holo version of a reverse holo card "Regular".
-REGULAR_PATTERN = re.compile(r"\bregular\b")
-HOLO_PATTERN = re.compile(r"\bholo|\bfoil\b")
-CRYSTAL_PATTERN = re.compile(r"\bcrystal\b")
-
-FULL_NUMBER_PATTERN = re.compile(r"\b(h?)0*(\d{1,3}) ?/ ?(h?)0*(\d{1,3})\b")
-PARTIAL_NUMBER_PATTERN = re.compile(
-    r"#\s?(h?)0*(\d{1,3})\b|\b(h)0*(\d{1,2})\b"
-    # Promo numbers are also written "No. 4" or "Promo 4".
-    r"|\b(?:no|promo) ?#?0*(\d{1,3})\b"
-)
 
 
 def normalize(text: str) -> str:
@@ -157,188 +55,182 @@ def normalize(text: str) -> str:
     return text.strip()
 
 
-def full_numbers(text: str) -> set[str]:
-    return {
-        f"{m[1]}{m[2]}/{m[3]}{m[4]}"
-        for m in FULL_NUMBER_PATTERN.finditer(text)
-    }
+class TitleRules:
+    """How one game's sellers title its cards, and the engine that matches
+    titles against its catalog.
 
-
-def partial_numbers(text: str) -> set[str]:
-    numbers = set()
-    for m in PARTIAL_NUMBER_PATTERN.finditer(text):
-        if m[2] is not None:
-            numbers.add(f"{m[1]}{m[2]}")
-        elif m[4] is not None:
-            numbers.add(f"{m[3]}{m[4]}")
-        else:
-            numbers.add(m[5])
-    return numbers
-
-
-@lru_cache(maxsize=None)
-def card_number_key(number: str) -> tuple[str, str]:
-    """Return the normalized full number and numerator for a catalog card."""
-    (full,) = full_numbers(normalize(number))
-    return full, full.split("/")[0]
-
-
-@lru_cache(maxsize=None)
-def name_patterns(name: str) -> list[re.Pattern]:
-    names = [normalize(name)] + NAME_ALIASES.get(name, [])
-    return [re.compile(rf"\b{re.escape(n)}\b") for n in names]
-
-
-def detect_sets(text: str) -> tuple[set[str], bool]:
-    """Return target sets named in the title and whether another set is.
-
-    Aliases are matched longest first and consumed, so "expedition base set"
-    is not also read as Base Set, and "base set 2" is not read as Base Set.
+    Subclasses set the class attributes and implement title_numbers and
+    card_numbers; score_printing and rejects add the game's own checks.
     """
-    aliases = [(alias, name) for name, group in SET_ALIASES.items()
-               for alias in group]
-    aliases += [(alias, None) for alias in OTHER_SET_ALIASES]
-    aliases.sort(key=lambda item: len(item[0]), reverse=True)
 
-    found = set()
-    other_set = False
-    for alias, set_name in aliases:
-        pattern = rf"\b{re.escape(alias)}\b"
-        if re.search(pattern, text):
-            text = re.sub(pattern, " | ", text)
-            if set_name is None:
-                other_set = True
-            else:
-                found.add(set_name)
+    # Each catalog set's name and how titles write it.
+    set_aliases: dict[str, list[str]] = {}
+    # Sets outside the catalog. A title naming one of these and no catalog
+    # set is about some other card.
+    other_set_aliases: list[str] = []
+    # Other ways titles write a card's name.
+    name_aliases: dict[str, list[str]] = {}
+    # Words that start some catalog names, e.g. "dark " in "Dark
+    # Charizard", so they must not count as evidence for the plain name.
+    name_prefixes: tuple[str, ...] = ()
+    # Sets whose titles must include the card's number to match.
+    number_required_sets: set[str] = set()
+    # The game's own title rejections, on top of REJECT_PATTERNS.
+    reject_patterns: list[str] = []
 
-    return found, other_set
-
-
-def has_name(card: PokemonCard, text: str) -> bool:
-    has_prefix = normalize(card.name).startswith(NAME_PREFIXES)
-
-    for pattern in name_patterns(card.name):
-        for m in pattern.finditer(text):
-            # Padded so prefixes only match whole words: "islands mew" must
-            # not read as the "s " of "_____'s".
-            before = " " + text[:m.start()]
-            if has_prefix or not before.endswith(WORD_PREFIXES):
-                return True
-
-    return False
-
-
-def count_distinct_names(text: str) -> int:
-    names = {card.name: card for card in CARDS}
-    return sum(1 for card in names.values() if has_name(card, text))
-
-
-def score_card(
-    card: PokemonCard,
-    text: str,
-    sets: set[str],
-    title_full_numbers: set[str],
-    title_partial_numbers: set[str],
-) -> float | None:
-    """Return a confidence for one card, or None if the title rules it out."""
-    if not has_name(card, text):
-        return None
-
-    full, numerator = card_number_key(card.number)
-    confidence = NAME_WEIGHT
-
-    # A stated number that isn't the card's rules it out, e.g. "#28" is the
-    # non-holo Poliwrath, not the 9/75 holo.
-    if title_full_numbers:
-        if full not in title_full_numbers:
-            return None
-        confidence += FULL_NUMBER_WEIGHT
-    elif title_partial_numbers:
-        if numerator not in title_partial_numbers:
-            return None
-        confidence += PARTIAL_NUMBER_WEIGHT
-    elif card.set_name in NUMBER_REQUIRED_SETS:
-        return None
-
-    if sets:
-        if card.set_name not in sets:
-            return None
-        confidence += SET_WEIGHT
-
-    if card.first_edition_required:
-        if not FIRST_EDITION_PATTERN.search(text):
-            return None
-        if UNLIMITED_PATTERN.search(text):
-            return None
-    elif FIRST_EDITION_PATTERN.search(text):
-        # None of the unlimited-only target sets had a 1st Edition print.
-        confidence -= UNEXPECTED_FIRST_EDITION_PENALTY
-
-    mentions_reverse = bool(REVERSE_HOLO_PATTERN.search(text))
-    if card.set_name in SINGLE_PRINTING_SETS:
-        # Only one printing exists, so the title needn't say which. Sellers
-        # use "Regular" for the non-holo Southern Islands cards.
-        if card.variant == Variant.REVERSE_HOLO and REGULAR_PATTERN.search(text):
-            return None
-    elif card.variant == Variant.REVERSE_HOLO:
-        if not mentions_reverse or REGULAR_PATTERN.search(text):
-            return None
-    elif mentions_reverse:
-        return None
-
-    is_crystal = card.rarity == Rarity.CRYSTAL
-    says_crystal = bool(CRYSTAL_PATTERN.search(text))
-    if is_crystal:
-        if (
-            not says_crystal
-            and full not in title_full_numbers
-            and (card.set_name, card.name) in CRYSTAL_NAME_CLASHES
-        ):
-            return None
-    elif says_crystal:
-        return None
-
-    if (
-        card.set_name in SETS_WITH_NON_HOLO_DUPLICATES
-        and not is_crystal
-        and full not in title_full_numbers
-        and not HOLO_PATTERN.search(text)
-    ):
-        return None
-
-    return round(min(confidence, 1.0), 2)
-
-
-def match_listing(title: str) -> list[Match]:
-    """Return eligible cards that plausibly match an eBay title.
-
-    Matches are sorted by confidence, highest first. More than one match
-    means the title is ambiguous between catalog cards.
-    """
-    text = normalize(title)
-
-    if REJECT_PATTERN.search(text):
-        return []
-    if NON_HOLO_PATTERN.search(text) or NOT_FIRST_EDITION_PATTERN.search(text):
-        return []
-
-    sets, other_set = detect_sets(text)
-    if other_set and not sets:
-        return []
-
-    if count_distinct_names(text) > MAX_DISTINCT_NAMES:
-        return []
-
-    title_full_numbers = full_numbers(text)
-    title_partial_numbers = partial_numbers(text)
-
-    matches = []
-    for card in CARDS:
-        confidence = score_card(
-            card, text, sets, title_full_numbers, title_partial_numbers
+    def __init__(self, cards: list[Card]):
+        self.cards = cards
+        self.reject_pattern = re.compile(
+            "|".join(f"(?:{p})" for p in REJECT_PATTERNS + self.reject_patterns)
         )
-        if confidence is not None and confidence >= MIN_CONFIDENCE:
-            matches.append(Match(card=card, confidence=confidence))
+        aliases = [(alias, name) for name, group in self.set_aliases.items()
+                   for alias in group]
+        aliases += [(alias, None) for alias in self.other_set_aliases]
+        aliases.sort(key=lambda item: len(item[0]), reverse=True)
+        self.set_patterns = [
+            (re.compile(rf"\b{re.escape(alias)}\b"), set_name)
+            for alias, set_name in aliases
+        ]
+        self.word_prefixes = tuple(" " + prefix for prefix in self.name_prefixes)
+        self._name_patterns: dict[str, list[re.Pattern]] = {}
+        self._card_numbers: dict[str, tuple[str, str]] = {}
 
-    matches.sort(key=lambda match: match.confidence, reverse=True)
-    return matches
+    def title_numbers(self, text: str) -> tuple[set[str], set[str]]:
+        """Return the full and partial card numbers in a normalized title.
+        A partial number is what card_numbers gives as the short form."""
+        raise NotImplementedError
+
+    def parse_card_number(self, number: str) -> tuple[str, str]:
+        """Return a catalog number's full and short forms, normalized as
+        title_numbers gives them."""
+        raise NotImplementedError
+
+    def card_numbers(self, card: Card) -> tuple[str, str]:
+        if card.number not in self._card_numbers:
+            self._card_numbers[card.number] = self.parse_card_number(card.number)
+        return self._card_numbers[card.number]
+
+    def rejects(self, text: str) -> bool:
+        """Return whether a normalized title is ruled out before matching."""
+        return bool(self.reject_pattern.search(text))
+
+    def score_printing(
+        self, card: Card, text: str, title_full_numbers: set[str]
+    ) -> float | None:
+        """Return a confidence adjustment for the card's printing, or None
+        if the title rules the printing out."""
+        return 0.0
+
+    def name_patterns(self, name: str) -> list[re.Pattern]:
+        if name not in self._name_patterns:
+            names = [normalize(name)] + self.name_aliases.get(name, [])
+            self._name_patterns[name] = [
+                re.compile(rf"\b{re.escape(n)}\b") for n in names
+            ]
+        return self._name_patterns[name]
+
+    def detect_sets(self, text: str) -> tuple[set[str], bool]:
+        """Return catalog sets named in the title and whether another set is.
+
+        Aliases are matched longest first and consumed, so "expedition base
+        set" is not also read as Base Set, and "base set 2" is not read as
+        Base Set.
+        """
+        found = set()
+        other_set = False
+        for pattern, set_name in self.set_patterns:
+            if pattern.search(text):
+                text = pattern.sub(" | ", text)
+                if set_name is None:
+                    other_set = True
+                else:
+                    found.add(set_name)
+
+        return found, other_set
+
+    def has_name(self, card: Card, text: str) -> bool:
+        has_prefix = normalize(card.name).startswith(self.name_prefixes)
+
+        for pattern in self.name_patterns(card.name):
+            for m in pattern.finditer(text):
+                # Padded so prefixes only match whole words: "islands mew"
+                # must not read as the "s " of "_____'s".
+                before = " " + text[:m.start()]
+                if has_prefix or not before.endswith(self.word_prefixes):
+                    return True
+
+        return False
+
+    def count_distinct_names(self, text: str) -> int:
+        names = {card.name: card for card in self.cards}
+        return sum(1 for card in names.values() if self.has_name(card, text))
+
+    def score_card(
+        self,
+        card: Card,
+        text: str,
+        sets: set[str],
+        title_full_numbers: set[str],
+        title_partial_numbers: set[str],
+    ) -> float | None:
+        """Return a confidence for one card, or None if the title rules it
+        out."""
+        if not self.has_name(card, text):
+            return None
+
+        full, short = self.card_numbers(card)
+        confidence = NAME_WEIGHT
+
+        # A stated number that isn't the card's rules it out, e.g. "#28" is
+        # the non-holo Poliwrath, not the 9/75 holo.
+        if title_full_numbers:
+            if full not in title_full_numbers:
+                return None
+            confidence += FULL_NUMBER_WEIGHT
+        elif title_partial_numbers:
+            if short not in title_partial_numbers:
+                return None
+            confidence += PARTIAL_NUMBER_WEIGHT
+        elif card.set_name in self.number_required_sets:
+            return None
+
+        if sets:
+            if card.set_name not in sets:
+                return None
+            confidence += SET_WEIGHT
+
+        adjustment = self.score_printing(card, text, title_full_numbers)
+        if adjustment is None:
+            return None
+        return round(min(confidence + adjustment, 1.0), 2)
+
+    def match(self, title: str) -> list[Match]:
+        """Return catalog cards that plausibly match an eBay title.
+
+        Matches are sorted by confidence, highest first. More than one match
+        means the title is ambiguous between catalog cards.
+        """
+        text = normalize(title)
+
+        if self.rejects(text):
+            return []
+
+        sets, other_set = self.detect_sets(text)
+        if other_set and not sets:
+            return []
+
+        if self.count_distinct_names(text) > MAX_DISTINCT_NAMES:
+            return []
+
+        title_full_numbers, title_partial_numbers = self.title_numbers(text)
+
+        matches = []
+        for card in self.cards:
+            confidence = self.score_card(
+                card, text, sets, title_full_numbers, title_partial_numbers
+            )
+            if confidence is not None and confidence >= MIN_CONFIDENCE:
+                matches.append(Match(card=card, confidence=confidence))
+
+        matches.sort(key=lambda match: match.confidence, reverse=True)
+        return matches

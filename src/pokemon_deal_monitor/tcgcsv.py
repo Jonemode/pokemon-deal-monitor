@@ -8,7 +8,8 @@ from dataclasses import dataclass
 
 from .ebay import USER_AGENT, to_cents
 from .games.pokemon.catalog import PokemonCard, Variant
-from .matcher import full_numbers, normalize, card_number_key
+from .games.pokemon.matcher import card_number_key, full_numbers
+from .matcher import normalize
 
 
 TCGCSV_URL = "https://tcgcsv.com/tcgplayer/3"

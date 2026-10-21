@@ -13,7 +13,8 @@ from pathlib import Path
 from .catalog import DATA_DIR
 from .ebay import Transport, urllib_transport
 from .games.pokemon.catalog import GAME, PokemonCard, Variant
-from .matcher import card_number_key, normalize
+from .games.pokemon.matcher import card_number_key
+from .matcher import normalize
 
 
 API_URL = "https://www.pricecharting.com/api"

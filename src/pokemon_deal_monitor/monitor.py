@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 
 from .config import QuietHours
 from .ebay import EbayClient, EbayError, EbayItem, ItemDetails
-from .matcher import Match, match_listing
+from .games.pokemon.matcher import RULES
+from .matcher import Match
 from .storage import Listing, Storage, UpsertResult, utc_now
 from .valuation import Deal, Pricer, evaluate_auction, evaluate_deal, evaluate_offer
 
@@ -189,7 +190,7 @@ def poll_once(
             seen.add(item.item_id)
             new_items += 1
 
-            matches = [] if is_graded(item) else match_listing(item.title)
+            matches = [] if is_graded(item) else RULES.match(item.title)
             best = matches[0] if matches else None
 
             listing = item.to_listing(
