@@ -126,7 +126,7 @@ class TestEvaluateDeal(unittest.TestCase):
         self.assertFalse(too_cheap.qualifies)
         self.assertEqual(
             too_cheap.reasons,
-            ("discount above 50%, likely a misrepresented reprint",),
+            ("discount above 50%, likely a different card",),
         )
 
     def test_sets_allowed_over_value(self):
@@ -199,7 +199,7 @@ class TestEvaluateDeal(unittest.TestCase):
         self.assertFalse(deal.qualifies)
         self.assertEqual(
             deal.reasons,
-            ("auctions skipped, reprints are often sold as this card",),
+            ("auctions skipped, other cards are often listed as this one",),
         )
 
     def test_value_not_confident(self):

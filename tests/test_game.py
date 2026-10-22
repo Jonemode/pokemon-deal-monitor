@@ -33,6 +33,20 @@ class TestGame(unittest.TestCase):
         lugia = card("pokemon:Aquapolis:149/147:holo:unlimited")
         self.assertEqual(POKEMON.rules_for(lugia).max_plausible_discount, 0.50)
 
+    def test_mislisted_cards_have_a_discount_limit(self):
+        for identifier in ("pokemon:Neo Destiny:107/105:holo:1st",
+                           "pokemon:Neo Destiny:106/105:holo:1st",
+                           "pokemon:Wizards Black Star Promos:24/53:holo:unlimited"):
+            self.assertEqual(
+                POKEMON.rules_for(card(identifier)).max_plausible_discount,
+                0.50, identifier)
+
+    def test_birthday_pikachu_keeps_promo_rules(self):
+        rules = POKEMON.rules_for(
+            card("pokemon:Wizards Black Star Promos:24/53:holo:unlimited"))
+        self.assertEqual(rules.min_discount, -0.05)
+        self.assertEqual(rules.min_value_cents, 5000)
+
     def test_default_rules(self):
         charizard = card("pokemon:Base Set:4/102:holo:1st")
         self.assertIs(POKEMON.rules_for(charizard), DEFAULT_RULES)

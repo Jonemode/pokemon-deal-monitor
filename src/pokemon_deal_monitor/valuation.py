@@ -56,11 +56,10 @@ class CardRules:
     # The minimum card value to alert on, in cents, e.g. to skip the many
     # promos worth only a few dollars.
     min_value_cents: int | None = None
-    # For cards often sold as reprints under the original set's name, with
-    # nothing in the listing to tell them apart: a discount beyond this is
-    # taken to mean a reprint rather than a bargain. Auctions of these cards
-    # are skipped, since a low current bid says nothing about whether it's
-    # a reprint.
+    # For cards other cards are often listed as, such as reprints under the
+    # original set's name: a discount beyond this is taken to mean a
+    # different card rather than a bargain. Auctions of these cards are
+    # skipped, since a low current bid says nothing about which card it is.
     max_plausible_discount: float | None = None
 
 
@@ -184,7 +183,7 @@ def evaluate_deal(
         and total_cents < round(valuation.value_cents * (1 - max_discount))
     ):
         reasons.append(
-            f"discount above {max_discount:.0%}, likely a misrepresented reprint"
+            f"discount above {max_discount:.0%}, likely a different card"
         )
 
     return Deal(
@@ -253,7 +252,7 @@ def evaluate_auction(
     if min_value is not None and valuation.value_cents < min_value:
         reasons.append(f"value below ${min_value / 100:,.0f}")
     if rules.max_plausible_discount is not None:
-        reasons.append("auctions skipped, reprints are often sold as this card")
+        reasons.append("auctions skipped, other cards are often listed as this one")
 
     return Deal(
         total_cents=total_cents,
