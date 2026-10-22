@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 from pokemon_deal_monitor.ebay import EbayClient
 from pokemon_deal_monitor.config import QuietHours
+from pokemon_deal_monitor.games.pokemon.game import POKEMON
 from pokemon_deal_monitor.monitor import auction_cutoff, poll_once
 from pokemon_deal_monitor.storage import PriceRecord, Storage, UpsertResult
 from pokemon_deal_monitor.valuation import PRICECHARTING, TCGPLAYER, value_card
@@ -37,6 +38,8 @@ def pacific(day, hour, minute=0):
 class FixedPricer:
     """Values every card at $2,000."""
 
+    game = POKEMON
+
     def valuation(self, card, now=None):
         return value_card({
             source: PriceRecord(card.identifier, source, START, raw_cents=200000)
@@ -53,7 +56,7 @@ class TestPollOnce(unittest.TestCase):
     def poll(self, searches, now=START, items=None):
         self.transport = FakeTransport(searches, items=items)
         client = EbayClient(CONFIG, transport=self.transport)
-        return poll_once(client, self.storage, queries=list(searches), now=now)
+        return poll_once(client, self.storage, POKEMON, queries=list(searches), now=now)
 
     def test_played_card_condition_is_rejected(self):
         poll = self.poll(
@@ -210,7 +213,7 @@ class TestPollOnce(unittest.TestCase):
             return fake(request)
 
         client = EbayClient(CONFIG, transport=transport)
-        poll = poll_once(client, self.storage, queries=["neo", "aquapolis"])
+        poll = poll_once(client, self.storage, POKEMON, queries=["neo", "aquapolis"])
 
         self.assertEqual(len(poll.errors), 1)
         self.assertEqual(len(poll.candidates), 1)
@@ -229,7 +232,7 @@ class TestPollOnce(unittest.TestCase):
             {"neo": search_response(), "aquapolis": search_response()},
             token=(401, b'{"error": "invalid_client"}'),
         ))
-        poll = poll_once(client, self.storage, queries=["neo", "aquapolis"])
+        poll = poll_once(client, self.storage, POKEMON, queries=["neo", "aquapolis"])
 
         self.assertEqual(len(poll.errors), 1)
 
@@ -240,7 +243,7 @@ class TestPollOnce(unittest.TestCase):
                 item_summary("2", UMBREON, "1900.00", "5.00"),
             ),
         }))
-        poll = poll_once(client, self.storage, queries=["neo"], now=START,
+        poll = poll_once(client, self.storage, POKEMON, queries=["neo"], now=START,
                          pricer=FixedPricer())
 
         deals = {c.item.item_id: c.deal for c in poll.candidates}
@@ -262,7 +265,7 @@ class TestPollOnce(unittest.TestCase):
                              best_offer=True),
             ),
         }))
-        poll = poll_once(client, self.storage, queries=["neo"], now=START,
+        poll = poll_once(client, self.storage, POKEMON, queries=["neo"], now=START,
                          pricer=FixedPricer())
 
         deals = {c.item.item_id: c.deal for c in poll.candidates}
@@ -282,7 +285,7 @@ class TestPollOnce(unittest.TestCase):
             ),
         })
         client = EbayClient(CONFIG, transport=transport)
-        poll = poll_once(client, self.storage, queries=["neo"], now=START,
+        poll = poll_once(client, self.storage, POKEMON, queries=["neo"], now=START,
                          pricer=FixedPricer(), auctions=True)
 
         self.assertIn("itemEndDate:[..2026-10-17T14:00:00Z]",
@@ -295,7 +298,7 @@ class TestPollOnce(unittest.TestCase):
     def test_evening_sweep_searches_auctions_ending_overnight(self):
         transport = FakeTransport()
         client = EbayClient(CONFIG, transport=transport)
-        poll_once(client, self.storage, queries=["neo"], now=pacific(17, 20, 30),
+        poll_once(client, self.storage, POKEMON, queries=["neo"], now=pacific(17, 20, 30),
                   pricer=FixedPricer(), auctions=True, quiet_hours=QUIET)
 
         # 07:00 Pacific daylight time.
@@ -308,7 +311,7 @@ class TestPollOnce(unittest.TestCase):
                 "auction:neo": search_response(
                     auction_summary("1", LUGIA, bid=bid)),
             }))
-            return poll_once(client, self.storage, queries=["neo"], now=now,
+            return poll_once(client, self.storage, POKEMON, queries=["neo"], now=now,
                              pricer=FixedPricer(), auctions=True)
 
         poll("500.00", START)
@@ -324,7 +327,7 @@ class TestPollOnce(unittest.TestCase):
                     item_summary("2", UMBREON, "1900.00", "5.00"),
                 ),
             }))
-            return poll_once(client, self.storage, queries=["neo"], now=START,
+            return poll_once(client, self.storage, POKEMON, queries=["neo"], now=START,
                              pricer=FixedPricer())
 
         poll()

@@ -19,6 +19,8 @@ from .config import (
     load_telegram_config,
 )
 from .ebay import EbayClient
+from .game import Game
+from .games import GAMES
 from .monitor import (
     AUCTION_POLL_INTERVAL,
     DEFAULT_POLL_INTERVAL_SECONDS,
@@ -172,10 +174,25 @@ def wait_until(deadline: float, listener: CommandListener | None) -> None:
             time.sleep(min(remaining, COMMAND_WAIT_SECONDS))
 
 
+def build_pricer(storage: Storage, game: Game, token: str | None) -> Pricer:
+    product_ids = (
+        load_product_ids(game.pricecharting_ids_path)
+        if game.pricecharting_ids_path else {}
+    )
+    if token is not None and game.pricecharting_ids_path and not product_ids:
+        logger.warning("No PriceCharting product IDs for %s; "
+                       "run make pricecharting-ids", game.name)
+    return Pricer(
+        storage, game,
+        PriceChartingClient(token) if token else None,
+        product_ids,
+    )
+
+
 def poll_and_alert(client, storage, pricer, notify, auctions=False,
                    quiet_hours=None) -> PollResult:
-    poll = poll_once(client, storage, pricer=pricer, auctions=auctions,
-                     quiet_hours=quiet_hours)
+    poll = poll_once(client, storage, pricer.game, pricer=pricer,
+                     auctions=auctions, quiet_hours=quiet_hours)
     report(poll)
     if notify is not None:
         timezone = quiet_hours.timezone if quiet_hours else None
@@ -229,9 +246,6 @@ def main() -> None:
     token = load_pricecharting_token()
     if token is None:
         logger.warning("PRICECHARTING_TOKEN not set; values use TCGplayer only")
-    product_ids = load_product_ids()
-    if token is not None and not product_ids:
-        logger.warning("No PriceCharting product IDs; run make pricecharting-ids")
 
     notify = build_notifier()
     telegram = telegram_config()
@@ -239,15 +253,12 @@ def main() -> None:
     quiet_hours = telegram.quiet_hours if telegram else None
 
     with Storage() as storage:
-        pricer = Pricer(
-            storage,
-            PriceChartingClient(token) if token else None,
-            product_ids,
-        )
+        pricers = [build_pricer(storage, game, token) for game in GAMES]
         if args.command == "poll":
-            poll_and_alert(client, storage, pricer, notify)
-            poll_and_alert(client, storage, pricer, notify, auctions=True,
-                           quiet_hours=quiet_hours)
+            for pricer in pricers:
+                poll_and_alert(client, storage, pricer, notify)
+                poll_and_alert(client, storage, pricer, notify, auctions=True,
+                               quiet_hours=quiet_hours)
             watch_and_alert(client, storage, notify)
             return
 
@@ -264,14 +275,16 @@ def main() -> None:
                 >= AUCTION_POLL_INTERVAL.total_seconds() - 1
             )
             try:
-                poll = poll_and_alert(client, storage, pricer, notify)
-                status.record(poll, auctions=False, now=utc_now())
+                for pricer in pricers:
+                    poll = poll_and_alert(client, storage, pricer, notify)
+                    status.record(poll, auctions=False, now=utc_now())
                 if auctions_due:
                     last_auction_poll = started
-                    poll = poll_and_alert(client, storage, pricer, notify,
-                                          auctions=True,
-                                          quiet_hours=quiet_hours)
-                    status.record(poll, auctions=True, now=utc_now())
+                    for pricer in pricers:
+                        poll = poll_and_alert(client, storage, pricer, notify,
+                                              auctions=True,
+                                              quiet_hours=quiet_hours)
+                        status.record(poll, auctions=True, now=utc_now())
                     # Watched cards share the auctions' schedule, keeping
                     # eBay calls under the daily limit.
                     watch_and_alert(client, storage, notify)

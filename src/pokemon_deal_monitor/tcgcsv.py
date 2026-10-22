@@ -6,35 +6,40 @@ import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from .catalog import Card
 from .ebay import USER_AGENT, to_cents
-from .games.pokemon.catalog import PokemonCard, Variant
-from .games.pokemon.matcher import card_number_key, full_numbers
-from .matcher import normalize
 
 
-TCGCSV_URL = "https://tcgcsv.com/tcgplayer/3"
+TCGCSV_URL = "https://tcgcsv.com/tcgplayer"
 
-# TCGplayer group IDs for each target set. TCGplayer files 1st Edition
-# Base Set under "Base Set (Shadowless)" rather than "Base Set".
-GROUP_IDS = {
-    "Base Set": 1663,
-    "Neo Genesis": 1396,
-    "Neo Discovery": 1434,
-    "Neo Revelation": 1389,
-    "Neo Destiny": 1444,
-    "Expedition": 1375,
-    "Aquapolis": 1397,
-    "Skyridge": 1372,
-    "Southern Islands": 648,
-    "Legendary Collection": 1374,
-    "Wizards Black Star Promos": 1418,
-}
 
-# TCGplayer lists stamped and special versions of a promo under the same
-# number as the plain card, e.g. "Rapidash [Pokemon Center NY]".
-SPECIAL_VERSION_PATTERN = re.compile(
-    r"\[|misprint|stamp|prerelease|corocoro|glossy", re.IGNORECASE
-)
+class TcgplayerCatalog:
+    """Where one game's catalog cards are on TCGplayer.
+
+    Subclasses set category_id and group_ids, and say how TCGplayer numbers
+    and names each card's printing.
+    """
+
+    # TCGplayer's category for the game, e.g. 3 for Pokémon.
+    category_id: int
+    # TCGplayer group IDs, its sets, for each catalog set.
+    group_ids: dict[str, int] = {}
+    # Product names of versions priced apart from the plain card, such as
+    # stamped promos sharing its number.
+    excluded_names: re.Pattern | None = None
+
+    def card_number(self, card: Card) -> str:
+        """Return a catalog card's number as product_number gives it."""
+        raise NotImplementedError
+
+    def product_number(self, product: dict) -> str | None:
+        """Return a TCGplayer product's card number, normalized."""
+        raise NotImplementedError
+
+    def sub_type_name(self, card: Card) -> str:
+        """Return the TCGplayer printing name for a catalog card."""
+        raise NotImplementedError
+
 
 FetchJson = Callable[[str], dict]
 
@@ -55,27 +60,16 @@ def fetch_json(url: str) -> dict:
         return json.load(response)
 
 
-def sub_type_name(card: PokemonCard) -> str:
-    """Return the TCGplayer printing name for a catalog card."""
-    if card.variant == Variant.REVERSE_HOLO:
-        return "Reverse Holofoil"
-    if card.variant == Variant.NORMAL:
-        return "Normal"
-    if card.first_edition_required:
-        return "1st Edition Holofoil"
-    return "Holofoil"
-
-
-def product_number(product: dict) -> str | None:
+def product_number_field(product: dict) -> str | None:
+    """Return the Number TCGplayer lists for a product, as written."""
     for entry in product.get("extendedData", []):
         if entry["name"] == "Number":
-            numbers = full_numbers(normalize(entry["value"]))
-            return next(iter(numbers), None)
+            return entry["value"]
     return None
 
 
 def fetch_prices(
-    cards: list[PokemonCard], fetch: FetchJson = fetch_json
+    cards: list[Card], catalog: TcgplayerCatalog, fetch: FetchJson = fetch_json
 ) -> dict[str, TcgPrice]:
     """Return TCGplayer prices keyed by catalog card identifier.
 
@@ -83,20 +77,21 @@ def fetch_prices(
     out.
     """
     prices = {}
-    by_set: dict[str, list[PokemonCard]] = {}
+    by_set: dict[str, list[Card]] = {}
     for card in cards:
         by_set.setdefault(card.set_name, []).append(card)
 
     for set_name, set_cards in by_set.items():
-        group_id = GROUP_IDS[set_name]
-        products = fetch(f"{TCGCSV_URL}/{group_id}/products")["results"]
-        rows = fetch(f"{TCGCSV_URL}/{group_id}/prices")["results"]
+        url = f"{TCGCSV_URL}/{catalog.category_id}/{catalog.group_ids[set_name]}"
+        products = fetch(f"{url}/products")["results"]
+        rows = fetch(f"{url}/prices")["results"]
 
         product_ids_by_number: dict[str, list[int]] = {}
         for product in products:
-            if SPECIAL_VERSION_PATTERN.search(product.get("name", "")):
+            excluded = catalog.excluded_names
+            if excluded is not None and excluded.search(product.get("name", "")):
                 continue
-            number = product_number(product)
+            number = catalog.product_number(product)
             if number is not None:
                 product_ids_by_number.setdefault(number, []).append(
                     product["productId"]
@@ -105,11 +100,12 @@ def fetch_prices(
         price_rows = {(row["productId"], row["subTypeName"]): row for row in rows}
 
         for card in set_cards:
-            full, _ = card_number_key(card.number)
+            sub_type = catalog.sub_type_name(card)
             candidates = [
-                price_rows[(product_id, sub_type_name(card))]
-                for product_id in product_ids_by_number.get(full, [])
-                if (product_id, sub_type_name(card)) in price_rows
+                price_rows[(product_id, sub_type)]
+                for product_id in product_ids_by_number.get(
+                    catalog.card_number(card), [])
+                if (product_id, sub_type) in price_rows
             ]
             # Skip numbers TCGplayer lists under more than one product.
             if len(candidates) != 1:

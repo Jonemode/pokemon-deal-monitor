@@ -4,31 +4,13 @@ from datetime import datetime, timedelta
 
 from .config import QuietHours
 from .ebay import EbayClient, EbayError, EbayItem, ItemDetails
-from .games.pokemon.matcher import RULES
+from .game import ENGLISH, Game
 from .matcher import Match
 from .storage import Listing, Storage, UpsertResult, utc_now
 from .valuation import Deal, Pricer, evaluate_auction, evaluate_deal, evaluate_offer
 
 
 logger = logging.getLogger(__name__)
-
-# One search per target set, two for promos since sellers call them either
-# Black Star or WOTC promos. Each poll makes one call per query, so with the
-# Browse API's default 5,000 calls a day a 5 minute interval leaves headroom.
-SEARCH_QUERIES = [
-    "pokemon base set 1st edition",
-    "pokemon neo genesis 1st edition",
-    "pokemon neo discovery 1st edition",
-    "pokemon neo revelation 1st edition",
-    "pokemon neo destiny 1st edition",
-    "pokemon expedition holo",
-    "pokemon aquapolis",
-    "pokemon skyridge",
-    "pokemon southern islands",
-    "pokemon legendary collection reverse holo",
-    "pokemon black star promo",
-    "pokemon wotc promo",
-]
 
 DEFAULT_POLL_INTERVAL_SECONDS = 300
 
@@ -50,10 +32,6 @@ ENDED_AFTER = timedelta(hours=24)
 # blank are kept too: the title isn't used to guess, since "HP" in a title
 # usually means hit points rather than heavily played.
 ACCEPTED_CARD_CONDITIONS = {"near mint or better", "lightly played (excellent)"}
-# A blank Language is kept; the matcher rejects non-English titles anyway.
-# Sellers on other eBay sites name English in their own language.
-ACCEPTED_LANGUAGES = {"english", "inglese", "englisch", "anglais", "inglés",
-                      "ingles", "engels"}
 
 
 @dataclass(frozen=True)
@@ -83,13 +61,18 @@ def is_graded(item: EbayItem) -> bool:
     return (item.condition or "").strip().lower() == "graded"
 
 
-def details_rejection(details: ItemDetails) -> str | None:
-    """Return why a listing's details rule it out, or None if they don't."""
+def details_rejection(
+    details: ItemDetails, languages: frozenset[str] = ENGLISH
+) -> str | None:
+    """Return why a listing's details rule it out, or None if they don't.
+
+    A blank Language is kept, as is a blank Card Condition.
+    """
     condition = details.card_condition
     if condition is not None and condition.lower() not in ACCEPTED_CARD_CONDITIONS:
         return f"card condition {condition}"
     language = details.language
-    if language is not None and language.lower() not in ACCEPTED_LANGUAGES:
+    if language is not None and language.lower() not in languages:
         return f"language {language}"
     return None
 
@@ -110,14 +93,15 @@ def value_listing(
     valuation = pricer.valuation(match.card, now=now)
     if valuation is None:
         return None
+    rules = pricer.game.rules_for(match.card)
     if item.auction:
         return evaluate_auction(listing.total_cents, listing.shipping_cents,
-                                valuation, match.card)
+                                valuation, rules)
     deal = evaluate_deal(listing.total_cents, listing.shipping_known, valuation,
-                         match.card)
+                         rules)
     if item.best_offer and not deal.qualifies:
         offer = evaluate_offer(listing.total_cents, listing.shipping_cents,
-                               valuation, match.card)
+                               valuation, rules)
         if offer.qualifies:
             return offer
     return deal
@@ -141,15 +125,17 @@ def auction_cutoff(
 def poll_once(
     client: EbayClient,
     storage: Storage,
-    queries: list[str] = SEARCH_QUERIES,
+    game: Game,
+    queries: list[str] | None = None,
     now: datetime | None = None,
     pricer: Pricer | None = None,
     auctions: bool = False,
     quiet_hours: QuietHours | None = None,
 ) -> PollResult:
-    """Search eBay once, store every listing, and return alert candidates.
+    """Search eBay once for a game's cards, store every listing, and return
+    alert candidates.
 
-    Searches Buy It Now listings, or with auctions, auctions ending within
+    Runs the game's searches, or the queries given, for Buy It Now listings, or with auctions, auctions ending within
     AUCTION_WINDOW, or in the evening before quiet hours, by their end.
 
     A candidate is a matched listing not yet alerted on at this price that
@@ -157,6 +143,7 @@ def poll_once(
     candidates so an alert that failed to send is retried.
     """
     now = now or utc_now()
+    queries = game.searches if queries is None else queries
     poll = PollResult()
     seen = set()
     # Cleared when eBay rate limits or rejects a details lookup, since the
@@ -166,7 +153,7 @@ def poll_once(
     if ending_before is not None and ending_before > now + AUCTION_WINDOW:
         logger.info("Including auctions ending overnight, by %s",
                     ending_before.isoformat(timespec="minutes"))
-    kind = "auctions" if auctions else "Buy It Now"
+    kind = f"{game.name} " + ("auctions" if auctions else "Buy It Now")
 
     for index, query in enumerate(queries, 1):
         progress = f"[{index}/{len(queries)}]"
@@ -190,7 +177,7 @@ def poll_once(
             seen.add(item.item_id)
             new_items += 1
 
-            matches = [] if is_graded(item) else RULES.match(item.title)
+            matches = [] if is_graded(item) else game.title_rules.match(item.title)
             best = matches[0] if matches else None
 
             listing = item.to_listing(
@@ -219,7 +206,7 @@ def poll_once(
                 looked_up += 1
                 storage.save_details(item.item_id, details.card_condition,
                                      details.language, now=now)
-            if details_rejection(details) is not None:
+            if details_rejection(details, game.languages) is not None:
                 continue
 
             deal = value_listing(pricer, best, item, listing, now)

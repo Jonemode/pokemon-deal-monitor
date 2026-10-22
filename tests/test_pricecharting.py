@@ -5,13 +5,12 @@ import urllib.parse
 from pathlib import Path
 
 from pokemon_deal_monitor.games.pokemon.catalog import Edition, PokemonCard, Rarity, Variant
+from pokemon_deal_monitor.games.pokemon.pricecharting import search_query, select_products
 from pokemon_deal_monitor.pricecharting import (
     PriceChartingClient,
     PriceChartingError,
     load_product_ids,
     parse_product,
-    search_query,
-    select_products,
 )
 
 

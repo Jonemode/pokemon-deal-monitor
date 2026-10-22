@@ -348,8 +348,15 @@ class Storage:
             records[row["source"]] = PriceRecord(**fields)
         return records
 
-    def latest_price_fetch(self, source: str) -> datetime | None:
+    def latest_price_fetch(
+        self, source: str, game: str | None = None
+    ) -> datetime | None:
+        """Return when a source's prices were last fetched, for one game's
+        cards if given."""
+        prefix = f"{game}:" if game is not None else ""
         row = self.connection.execute(
-            "SELECT MAX(fetched_at) FROM prices WHERE source = ?", (source,)
+            "SELECT MAX(fetched_at) FROM prices WHERE source = ? "
+            "AND substr(card_identifier, 1, length(?)) = ?",
+            (source, prefix, prefix),
         ).fetchone()
         return parse_time(row[0])

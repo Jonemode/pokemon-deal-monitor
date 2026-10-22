@@ -1,7 +1,9 @@
 import unittest
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 from pokemon_deal_monitor.games.pokemon.catalog import Edition, PokemonCard, Rarity, Variant
+from pokemon_deal_monitor.games.pokemon.game import POKEMON
 from pokemon_deal_monitor.pricecharting import PriceChartingError, PriceChartingPrice
 from pokemon_deal_monitor.storage import PriceRecord, Storage
 from pokemon_deal_monitor.tcgcsv import TcgPrice
@@ -117,10 +119,10 @@ class TestEvaluateDeal(unittest.TestCase):
     def test_implausible_discount_on_reprinted_card(self):
         lugia = PokemonCard("Lugia", "Aquapolis", "149/147", Variant.HOLO,
                             Edition.UNLIMITED, Rarity.CRYSTAL)
-        at_limit = evaluate_deal(100000, True, self.valuation, lugia)
+        at_limit = evaluate_deal(100000, True, self.valuation, POKEMON.rules_for(lugia))
         self.assertTrue(at_limit.qualifies)
 
-        too_cheap = evaluate_deal(99999, True, self.valuation, lugia)
+        too_cheap = evaluate_deal(99999, True, self.valuation, POKEMON.rules_for(lugia))
         self.assertFalse(too_cheap.qualifies)
         self.assertEqual(
             too_cheap.reasons,
@@ -130,17 +132,17 @@ class TestEvaluateDeal(unittest.TestCase):
     def test_sets_allowed_over_value(self):
         mewtwo = PokemonCard("Mewtwo", "Wizards Black Star Promos", "3/53",
                              Variant.NORMAL, Edition.UNLIMITED, Rarity.PROMO)
-        self.assertTrue(evaluate_deal(210000, True, self.valuation, mewtwo).qualifies)
+        self.assertTrue(evaluate_deal(210000, True, self.valuation, POKEMON.rules_for(mewtwo)).qualifies)
 
-        too_high = evaluate_deal(210001, True, self.valuation, mewtwo)
+        too_high = evaluate_deal(210001, True, self.valuation, POKEMON.rules_for(mewtwo))
         self.assertFalse(too_high.qualifies)
         self.assertEqual(too_high.reasons, ("price more than 5% over value",))
 
         # Other sets still need 10% below value.
-        self.assertFalse(evaluate_deal(190000, True, self.valuation, LUGIA).qualifies)
+        self.assertFalse(evaluate_deal(190000, True, self.valuation, POKEMON.rules_for(LUGIA)).qualifies)
 
     def test_other_cards_have_no_discount_ceiling(self):
-        deal = evaluate_deal(20000, True, self.valuation, LUGIA)
+        deal = evaluate_deal(20000, True, self.valuation, POKEMON.rules_for(LUGIA))
         self.assertTrue(deal.qualifies)
 
     def test_promo_minimum_value(self):
@@ -149,12 +151,12 @@ class TestEvaluateDeal(unittest.TestCase):
         cheap = value_card({
             PRICECHARTING: record(PRICECHARTING, raw=4999),
         })
-        deal = evaluate_deal(1000, True, cheap, mewtwo)
+        deal = evaluate_deal(1000, True, cheap, POKEMON.rules_for(mewtwo))
         self.assertFalse(deal.qualifies)
         self.assertEqual(deal.reasons, ("value below $50",))
 
         at_minimum = value_card({PRICECHARTING: record(PRICECHARTING, raw=5000)})
-        self.assertTrue(evaluate_deal(4000, True, at_minimum, mewtwo).qualifies)
+        self.assertTrue(evaluate_deal(4000, True, at_minimum, POKEMON.rules_for(mewtwo)).qualifies)
 
     def test_offer_on_listing_up_to_10_percent_over_value(self):
         deal = evaluate_offer(220000, 500, self.valuation)
@@ -193,7 +195,7 @@ class TestEvaluateDeal(unittest.TestCase):
     def test_auctions_of_reprinted_cards_skipped(self):
         lugia = PokemonCard("Lugia", "Aquapolis", "149/147", Variant.HOLO,
                             Edition.UNLIMITED, Rarity.CRYSTAL)
-        deal = evaluate_auction(50000, 500, self.valuation, lugia)
+        deal = evaluate_auction(50000, 500, self.valuation, POKEMON.rules_for(lugia))
         self.assertFalse(deal.qualifies)
         self.assertEqual(
             deal.reasons,
@@ -228,7 +230,7 @@ class FakeTcgplayer:
         self.error = error
         self.calls = 0
 
-    def __call__(self, cards):
+    def __call__(self, cards, catalog):
         self.calls += 1
         if self.error:
             raise self.error
@@ -255,10 +257,10 @@ class TestPricer(unittest.TestCase):
     def pricer(self, product_ids=None):
         return Pricer(
             self.storage,
+            replace(POKEMON, cards=[LUGIA]),
             self.pricecharting,
             {LUGIA.identifier: "6910"} if product_ids is None else product_ids,
             fetch_tcgplayer=self.tcgplayer,
-            cards=[LUGIA],
         )
 
     def test_values_from_both_sources(self):

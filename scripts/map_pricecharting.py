@@ -14,15 +14,15 @@ import argparse
 import json
 import sys
 
-from pokemon_deal_monitor.games.pokemon.catalog import CARDS
 from pokemon_deal_monitor.config import load_pricecharting_token
-from pokemon_deal_monitor.pricecharting import (
+from pokemon_deal_monitor.games.pokemon.catalog import CARDS
+from pokemon_deal_monitor.games.pokemon.pricecharting import (
     PRODUCT_IDS_PATH,
-    PriceChartingClient,
-    PriceChartingError,
     search_query,
     select_products,
 )
+from pokemon_deal_monitor.games.pokemon.tcgplayer import TCGPLAYER
+from pokemon_deal_monitor.pricecharting import PriceChartingClient, PriceChartingError
 from pokemon_deal_monitor.tcgcsv import fetch_prices
 
 
@@ -62,7 +62,7 @@ def main() -> None:
     # Drop entries for cards no longer in the catalog.
     identifiers = {card.identifier for card in CARDS}
     entries = {k: v for k, v in entries.items() if k in identifiers}
-    tcg_prices = fetch_prices(CARDS)
+    tcg_prices = fetch_prices(CARDS, TCGPLAYER)
 
     for index, card in enumerate(CARDS, 1):
         existing = entries.get(card.identifier, {})

@@ -4,11 +4,15 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
-from .games.pokemon.catalog import CARDS, PokemonCard
+from .catalog import Card
 from .pricecharting import PriceChartingClient, PriceChartingError
 from .storage import PriceRecord, Storage, utc_now
-from .tcgcsv import TcgPrice, fetch_prices
+from .tcgcsv import TcgplayerCatalog, TcgPrice, fetch_prices
+
+if TYPE_CHECKING:
+    from .game import Game
 
 
 logger = logging.getLogger(__name__)
@@ -25,12 +29,6 @@ TCGPLAYER_RETRY_AFTER = timedelta(hours=1)
 
 # A listing qualifies when its total is at least this far below value.
 MIN_DISCOUNT = 0.10
-# Sets with their own minimum discount for Buy It Now listings. Negative
-# allows a total up to that far over value.
-MIN_DISCOUNTS = {
-    "Wizards Black Star Promos": -0.05,
-    "Legendary Collection": -0.05,
-}
 # An auction's current bid will rise before it ends, so it qualifies only
 # when the current total is this far below value. The suggested maximum bid
 # still keeps the final total MIN_DISCOUNT below value.
@@ -40,25 +38,33 @@ MAX_BID_CENTS = 500000
 # A Best Offer listing priced up to this far over value is worth an offer
 # of MIN_DISCOUNT below value, which the seller may accept.
 MAX_OFFER_PREMIUM = 0.10
-# Sets with a minimum card value to alert on, in cents, to skip the many
-# promos worth only a few dollars.
-MIN_VALUE_CENTS = {
-    "Wizards Black Star Promos": 5000,
-}
-# Cards often sold as reprints under the original set's name, with nothing
-# in the listing to tell them apart. A discount beyond the limit is taken to
-# mean a reprint rather than a bargain. Auctions of these cards are skipped,
-# since a low current bid says nothing about whether it's a reprint.
-MAX_PLAUSIBLE_DISCOUNTS = {
-    # 30th Anniversary Lugia reprints listed as Aquapolis.
-    "pokemon:Aquapolis:149/147:holo:unlimited": 0.50,
-}
 # A TCGplayer price this many times below PriceCharting's is flagged as a
 # warning on the alert, since it can mean a mismatched or stale product.
 MAX_SOURCE_RATIO = 1.5
 # With no raw price, a grade 5 copy stands in for a lightly played raw card
 # after taking off the premium buyers pay for a graded slab.
 GRADE_5_RAW_DISCOUNT = 0.2
+
+
+@dataclass(frozen=True)
+class CardRules:
+    """Alert rules for a set or card where they differ from the defaults.
+    Each game says which apply to its cards."""
+    # The minimum discount for Buy It Now listings. Negative allows a total
+    # up to that far over value.
+    min_discount: float = MIN_DISCOUNT
+    # The minimum card value to alert on, in cents, e.g. to skip the many
+    # promos worth only a few dollars.
+    min_value_cents: int | None = None
+    # For cards often sold as reprints under the original set's name, with
+    # nothing in the listing to tell them apart: a discount beyond this is
+    # taken to mean a reprint rather than a bargain. Auctions of these cards
+    # are skipped, since a low current bid says nothing about whether it's
+    # a reprint.
+    max_plausible_discount: float | None = None
+
+
+DEFAULT_RULES = CardRules()
 
 
 @dataclass(frozen=True)
@@ -149,7 +155,7 @@ def evaluate_deal(
     total_cents: int,
     shipping_known: bool,
     valuation: Valuation,
-    card: PokemonCard | None = None,
+    rules: CardRules = DEFAULT_RULES,
 ) -> Deal:
     """Judge a listing against a card's value.
 
@@ -158,9 +164,7 @@ def evaluate_deal(
     """
     discount = 1 - total_cents / valuation.value_cents
 
-    min_discount = MIN_DISCOUNT
-    if card is not None:
-        min_discount = MIN_DISCOUNTS.get(card.set_name, MIN_DISCOUNT)
+    min_discount = rules.min_discount
 
     reasons = []
     if not valuation.confident:
@@ -171,10 +175,10 @@ def evaluate_deal(
             reasons.append(f"price more than {-min_discount:.0%} over value")
         else:
             reasons.append(f"discount below {min_discount:.0%}")
-    min_value = MIN_VALUE_CENTS.get(card.set_name) if card else None
+    min_value = rules.min_value_cents
     if min_value is not None and valuation.value_cents < min_value:
         reasons.append(f"value below ${min_value / 100:,.0f}")
-    max_discount = MAX_PLAUSIBLE_DISCOUNTS.get(card.identifier) if card else None
+    max_discount = rules.max_plausible_discount
     if (
         max_discount is not None
         and total_cents < round(valuation.value_cents * (1 - max_discount))
@@ -196,7 +200,7 @@ def evaluate_offer(
     total_cents: int,
     shipping_cents: int,
     valuation: Valuation,
-    card: PokemonCard | None = None,
+    rules: CardRules = DEFAULT_RULES,
 ) -> Deal:
     """Judge a Best Offer listing that isn't a deal at its price, and
     suggest an offer that would make it one."""
@@ -212,7 +216,7 @@ def evaluate_offer(
     # as a likely reprint, which an offer doesn't change.
     if total_cents <= target_cents:
         reasons.append("price already at or below the offer")
-    min_value = MIN_VALUE_CENTS.get(card.set_name) if card else None
+    min_value = rules.min_value_cents
     if min_value is not None and valuation.value_cents < min_value:
         reasons.append(f"value below ${min_value / 100:,.0f}")
 
@@ -230,7 +234,7 @@ def evaluate_auction(
     total_cents: int,
     shipping_cents: int,
     valuation: Valuation,
-    card: PokemonCard | None = None,
+    rules: CardRules = DEFAULT_RULES,
 ) -> Deal:
     """Judge an auction's current bid against a card's value, and suggest
     the most to bid."""
@@ -245,10 +249,10 @@ def evaluate_auction(
         reasons.append("value not confident")
     if total_cents > round(valuation.value_cents * (1 - MIN_AUCTION_DISCOUNT)):
         reasons.append(f"current bid less than {MIN_AUCTION_DISCOUNT:.0%} below value")
-    min_value = MIN_VALUE_CENTS.get(card.set_name) if card else None
+    min_value = rules.min_value_cents
     if min_value is not None and valuation.value_cents < min_value:
         reasons.append(f"value below ${min_value / 100:,.0f}")
-    if card is not None and card.identifier in MAX_PLAUSIBLE_DISCOUNTS:
+    if rules.max_plausible_discount is not None:
         reasons.append("auctions skipped, reprints are often sold as this card")
 
     return Deal(
@@ -261,8 +265,12 @@ def evaluate_auction(
     )
 
 
+FetchTcgplayer = Callable[[list[Card], TcgplayerCatalog], dict[str, TcgPrice]]
+
+
 class Pricer:
-    """Values cards from cached prices, refreshing them when stale.
+    """Values one game's cards from cached prices, refreshing them when
+    stale.
 
     TCGplayer prices are refreshed in bulk once a day. PriceCharting prices
     are fetched one card at a time, only for cards that need a value.
@@ -271,20 +279,20 @@ class Pricer:
     def __init__(
         self,
         storage: Storage,
+        game: "Game",
         pricecharting: PriceChartingClient | None = None,
         product_ids: dict[str, str] | None = None,
-        fetch_tcgplayer: Callable[[list[PokemonCard]], dict[str, TcgPrice]] = fetch_prices,
-        cards: list[PokemonCard] = CARDS,
+        fetch_tcgplayer: FetchTcgplayer = fetch_prices,
     ):
         self.storage = storage
+        self.game = game
         self.pricecharting = pricecharting
         self.product_ids = product_ids or {}
         self.fetch_tcgplayer = fetch_tcgplayer
-        self.cards = cards
         self._tcgplayer_attempted_at: datetime | None = None
 
     def valuation(
-        self, card: PokemonCard, now: datetime | None = None
+        self, card: Card, now: datetime | None = None
     ) -> Valuation | None:
         now = now or utc_now()
         self.refresh_tcgplayer(now)
@@ -298,7 +306,9 @@ class Pricer:
         return value_card(prices)
 
     def refresh_tcgplayer(self, now: datetime) -> None:
-        last = self.storage.latest_price_fetch(TCGPLAYER)
+        if self.game.tcgplayer is None:
+            return
+        last = self.storage.latest_price_fetch(TCGPLAYER, game=self.game.key)
         if last is not None and now - last < PRICE_MAX_AGE:
             return
         attempted = self._tcgplayer_attempted_at
@@ -306,9 +316,9 @@ class Pricer:
             return
         self._tcgplayer_attempted_at = now
 
-        logger.info("Refreshing TCGplayer prices")
+        logger.info("Refreshing %s TCGplayer prices", self.game.name)
         try:
-            prices = self.fetch_tcgplayer(self.cards)
+            prices = self.fetch_tcgplayer(self.game.cards, self.game.tcgplayer)
         except Exception as error:
             logger.warning("TCGplayer price refresh failed: %s", error)
             return
@@ -321,7 +331,7 @@ class Pricer:
                 raw_cents=price.market_cents,
             ))
 
-    def refresh_pricecharting(self, card: PokemonCard, now: datetime) -> None:
+    def refresh_pricecharting(self, card: Card, now: datetime) -> None:
         product_id = self.product_ids.get(card.identifier)
         if self.pricecharting is None or product_id is None:
             return

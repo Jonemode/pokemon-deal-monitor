@@ -1,7 +1,8 @@
 import unittest
 
 from pokemon_deal_monitor.games.pokemon.catalog import Edition, PokemonCard, Rarity, Variant
-from pokemon_deal_monitor.tcgcsv import TCGCSV_URL, fetch_prices, sub_type_name
+from pokemon_deal_monitor.games.pokemon.tcgplayer import TCGPLAYER
+from pokemon_deal_monitor.tcgcsv import TCGCSV_URL, fetch_prices
 
 
 LUGIA = PokemonCard("Lugia", "Neo Genesis", "9/111", Variant.HOLO,
@@ -32,16 +33,16 @@ class FakeTcgcsv:
 
     def __call__(self, url):
         self.urls.append(url)
-        group_id, kind = url.removeprefix(TCGCSV_URL + "/").split("/")
+        group_id, kind = url.removeprefix(f"{TCGCSV_URL}/3/").split("/")
         return {"results": self.groups[int(group_id)][kind]}
 
 
 class TestTcgcsv(unittest.TestCase):
 
     def test_sub_type_names(self):
-        self.assertEqual(sub_type_name(LUGIA), "1st Edition Holofoil")
-        self.assertEqual(sub_type_name(UMBREON), "Holofoil")
-        self.assertEqual(sub_type_name(ZAPDOS), "Reverse Holofoil")
+        self.assertEqual(TCGPLAYER.sub_type_name(LUGIA), "1st Edition Holofoil")
+        self.assertEqual(TCGPLAYER.sub_type_name(UMBREON), "Holofoil")
+        self.assertEqual(TCGPLAYER.sub_type_name(ZAPDOS), "Reverse Holofoil")
 
     def test_prices_by_number_and_printing(self):
         fetch = FakeTcgcsv({
@@ -57,7 +58,7 @@ class TestTcgcsv(unittest.TestCase):
                 "prices": [price(90139, "Holofoil", 1252.62)],
             },
         })
-        prices = fetch_prices([LUGIA, UMBREON], fetch=fetch)
+        prices = fetch_prices([LUGIA, UMBREON], TCGPLAYER, fetch=fetch)
 
         self.assertEqual(prices[LUGIA.identifier].market_cents, 130000)
         self.assertEqual(prices[UMBREON.identifier].market_cents, 125262)
@@ -74,7 +75,7 @@ class TestTcgcsv(unittest.TestCase):
                 "prices": [price(84212, "Reverse Holofoil", None)],
             },
         })
-        self.assertEqual(fetch_prices([LUGIA, ZAPDOS], fetch=fetch), {})
+        self.assertEqual(fetch_prices([LUGIA, ZAPDOS], TCGPLAYER, fetch=fetch), {})
 
     def test_duplicate_numbers_are_skipped(self):
         fetch = FakeTcgcsv({
@@ -86,7 +87,7 @@ class TestTcgcsv(unittest.TestCase):
                 ],
             },
         })
-        self.assertEqual(fetch_prices([LUGIA], fetch=fetch), {})
+        self.assertEqual(fetch_prices([LUGIA], TCGPLAYER, fetch=fetch), {})
 
     def test_special_versions_are_ignored(self):
         rapidash = PokemonCard("Rapidash", "Wizards Black Star Promos", "51/53",
@@ -102,12 +103,12 @@ class TestTcgcsv(unittest.TestCase):
                            price(244347, "Normal", 119.87)],
             },
         })
-        prices = fetch_prices([rapidash], fetch=fetch)
+        prices = fetch_prices([rapidash], TCGPLAYER, fetch=fetch)
         self.assertEqual(prices[rapidash.identifier].market_cents, 5571)
 
     def test_one_download_per_set(self):
         fetch = FakeTcgcsv({1396: {"products": [], "prices": []}})
-        fetch_prices([LUGIA, LUGIA], fetch=fetch)
+        fetch_prices([LUGIA, LUGIA], TCGPLAYER, fetch=fetch)
         self.assertEqual(len(fetch.urls), 2)
 
 
