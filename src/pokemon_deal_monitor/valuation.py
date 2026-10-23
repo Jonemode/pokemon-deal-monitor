@@ -68,6 +68,13 @@ class CardRules:
     # skipped, since a low current bid says nothing about which card it is.
     max_plausible_discount: float | None = None
 
+    @classmethod
+    def up_to_over_value(cls, premium: float) -> "CardRules":
+        """Rules alerting on Buy It Now, Best Offer and auction totals up to
+        this fraction over value, with a maximum bid to match."""
+        return cls(min_discount=-premium, max_offer_premium=premium,
+                   min_auction_discount=-premium, max_bid_discount=-premium)
+
 
 DEFAULT_RULES = CardRules()
 

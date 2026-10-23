@@ -39,15 +39,15 @@ SEARCH_INTERVALS = {
     "pokemon wotc promo": timedelta(minutes=15),
 }
 
-# Promos alert up to 5% over value, but skip the many worth only a few
-# dollars.
-PROMO_RULES = CardRules(min_discount=-0.05, min_value_cents=5000)
+# How far over value a listing's total can be and still alert, for every
+# set and every kind of listing: Buy It Now, Best Offer and auctions, with
+# a maximum bid to match. Change this one number to tighten or loosen all
+# alerts, e.g. -0.10 to alert only at 10% or more below value.
+MAX_OVER_VALUE = 0.20
+ALERT_RULES = CardRules.up_to_over_value(MAX_OVER_VALUE)
 
-# Alert up to 20% over value, for every kind of listing, with a maximum
-# bid to match.
-OVER_VALUE_RULES = CardRules(
-    min_discount=-0.20, max_offer_premium=0.20,
-    min_auction_discount=-0.20, max_bid_discount=-0.20)
+# Promos skip the many worth only a few dollars.
+PROMO_RULES = replace(ALERT_RULES, min_value_cents=5000)
 
 # Cards sellers often list wrongly, with a far cheaper card's listing
 # titled as this one. A discount beyond this is taken to mean the wrong
@@ -63,23 +63,18 @@ POKEMON = Game(
     search_intervals=SEARCH_INTERVALS,
     tcgplayer=TCGPLAYER,
     pricecharting_ids_path=PRODUCT_IDS_PATH,
-    set_rules={
-        "Wizards Black Star Promos": PROMO_RULES,
-        "Legendary Collection": OVER_VALUE_RULES,
-        "Expedition": OVER_VALUE_RULES,
-        "Aquapolis": OVER_VALUE_RULES,
-        "Skyridge": OVER_VALUE_RULES,
-    },
+    default_rules=ALERT_RULES,
+    set_rules={"Wizards Black Star Promos": PROMO_RULES},
     # Each replaces its set's rules.
     card_rules={
         # 30th Anniversary Lugia reprints listed as Aquapolis.
         "pokemon:Aquapolis:149/147:holo:unlimited": replace(
-            OVER_VALUE_RULES, max_plausible_discount=MISLISTED_CARD_DISCOUNT),
+            ALERT_RULES, max_plausible_discount=MISLISTED_CARD_DISCOUNT),
         # Shining Charizard and Shining Celebi.
-        "pokemon:Neo Destiny:107/105:holo:1st": CardRules(
-            max_plausible_discount=MISLISTED_CARD_DISCOUNT),
-        "pokemon:Neo Destiny:106/105:holo:1st": CardRules(
-            max_plausible_discount=MISLISTED_CARD_DISCOUNT),
+        "pokemon:Neo Destiny:107/105:holo:1st": replace(
+            ALERT_RULES, max_plausible_discount=MISLISTED_CARD_DISCOUNT),
+        "pokemon:Neo Destiny:106/105:holo:1st": replace(
+            ALERT_RULES, max_plausible_discount=MISLISTED_CARD_DISCOUNT),
         # Birthday Pikachu.
         "pokemon:Wizards Black Star Promos:24/53:holo:unlimited": replace(
             PROMO_RULES, max_plausible_discount=MISLISTED_CARD_DISCOUNT),

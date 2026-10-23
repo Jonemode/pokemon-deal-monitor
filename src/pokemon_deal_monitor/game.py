@@ -37,14 +37,15 @@ class Game:
     # eBay Language values to accept, lowercased. A blank Language is
     # accepted too.
     languages: frozenset[str] = ENGLISH
-    # Alert rules differing from the defaults, by set name or, replacing
-    # the set's, by card identifier.
+    # Alert rules for the game's cards, and those differing from them by
+    # set name or, replacing the set's, by card identifier.
+    default_rules: CardRules = DEFAULT_RULES
     set_rules: dict[str, CardRules] = field(default_factory=dict)
     card_rules: dict[str, CardRules] = field(default_factory=dict)
 
     def rules_for(self, card: Card) -> CardRules:
         return self.card_rules.get(
-            card.identifier, self.set_rules.get(card.set_name, DEFAULT_RULES)
+            card.identifier, self.set_rules.get(card.set_name, self.default_rules)
         )
 
     def searches_due(
