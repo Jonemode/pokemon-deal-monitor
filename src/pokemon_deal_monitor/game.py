@@ -1,6 +1,7 @@
 """What the monitor needs to know about each trading card game."""
 
 from dataclasses import dataclass, field
+from datetime import timedelta
 from pathlib import Path
 
 from .catalog import Card
@@ -25,6 +26,10 @@ class Game:
     # eBay searches, each one call per poll, so their number sets how much
     # of eBay's daily call limit the game uses.
     searches: list[str]
+    # How often a Buy It Now search runs, by search, when less often than
+    # every poll. A quiet search's newest results reach back many hours, so
+    # searching it less often delays its alerts without missing listings.
+    search_intervals: dict[str, timedelta] = field(default_factory=dict)
     # None when TCGplayer prices aren't used.
     tcgplayer: TcgplayerCatalog | None = None
     # The file mapping card identifiers to PriceCharting product IDs.
@@ -41,3 +46,17 @@ class Game:
         return self.card_rules.get(
             card.identifier, self.set_rules.get(card.set_name, DEFAULT_RULES)
         )
+
+    def searches_due(
+        self, last_searched: dict[str, float], now: float, poll_interval: float
+    ) -> list[str]:
+        """Return the Buy It Now searches due at a time.monotonic() time,
+        given when each last ran. A second's leeway allows for a sleep
+        waking slightly early."""
+        return [
+            query for query in self.searches
+            if query not in last_searched
+            or now - last_searched[query] >= self.search_intervals.get(
+                query, timedelta(seconds=poll_interval)
+            ).total_seconds() - 1
+        ]

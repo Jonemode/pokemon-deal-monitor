@@ -1,11 +1,19 @@
 import unittest
 from dataclasses import replace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from pokemon_deal_monitor.games import GAMES
 from pokemon_deal_monitor.games.pokemon.game import POKEMON
 from pokemon_deal_monitor.storage import PriceRecord, Storage
-from pokemon_deal_monitor.valuation import DEFAULT_RULES, TCGPLAYER, Pricer
+from pokemon_deal_monitor.valuation import (
+    DEFAULT_RULES,
+    TCGPLAYER,
+    Pricer,
+    Valuation,
+    evaluate_auction,
+    evaluate_deal,
+    evaluate_offer,
+)
 
 
 START = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
@@ -47,9 +55,60 @@ class TestGame(unittest.TestCase):
         self.assertEqual(rules.min_discount, -0.05)
         self.assertEqual(rules.min_value_cents, 5000)
 
+    def test_legendary_collection_alerts_up_to_20_percent_over(self):
+        charizard = card("pokemon:Legendary Collection:3/110:reverse_holo:unlimited")
+        rules = POKEMON.rules_for(charizard)
+        value = Valuation(10000, True, {})
+
+        self.assertTrue(evaluate_deal(12000, True, value, rules).qualifies)
+        self.assertFalse(evaluate_deal(12001, True, value, rules).qualifies)
+        self.assertFalse(evaluate_offer(12001, 0, value, rules).qualifies)
+
+        auction = evaluate_auction(11500, 500, value, rules)
+        self.assertTrue(auction.qualifies)
+        self.assertEqual(auction.max_bid_cents, 11500)
+        self.assertEqual(evaluate_auction(12001, 0, value, rules).reasons,
+                         ("current bid more than 20% over value",))
+
+    def test_vintage_holo_sets_alert_up_to_20_percent_over(self):
+        for identifier in ("pokemon:Expedition:6/165:holo:unlimited",
+                           "pokemon:Aquapolis:H29/H32:holo:unlimited",
+                           "pokemon:Skyridge:146/144:holo:unlimited"):
+            rules = POKEMON.rules_for(card(identifier))
+            self.assertEqual((rules.min_discount, rules.max_offer_premium,
+                              rules.min_auction_discount, rules.max_bid_discount),
+                             (-0.20, 0.20, -0.20, -0.20), identifier)
+
+    def test_aquapolis_lugia_keeps_its_discount_limit(self):
+        rules = POKEMON.rules_for(card("pokemon:Aquapolis:149/147:holo:unlimited"))
+        self.assertEqual(rules.min_discount, -0.20)
+        self.assertEqual(rules.max_plausible_discount, 0.50)
+
     def test_default_rules(self):
         charizard = card("pokemon:Base Set:4/102:holo:1st")
         self.assertIs(POKEMON.rules_for(charizard), DEFAULT_RULES)
+
+
+class TestSearchesDue(unittest.TestCase):
+
+    game = replace(POKEMON, searches=["busy", "quiet"],
+                   search_intervals={"quiet": timedelta(minutes=15)})
+
+    def due(self, last_searched, now):
+        return self.game.searches_due(last_searched, now, poll_interval=300)
+
+    def test_every_search_runs_first(self):
+        self.assertEqual(self.due({}, 0), ["busy", "quiet"])
+
+    def test_quiet_search_runs_every_third_poll(self):
+        last = {"busy": 0, "quiet": 0}
+        self.assertEqual(self.due(last, 300), ["busy"])
+        self.assertEqual(self.due(last, 600), ["busy"])
+        # A sleep waking slightly early still counts.
+        self.assertEqual(self.due(last, 899.5), ["busy", "quiet"])
+
+    def test_pokemon_intervals_name_its_searches(self):
+        self.assertLessEqual(set(POKEMON.search_intervals), set(POKEMON.searches))
 
 
 class TestPricerPerGame(unittest.TestCase):

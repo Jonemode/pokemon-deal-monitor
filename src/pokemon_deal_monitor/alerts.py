@@ -86,8 +86,8 @@ def format_alert(
         versus = f"{deal.discount:.0%} off"
 
     if item.auction:
-        # The max bid leaves 10% under value once shipping is paid,
-        # so with shipping unknown it is before shipping.
+        # The max bid allows for shipping, so with shipping unknown it is
+        # before shipping.
         bid = total if shipping_known else f"{total} + ship"
         max_bid = format_whole_dollars(deal.max_bid_cents, round_down=True)
         line = (
@@ -95,7 +95,7 @@ def format_alert(
             f"{format_time_left(item.ends_at, now or utc_now(), timezone)}"
             f" · max {max_bid}" + ("" if shipping_known else " + ship")
         )
-    elif deal.offer_cents is not None:
+    elif item.best_offer:
         asking = total if shipping_known else f"{total} + ship"
         line = f"{asking} obo · {versus}"
     else:

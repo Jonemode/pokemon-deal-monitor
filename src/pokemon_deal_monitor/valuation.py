@@ -51,8 +51,14 @@ class CardRules:
     """Alert rules for a set or card where they differ from the defaults.
     Each game says which apply to its cards."""
     # The minimum discount for Buy It Now listings. Negative allows a total
-    # up to that far over value.
+    # up to that far over value, as do the other discounts here.
     min_discount: float = MIN_DISCOUNT
+    # The most over value a Best Offer listing can be priced to alert.
+    max_offer_premium: float = MAX_OFFER_PREMIUM
+    # The minimum discount of an auction's current total.
+    min_auction_discount: float = MIN_AUCTION_DISCOUNT
+    # The discount the suggested maximum bid keeps the final total at.
+    max_bid_discount: float = MIN_DISCOUNT
     # The minimum card value to alert on, in cents, e.g. to skip the many
     # promos worth only a few dollars.
     min_value_cents: int | None = None
@@ -85,8 +91,9 @@ class Deal:
     qualifies: bool
     # Why the listing does not qualify; empty when it does.
     reasons: tuple[str, ...] = ()
-    # For an auction, the most to bid so the total stays MIN_DISCOUNT below
-    # value. Without known shipping it leaves no room for shipping.
+    # For an auction, the most to bid so the total stays the card's
+    # max_bid_discount below value. Without known shipping it leaves no room
+    # for shipping.
     max_bid_cents: int | None = None
     # For a Best Offer listing, the offer that keeps the total MIN_DISCOUNT
     # below value, likewise before any unknown shipping.
@@ -209,8 +216,8 @@ def evaluate_offer(
     reasons = []
     if not valuation.confident:
         reasons.append("value not confident")
-    if total_cents > round(valuation.value_cents * (1 + MAX_OFFER_PREMIUM)):
-        reasons.append(f"price more than {MAX_OFFER_PREMIUM:.0%} over value")
+    if total_cents > round(valuation.value_cents * (1 + rules.max_offer_premium)):
+        reasons.append(f"price more than {rules.max_offer_premium:.0%} over value")
     # A listing already this cheap failed as a deal for another reason, such
     # as a likely reprint, which an offer doesn't change.
     if total_cents <= target_cents:
@@ -239,15 +246,22 @@ def evaluate_auction(
     the most to bid."""
     discount = 1 - total_cents / valuation.value_cents
     max_bid_cents = min(
-        round(valuation.value_cents * (1 - MIN_DISCOUNT)) - shipping_cents,
+        round(valuation.value_cents * (1 - rules.max_bid_discount))
+        - shipping_cents,
         MAX_BID_CENTS,
     )
 
     reasons = []
     if not valuation.confident:
         reasons.append("value not confident")
-    if total_cents > round(valuation.value_cents * (1 - MIN_AUCTION_DISCOUNT)):
-        reasons.append(f"current bid less than {MIN_AUCTION_DISCOUNT:.0%} below value")
+    min_auction_discount = rules.min_auction_discount
+    if total_cents > round(valuation.value_cents * (1 - min_auction_discount)):
+        if min_auction_discount < 0:
+            reasons.append(f"current bid more than {-min_auction_discount:.0%}"
+                           " over value")
+        else:
+            reasons.append(f"current bid less than {min_auction_discount:.0%}"
+                           " below value")
     min_value = rules.min_value_cents
     if min_value is not None and valuation.value_cents < min_value:
         reasons.append(f"value below ${min_value / 100:,.0f}")

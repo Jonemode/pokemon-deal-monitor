@@ -25,7 +25,7 @@ from .fakes import (
 START = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
 
 LUGIA = "Lugia 9/111 Neo Genesis 1st Edition Holo LP"
-UMBREON = "Umbreon H29/H32 Aquapolis Holo LP"
+UMBREON = "Umbreon 13/75 Neo Discovery 1st Edition Holo LP"
 
 PACIFIC = ZoneInfo("America/Los_Angeles")
 QUIET = QuietHours(time(22), time(7), PACIFIC)

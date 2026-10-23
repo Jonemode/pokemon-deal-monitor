@@ -97,6 +97,12 @@ class TestFormatAlert(unittest.TestCase):
             HEADING + "$2,100 obo · 5% over",
         )
 
+    def test_best_offer_deal_says_obo(self):
+        c = candidate("1", 140000)
+        item = EbayItem(**{**c.item.__dict__, "best_offer": True})
+        self.assertTrue(format_alert(Candidate(item, c.match, c.result, c.deal))
+                        .endswith("\n$1,405 obo · 30% off"))
+
     def test_auction_alert(self):
         self.assertEqual(
             format_alert(auction_candidate(80000), now=START),

@@ -190,9 +190,9 @@ def build_pricer(storage: Storage, game: Game, token: str | None) -> Pricer:
 
 
 def poll_and_alert(client, storage, pricer, notify, auctions=False,
-                   quiet_hours=None) -> PollResult:
-    poll = poll_once(client, storage, pricer.game, pricer=pricer,
-                     auctions=auctions, quiet_hours=quiet_hours)
+                   quiet_hours=None, queries=None) -> PollResult:
+    poll = poll_once(client, storage, pricer.game, queries=queries,
+                     pricer=pricer, auctions=auctions, quiet_hours=quiet_hours)
     report(poll)
     if notify is not None:
         timezone = quiet_hours.timezone if quiet_hours else None
@@ -267,6 +267,8 @@ def main() -> None:
         status = MonitorStatus(started_at=utc_now())
         listener = build_listener(storage, status)
         last_auction_poll = None
+        # When each game's Buy It Now searches last ran, by game and search.
+        last_searched = {pricer.game.key: {} for pricer in pricers}
         while True:
             started = time.monotonic()
             auctions_due = (
@@ -276,8 +278,15 @@ def main() -> None:
             )
             try:
                 for pricer in pricers:
-                    poll = poll_and_alert(client, storage, pricer, notify)
+                    searched = last_searched[pricer.game.key]
+                    due = pricer.game.searches_due(searched, started,
+                                                   args.interval)
+                    if not due:
+                        continue
+                    poll = poll_and_alert(client, storage, pricer, notify,
+                                          queries=due)
                     status.record(poll, auctions=False, now=utc_now())
+                    searched.update(dict.fromkeys(due, started))
                 if auctions_due:
                     last_auction_poll = started
                     for pricer in pricers:
