@@ -40,11 +40,16 @@ SEARCH_INTERVALS = {
 }
 
 # How far over value a listing's total can be and still alert, for every
-# set and every kind of listing: Buy It Now, Best Offer and auctions, with
-# a maximum bid to match. Change this one number to tighten or loosen all
-# alerts, e.g. -0.10 to alert only at 10% or more below value.
+# set: Buy It Now and Best Offer listings, and the maximum bid suggested
+# for auctions. Change this one number to tighten or loosen those alerts,
+# e.g. -0.10 to alert only at 10% or more below value.
 MAX_OVER_VALUE = 0.20
-ALERT_RULES = CardRules.up_to_over_value(MAX_OVER_VALUE)
+# How far below value an auction's current bid plus shipping must be to
+# alert, for every set. Early bids sit far below where an auction ends, so
+# this is stricter than MAX_OVER_VALUE.
+MIN_AUCTION_DISCOUNT = 0.20
+ALERT_RULES = replace(CardRules.up_to_over_value(MAX_OVER_VALUE),
+                      min_auction_discount=MIN_AUCTION_DISCOUNT)
 
 # Promos skip the many worth only a few dollars.
 PROMO_RULES = replace(ALERT_RULES, min_value_cents=5000)

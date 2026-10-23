@@ -55,7 +55,7 @@ class TestGame(unittest.TestCase):
         self.assertEqual(rules.min_discount, -0.20)
         self.assertEqual(rules.min_value_cents, 5000)
 
-    def test_legendary_collection_alerts_up_to_20_percent_over(self):
+    def test_legendary_collection_rules(self):
         charizard = card("pokemon:Legendary Collection:3/110:reverse_holo:unlimited")
         rules = POKEMON.rules_for(charizard)
         value = Valuation(10000, True, {})
@@ -64,18 +64,18 @@ class TestGame(unittest.TestCase):
         self.assertFalse(evaluate_deal(12001, True, value, rules).qualifies)
         self.assertFalse(evaluate_offer(12001, 0, value, rules).qualifies)
 
-        auction = evaluate_auction(11500, 500, value, rules)
+        auction = evaluate_auction(7500, 500, value, rules)
         self.assertTrue(auction.qualifies)
         self.assertEqual(auction.max_bid_cents, 11500)
-        self.assertEqual(evaluate_auction(12001, 0, value, rules).reasons,
-                         ("current bid more than 20% over value",))
+        self.assertEqual(evaluate_auction(8001, 0, value, rules).reasons,
+                         ("current bid less than 20% below value",))
 
-    def test_every_card_alerts_up_to_20_percent_over(self):
+    def test_every_card_alerts_up_to_20_percent_over_and_auctions_20_under(self):
         for c in POKEMON.cards:
             rules = POKEMON.rules_for(c)
             self.assertEqual((rules.min_discount, rules.max_offer_premium,
                               rules.min_auction_discount, rules.max_bid_discount),
-                             (-0.20, 0.20, -0.20, -0.20), c.identifier)
+                             (-0.20, 0.20, 0.20, -0.20), c.identifier)
 
     def test_aquapolis_lugia_keeps_its_discount_limit(self):
         rules = POKEMON.rules_for(card("pokemon:Aquapolis:149/147:holo:unlimited"))
