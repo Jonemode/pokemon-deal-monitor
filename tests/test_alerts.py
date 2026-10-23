@@ -94,19 +94,19 @@ class TestFormatAlert(unittest.TestCase):
                               evaluate_offer(210000, 500, valuation))
         self.assertEqual(
             format_alert(candidate),
-            HEADING + "$2,100 obo · 5% over",
+            HEADING + "5% over · $2,100 obo",
         )
 
     def test_best_offer_deal_says_obo(self):
         c = candidate("1", 140000)
         item = EbayItem(**{**c.item.__dict__, "best_offer": True})
         self.assertTrue(format_alert(Candidate(item, c.match, c.result, c.deal))
-                        .endswith("\n$1,405 obo · 30% off"))
+                        .endswith("\n30% off · $1,405 obo"))
 
     def test_auction_alert(self):
         self.assertEqual(
             format_alert(auction_candidate(80000), now=START),
-            HEADING + "Bid $805 · 1h 25m left · max $1,795",
+            HEADING + "60% off · Bid $805 · 1h 25m left · max $1,795",
         )
 
     def test_overnight_auction_gives_local_end_time(self):
@@ -116,7 +116,7 @@ class TestFormatAlert(unittest.TestCase):
         text = format_alert(Candidate(item, c.match, c.result, c.deal),
                             now=START, timezone=ZoneInfo("America/Los_Angeles"))
         # 22:10 UTC is 3:10pm Pacific daylight time.
-        self.assertTrue(text.endswith("\nBid $805 · ends 3:10pm"
+        self.assertTrue(text.endswith("\n60% off · Bid $805 · ends 3:10pm"
                                       " · max $1,795"), text)
 
     def test_auction_ending_soon_keeps_time_left(self):
@@ -127,7 +127,7 @@ class TestFormatAlert(unittest.TestCase):
     def test_auction_alert_without_shipping(self):
         text = format_alert(auction_candidate(80000, None), now=START)
         self.assertTrue(text.endswith(
-            "\nBid $800 + ship · 1h 25m left · max $1,800 + ship"
+            "\n60% off · Bid $800 + ship · 1h 25m left · max $1,800 + ship"
         ))
 
     def test_whole_dollars(self):

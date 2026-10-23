@@ -63,11 +63,11 @@ def format_alert(
     timezone: tzinfo | None = None,
 ) -> str:
     """Return a two-line Telegram HTML message: the card and set, linked to
-    the listing, then the price against value.
+    the listing, then the price against value, which always comes first.
 
     Prices include shipping, as the value comparison does. An auction gives
     its current bid, time left and suggested maximum bid; a Best Offer
-    listing its asking price against value.
+    listing its asking price.
     """
     card = candidate.match.card
     deal = candidate.deal
@@ -91,13 +91,13 @@ def format_alert(
         bid = total if shipping_known else f"{total} + ship"
         max_bid = format_whole_dollars(deal.max_bid_cents, round_down=True)
         line = (
-            f"Bid {bid} · "
+            f"{versus} · Bid {bid} · "
             f"{format_time_left(item.ends_at, now or utc_now(), timezone)}"
             f" · max {max_bid}" + ("" if shipping_known else " + ship")
         )
     elif item.best_offer:
         asking = total if shipping_known else f"{total} + ship"
-        line = f"{asking} obo · {versus}"
+        line = f"{versus} · {asking} obo"
     else:
         price = f"{total} shipped" if shipping_known else f"{total} + ship"
         line = f"{versus} · {price}"
