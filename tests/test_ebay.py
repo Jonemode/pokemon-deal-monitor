@@ -153,7 +153,8 @@ class TestEbayClient(unittest.TestCase):
         self.assertEqual(params["category_ids"], ["183454"])
         self.assertEqual(params["sort"], ["newlyListed"])
         self.assertIn("buyingOptions:{FIXED_PRICE}", params["filter"][0])
-        self.assertIn("price:[..5000]", params["filter"][0])
+        self.assertIn("conditionIds:{4000}", params["filter"][0])
+        self.assertIn("price:[10..5000]", params["filter"][0])
         self.assertNotIn("aspect_filter", params)
         self.assertEqual(request.get_header("Authorization"), "Bearer token-1")
         self.assertEqual(
@@ -231,6 +232,7 @@ class TestEbayClient(unittest.TestCase):
         self.assertEqual(params["filter"][0],
                          "buyingOptions:{AUCTION},"
                          "itemEndDate:[..2026-10-17T14:00:00Z],"
+                         "conditionIds:{4000},"
                          "price:[..5000],priceCurrency:USD")
         self.assertEqual(params["sort"][0], "endingSoonest")
         self.assertTrue(item.auction)

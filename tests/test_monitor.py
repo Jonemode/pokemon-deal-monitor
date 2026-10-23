@@ -9,7 +9,8 @@ from zoneinfo import ZoneInfo
 from pokemon_deal_monitor.ebay import EbayClient
 from pokemon_deal_monitor.config import QuietHours
 from pokemon_deal_monitor.games.pokemon.game import POKEMON
-from pokemon_deal_monitor.monitor import auction_cutoff, poll_once
+from pokemon_deal_monitor.ebay import parse_item
+from pokemon_deal_monitor.monitor import auction_cutoff, poll_once, search_window
 from pokemon_deal_monitor.storage import PriceRecord, Storage, UpsertResult
 from pokemon_deal_monitor.valuation import (
     DEFAULT_RULES,
@@ -65,10 +66,30 @@ class TestPollOnce(unittest.TestCase):
         self.storage = Storage(":memory:")
         self.addCleanup(self.storage.close)
 
-    def poll(self, searches, now=START, items=None):
+    def poll(self, searches, now=START, items=None, pricer=FixedPricer()):
+        """Poll, by default with every card valued at $2,000, so the default
+        $100 listings qualify and have their details looked up."""
         self.transport = FakeTransport(searches, items=items)
         client = EbayClient(CONFIG, transport=self.transport)
-        return poll_once(client, self.storage, GAME, queries=list(searches), now=now)
+        return poll_once(client, self.storage, GAME, queries=list(searches),
+                         now=now, pricer=pricer)
+
+    def test_details_are_looked_up_only_for_listings_qualifying_on_price(self):
+        poll = self.poll({"neo": search_response(
+            item_summary("1", LUGIA, "2500.00"))})
+        self.assertEqual(self.transport.item_requests, [])
+        (candidate,) = poll.candidates
+        self.assertFalse(candidate.deal.qualifies)
+        self.assertIsNone(candidate.details)
+
+        # A price drop makes it qualify, so it's looked up then.
+        poll = self.poll({"neo": search_response(
+            item_summary("1", LUGIA, "1500.00"))},
+            now=START + timedelta(minutes=5))
+        self.assertEqual(len(self.transport.item_requests), 1)
+        (candidate,) = poll.candidates
+        self.assertTrue(candidate.deal.qualifies)
+        self.assertIsNotNone(candidate.details)
 
     def test_played_card_condition_is_rejected(self):
         poll = self.poll(
@@ -144,7 +165,8 @@ class TestPollOnce(unittest.TestCase):
 
         retry = self.poll(searches, now=START + timedelta(minutes=5))
         self.assertEqual(len(self.transport.item_requests), 2)
-        self.assertEqual(retry.candidates, [])
+        # Unsent deals stay candidates, so both alert once looked up.
+        self.assertEqual([c.item.item_id for c in retry.candidates], ["1", "2"])
 
     def test_new_matched_listing_is_candidate(self):
         poll = self.poll({
@@ -180,9 +202,9 @@ class TestPollOnce(unittest.TestCase):
 
     def test_repeat_poll_has_no_candidates(self):
         searches = {"neo": search_response(item_summary("1", LUGIA))}
-        self.poll(searches)
+        self.poll(searches, pricer=None)
 
-        poll = self.poll(searches, now=START + timedelta(minutes=5))
+        poll = self.poll(searches, now=START + timedelta(minutes=5), pricer=None)
         self.assertEqual(poll.candidates, [])
 
     def test_price_change_is_candidate(self):
@@ -351,14 +373,44 @@ class TestPollOnce(unittest.TestCase):
         self.assertEqual(poll().candidates, [])
 
     def test_candidates_without_pricer_have_no_deal(self):
-        poll = self.poll({"neo": search_response(item_summary("1", LUGIA))})
+        poll = self.poll({"neo": search_response(item_summary("1", LUGIA))},
+                         pricer=None)
         self.assertIsNone(poll.candidates[0].deal)
+        self.assertEqual(self.transport.item_requests, [])
 
     def test_long_unseen_listing_is_ended(self):
         self.poll({"neo": search_response(item_summary("1", LUGIA))})
         self.poll({"neo": search_response()}, now=START + timedelta(hours=25))
 
         self.assertIsNotNone(self.storage.get_listing("1").ended_at)
+
+
+class TestSearchWindow(unittest.TestCase):
+
+    def items(self, count):
+        summaries = [item_summary(str(i), "Lugia") for i in range(count)]
+        summaries[-1]["itemCreationDate"] = "2026-10-17T05:30:00.000Z"
+        return [parse_item(summary) for summary in summaries]
+
+    def test_full_page_reaches_back_to_its_oldest_listing(self):
+        self.assertEqual(search_window(self.items(200), START),
+                         timedelta(hours=6, minutes=30))
+
+    def test_partial_page_has_every_listing(self):
+        self.assertIsNone(search_window(self.items(150), START))
+
+    def test_short_window_is_logged(self):
+        summaries = [item_summary(str(i), "Lugia") for i in range(200)]
+        client = EbayClient(CONFIG, transport=FakeTransport(
+            {"neo": search_response(*summaries)}))
+        with Storage(":memory:") as storage, self.assertLogs(
+                "pokemon_deal_monitor.monitor", "INFO") as logs:
+            poll_once(client, storage, GAME, queries=["neo"],
+                      now=START + timedelta(hours=1))
+        output = "\n".join(logs.output)
+        self.assertIn("200 listings reaching back 1.0h, 0 matched cards (0%)",
+                      output)
+        self.assertIn("reaches back only 1.0h", output)
 
 
 class TestAuctionCutoff(unittest.TestCase):

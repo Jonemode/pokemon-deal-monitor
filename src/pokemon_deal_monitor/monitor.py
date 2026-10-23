@@ -3,7 +3,14 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 from .config import QuietHours
-from .ebay import EbayClient, EbayError, EbayItem, ItemDetails
+from .ebay import (
+    PAGE_LIMIT,
+    EbayClient,
+    EbayError,
+    EbayItem,
+    ItemDetails,
+    parse_time,
+)
 from .game import ENGLISH, Game
 from .matcher import Match
 from .storage import Listing, Storage, UpsertResult, utc_now
@@ -17,12 +24,17 @@ DEFAULT_POLL_INTERVAL_SECONDS = 300
 # Auctions are searched less often, keeping total calls under the daily
 # limit, and only those ending within the window: late enough that the
 # current bid means something, early enough to place a bid.
-AUCTION_POLL_INTERVAL = timedelta(minutes=15)
+AUCTION_POLL_INTERVAL = timedelta(minutes=30)
 AUCTION_WINDOW = timedelta(hours=2)
 # In the evening, this long before quiet hours start, auctions ending any
 # time during quiet hours are searched too, so bids can be placed before
 # going to sleep.
 EVENING_SWEEP = timedelta(hours=2)
+
+# A Buy It Now search returns its newest listings, so a full page reaches
+# back only so far. One reaching back less than this could miss listings
+# while eBay's rate limit blocks searches, as it has for up to 90 minutes.
+MIN_SEARCH_WINDOW = timedelta(hours=3)
 
 # Searches only return the newest listings, so a listing missing from one
 # poll may still be live. Only treat it as ended after this long unseen.
@@ -122,6 +134,15 @@ def auction_cutoff(
     return max(cutoff, end)
 
 
+def search_window(items: list[EbayItem], now: datetime) -> timedelta | None:
+    """Return how far back a Buy It Now search's results reach, or None if
+    they don't fill a page, so the search returned every listing."""
+    created = [parse_time(item.created_at) for item in items if item.created_at]
+    if len(items) < PAGE_LIMIT or not created:
+        return None
+    return now - min(created)
+
+
 def poll_once(
     client: EbayClient,
     storage: Storage,
@@ -190,9 +211,15 @@ def poll_once(
                 continue
             matched += 1
 
-            # Each listing's details are fetched once, then read from storage.
+            deal = value_listing(pricer, best, item, listing, now)
+            qualifies = deal is not None and deal.qualifies
+
+            # Each detail lookup is a call, so only listings that would alert
+            # on price are looked up, once, then read from storage. One that
+            # qualifies later, after a price drop or as its auction's bid
+            # changes, is looked up then.
             details = stored_details(storage, item.item_id)
-            if details is None:
+            if details is None and qualifies:
                 if not can_fetch_details:
                     continue
                 try:
@@ -206,20 +233,34 @@ def poll_once(
                 looked_up += 1
                 storage.save_details(item.item_id, details.card_condition,
                                      details.language, now=now)
-            if details_rejection(details, game.languages) is not None:
+            if details is not None and details_rejection(details, game.languages):
                 continue
 
-            deal = value_listing(pricer, best, item, listing, now)
-            if result != UpsertResult.UNCHANGED or (deal and deal.qualifies):
+            if result != UpsertResult.UNCHANGED or qualifies:
                 poll.candidates.append(
                     Candidate(item, best, result, deal, details)
                 )
 
+        # For tuning searches: how far back a Buy It Now search reaches,
+        # and what share of its listings are target cards.
+        window = None if auctions else search_window(items, now)
+        reach = (
+            f" reaching back {window.total_seconds() / 3600:.1f}h"
+            if window is not None else ""
+        )
+        share = f" ({matched / new_items:.0%})" if new_items else ""
         logger.info(
-            "%s %d listings, %d matched cards, %d detail lookups, %d candidates",
-            progress, new_items, matched, looked_up,
+            "%s %d listings%s, %d matched cards%s, %d detail lookups, "
+            "%d candidates",
+            progress, new_items, reach, matched, share, looked_up,
             len(poll.candidates) - candidates_before,
         )
+        if window is not None and window < MIN_SEARCH_WINDOW:
+            logger.warning(
+                "Search %r reaches back only %.1fh; its listings may be "
+                "missed if searches are blocked", query,
+                window.total_seconds() / 3600,
+            )
 
     poll.items_seen = len(seen)
     storage.mark_ended(not_seen_since=now - ENDED_AFTER, now=now)

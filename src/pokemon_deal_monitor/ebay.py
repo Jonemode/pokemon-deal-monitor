@@ -21,6 +21,14 @@ BROWSE_SCOPE = "https://api.ebay.com/oauth/api_scope"
 MARKETPLACE_ID = "EBAY_US"
 CCG_INDIVIDUAL_CARDS_CATEGORY = "183454"
 MAX_PRICE_USD = 5000
+# Buy It Now listings below this are skipped: mostly modern cards, whose
+# noise would push older target listings out of a search's 200 results.
+# Auctions aren't, since a low current bid can be the best deal.
+MIN_BUY_IT_NOW_PRICE_USD = 10
+# eBay's condition ID for ungraded cards in card categories. Graded cards
+# are never alerted on, and filtering them out on eBay's side lets each
+# search's 200 results reach back further.
+UNGRADED_CONDITION_ID = 4000
 PAGE_LIMIT = 200
 # An evening auction search spans the night and can fill a page; later
 # pages are fetched up to this many in all.
@@ -255,12 +263,14 @@ class EbayClient:
         from up to MAX_AUCTION_PAGES pages."""
         if auctions_ending_before is None:
             buying_filter = "buyingOptions:{FIXED_PRICE}"
+            min_price = MIN_BUY_IT_NOW_PRICE_USD
             sort = "newlyListed"
         else:
             buying_filter = (
                 "buyingOptions:{AUCTION},"
                 f"itemEndDate:[..{format_time(auctions_ending_before)}]"
             )
+            min_price = ""
             sort = "endingSoonest"
         auction = auctions_ending_before is not None
         summaries = []
@@ -270,7 +280,8 @@ class EbayClient:
                 "category_ids": CCG_INDIVIDUAL_CARDS_CATEGORY,
                 "filter": (
                     f"{buying_filter},"
-                    f"price:[..{MAX_PRICE_USD}],priceCurrency:USD"
+                    f"conditionIds:{{{UNGRADED_CONDITION_ID}}},"
+                    f"price:[{min_price}..{MAX_PRICE_USD}],priceCurrency:USD"
                 ),
                 "sort": sort,
                 "limit": str(limit),

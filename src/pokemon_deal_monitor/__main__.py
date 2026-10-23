@@ -262,7 +262,7 @@ def main() -> None:
             watch_and_alert(client, storage, notify)
             return
 
-        # Auctions are searched on every third poll at the default interval,
+        # Auctions are searched on every sixth poll at the default interval,
         # with a second's leeway in case a sleep wakes slightly early.
         status = MonitorStatus(started_at=utc_now())
         listener = build_listener(storage, status)
