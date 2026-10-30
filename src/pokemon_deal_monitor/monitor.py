@@ -19,7 +19,7 @@ from .valuation import Deal, Pricer, evaluate_auction, evaluate_deal, evaluate_o
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_POLL_INTERVAL_SECONDS = 300
+DEFAULT_POLL_INTERVAL_SECONDS = 240
 
 # Auctions are searched less often, keeping total calls under the daily
 # limit, and only those ending within the window: late enough that the

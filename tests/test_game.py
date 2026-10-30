@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from pokemon_deal_monitor.games import GAMES
 from pokemon_deal_monitor.games.pokemon.game import ALERT_RULES, POKEMON
+from pokemon_deal_monitor.monitor import DEFAULT_POLL_INTERVAL_SECONDS
 from pokemon_deal_monitor.storage import PriceRecord, Storage
 from pokemon_deal_monitor.valuation import (
     CardRules,
@@ -113,6 +114,21 @@ class TestSearchesDue(unittest.TestCase):
 
     def test_pokemon_intervals_name_its_searches(self):
         self.assertLessEqual(set(POKEMON.search_intervals), set(POKEMON.searches))
+
+    def test_intervals_are_whole_numbers_of_polls(self):
+        for game in GAMES:
+            for query, interval in game.search_intervals.items():
+                self.assertEqual(
+                    interval.total_seconds() % DEFAULT_POLL_INTERVAL_SECONDS, 0, query)
+
+    def test_buy_it_now_searches_leave_room_under_the_daily_limit(self):
+        day = timedelta(days=1)
+        poll = timedelta(seconds=DEFAULT_POLL_INTERVAL_SECONDS)
+        calls = sum(
+            day / game.search_intervals.get(query, poll)
+            for game in GAMES for query in game.searches
+        )
+        self.assertEqual(calls, 3270)
 
 
 class TestPricerPerGame(unittest.TestCase):

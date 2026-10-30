@@ -63,9 +63,9 @@ class TestCoroCoroMew(unittest.TestCase):
         self.assertIsNotNone(details_rejection(
             ItemDetails(None, "Japanese"), ENGLISH))
 
-    def test_searched_every_15_minutes(self):
+    def test_searched_every_16_minutes(self):
         self.assertEqual(POKEMON_JP.search_intervals["corocoro shining mew"],
-                         timedelta(minutes=15))
+                         timedelta(minutes=16))
 
     def test_alerts_like_every_pokemon_set(self):
         self.assertIs(POKEMON_JP.rules_for(MEW), ALERT_RULES)

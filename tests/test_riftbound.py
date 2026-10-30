@@ -1,4 +1,5 @@
 import unittest
+from datetime import timedelta
 
 from pokemon_deal_monitor.games import GAMES
 from pokemon_deal_monitor.games.pokemon.game import ALERT_RULES
@@ -57,6 +58,10 @@ class TestRiftboundSignatures(unittest.TestCase):
             "Defiant Dance (SFD 196/221) Riftbound Irelia Signature Spell",
         ):
             self.assertEqual(matches(title), [], title)
+
+    def test_searched_every_8_minutes(self):
+        self.assertEqual(RIFTBOUND.search_intervals["riftbound signature"],
+                         timedelta(minutes=8))
 
     def test_alerts_like_every_pokemon_set(self):
         for card in RIFTBOUND.cards:

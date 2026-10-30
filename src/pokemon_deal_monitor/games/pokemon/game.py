@@ -13,7 +13,7 @@ from .tcgplayer import TCGPLAYER
 
 # One search per target set, two for promos since sellers call them either
 # Black Star or WOTC promos. Each poll makes one call per query, so with the
-# Browse API's default 5,000 calls a day a 5 minute interval leaves headroom.
+# Browse API's default 5,000 calls a day SEARCH_INTERVALS keeps us under it.
 SEARCHES = [
     "pokemon base set 1st edition",
     "pokemon neo genesis 1st edition",
@@ -30,13 +30,16 @@ SEARCHES = [
 ]
 
 # Searches run less often than every poll. Each still reaches back many
-# hours, so these only delay alerts.
+# hours, so these only delay alerts. Polls are 4 minutes apart, so a search
+# runs on the first poll after its interval: use multiples of 4 minutes.
 SEARCH_INTERVALS = {
-    "pokemon neo genesis 1st edition": timedelta(minutes=15),
-    "pokemon neo discovery 1st edition": timedelta(minutes=15),
-    "pokemon neo revelation 1st edition": timedelta(minutes=15),
-    "pokemon southern islands": timedelta(minutes=10),
-    "pokemon wotc promo": timedelta(minutes=15),
+    "pokemon neo genesis 1st edition": timedelta(minutes=8),
+    "pokemon neo discovery 1st edition": timedelta(minutes=8),
+    "pokemon neo revelation 1st edition": timedelta(minutes=8),
+    "pokemon neo destiny 1st edition": timedelta(minutes=8),
+    "pokemon southern islands": timedelta(minutes=8),
+    "pokemon wotc promo": timedelta(minutes=8),
+    "pokemon black star promo": timedelta(minutes=12),
 }
 
 # How far over value a listing's total can be and still alert, for every

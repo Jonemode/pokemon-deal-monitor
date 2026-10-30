@@ -12,7 +12,7 @@ from .matcher import RULES
 SEARCHES = ["corocoro shining mew"]
 
 # Its 200 newest listings reach back over two months.
-SEARCH_INTERVALS = {"corocoro shining mew": timedelta(minutes=15)}
+SEARCH_INTERVALS = {"corocoro shining mew": timedelta(minutes=16)}
 
 # Listed by hand: TCGplayer doesn't sell Japanese promos, and the one card
 # is easier to map than to search for.
