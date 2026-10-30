@@ -64,6 +64,13 @@ DEFAULT_VARIANTS = {"basep": "normal"}
 
 PROMO_SETS = {"si1", "basep"}
 
+# Sets whose non-holo cards also came as reverse holos. Those are targeted
+# when no holo shares their art. A holo and a rare with the same art have
+# the same name and artist; the holo only swaps the background for stars.
+REVERSE_HOLO_ART_SETS = {"ecard1", "ecard2", "ecard3"}
+REVERSE_HOLO_RARITIES = {"Common", "Uncommon", "Rare"}
+HOLO_RARITIES = {"Rare Holo", "Rare Secret"}
+
 
 # Card numbers to keep, for sets the source data can't filter by rarity.
 # Each English Southern Islands card has a single printing: six are reverse
@@ -115,12 +122,37 @@ def build_set(set_info: dict, target: tuple) -> list[dict]:
     return entries
 
 
+def build_reverse_holos(set_info: dict, target: tuple) -> list[dict]:
+    """Return a set's reverse holos with art no holo in the set shares."""
+    set_id, set_name, edition, _, _ = target
+    cards = fetch_json(f"cards/en/{set_id}.json")
+    holo_art = {
+        (card["name"], card.get("artist"))
+        for card in cards if card.get("rarity") in HOLO_RARITIES
+    }
+    return [
+        {
+            "name": NAME_FIXES.get(card["name"], card["name"]),
+            "set_name": set_name,
+            "number": format_number(card["number"], set_info["printedTotal"], 0),
+            "variant": "reverse_holo",
+            "edition": edition,
+            "rarity": RARITY_MAP[card["rarity"]],
+        }
+        for card in cards
+        if card.get("rarity") in REVERSE_HOLO_RARITIES
+        and (card["name"], card.get("artist")) not in holo_art
+    ]
+
+
 def main() -> None:
     sets = {entry["id"]: entry for entry in fetch_json("sets/en.json")}
 
     catalog = []
     for target in TARGET_SETS:
         entries = build_set(sets[target[0]], target)
+        if target[0] in REVERSE_HOLO_ART_SETS:
+            entries += build_reverse_holos(sets[target[0]], target)
         print(f"{target[1]}: {len(entries)} cards")
         catalog.extend(entries)
 

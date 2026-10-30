@@ -992,6 +992,766 @@
     "rarity": "holo_rare"
   },
   {
+    "name": "Blastoise",
+    "set_name": "Expedition",
+    "number": "36/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Charizard",
+    "set_name": "Expedition",
+    "number": "39/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Feraligatr",
+    "set_name": "Expedition",
+    "number": "46/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Meganium",
+    "set_name": "Expedition",
+    "number": "53/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Typhlosion",
+    "set_name": "Expedition",
+    "number": "64/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Venusaur",
+    "set_name": "Expedition",
+    "number": "67/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Bayleef",
+    "set_name": "Expedition",
+    "number": "71/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Chansey",
+    "set_name": "Expedition",
+    "number": "72/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Charmeleon",
+    "set_name": "Expedition",
+    "number": "73/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Croconaw",
+    "set_name": "Expedition",
+    "number": "74/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Dragonair",
+    "set_name": "Expedition",
+    "number": "75/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Electabuzz",
+    "set_name": "Expedition",
+    "number": "76/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Flaaffy",
+    "set_name": "Expedition",
+    "number": "77/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Gloom",
+    "set_name": "Expedition",
+    "number": "78/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Graveler",
+    "set_name": "Expedition",
+    "number": "79/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Haunter",
+    "set_name": "Expedition",
+    "number": "80/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Hitmonlee",
+    "set_name": "Expedition",
+    "number": "81/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Ivysaur",
+    "set_name": "Expedition",
+    "number": "82/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Jynx",
+    "set_name": "Expedition",
+    "number": "83/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Kadabra",
+    "set_name": "Expedition",
+    "number": "84/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Machoke",
+    "set_name": "Expedition",
+    "number": "85/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Magmar",
+    "set_name": "Expedition",
+    "number": "86/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Metapod",
+    "set_name": "Expedition",
+    "number": "87/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Pidgeotto",
+    "set_name": "Expedition",
+    "number": "88/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Poliwhirl",
+    "set_name": "Expedition",
+    "number": "89/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Pupitar",
+    "set_name": "Expedition",
+    "number": "90/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Quilava",
+    "set_name": "Expedition",
+    "number": "91/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Wartortle",
+    "set_name": "Expedition",
+    "number": "92/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Abra",
+    "set_name": "Expedition",
+    "number": "93/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Bulbasaur",
+    "set_name": "Expedition",
+    "number": "94/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Bulbasaur",
+    "set_name": "Expedition",
+    "number": "95/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Caterpie",
+    "set_name": "Expedition",
+    "number": "96/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Charmander",
+    "set_name": "Expedition",
+    "number": "97/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Charmander",
+    "set_name": "Expedition",
+    "number": "98/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Chikorita",
+    "set_name": "Expedition",
+    "number": "99/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Chikorita",
+    "set_name": "Expedition",
+    "number": "100/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Clefairy",
+    "set_name": "Expedition",
+    "number": "101/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Corsola",
+    "set_name": "Expedition",
+    "number": "102/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Cubone",
+    "set_name": "Expedition",
+    "number": "103/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Cyndaquil",
+    "set_name": "Expedition",
+    "number": "104/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Cyndaquil",
+    "set_name": "Expedition",
+    "number": "105/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Diglett",
+    "set_name": "Expedition",
+    "number": "106/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Dratini",
+    "set_name": "Expedition",
+    "number": "107/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Ekans",
+    "set_name": "Expedition",
+    "number": "108/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Gastly",
+    "set_name": "Expedition",
+    "number": "109/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Geodude",
+    "set_name": "Expedition",
+    "number": "110/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Goldeen",
+    "set_name": "Expedition",
+    "number": "111/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Hoppip",
+    "set_name": "Expedition",
+    "number": "112/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Houndour",
+    "set_name": "Expedition",
+    "number": "113/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Koffing",
+    "set_name": "Expedition",
+    "number": "114/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Krabby",
+    "set_name": "Expedition",
+    "number": "115/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Larvitar",
+    "set_name": "Expedition",
+    "number": "116/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Machop",
+    "set_name": "Expedition",
+    "number": "117/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Magikarp",
+    "set_name": "Expedition",
+    "number": "118/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Mareep",
+    "set_name": "Expedition",
+    "number": "119/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Marill",
+    "set_name": "Expedition",
+    "number": "120/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Meowth",
+    "set_name": "Expedition",
+    "number": "121/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Oddish",
+    "set_name": "Expedition",
+    "number": "122/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Pidgey",
+    "set_name": "Expedition",
+    "number": "123/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Pikachu",
+    "set_name": "Expedition",
+    "number": "124/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Poliwag",
+    "set_name": "Expedition",
+    "number": "125/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Ponyta",
+    "set_name": "Expedition",
+    "number": "126/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Qwilfish",
+    "set_name": "Expedition",
+    "number": "127/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Rattata",
+    "set_name": "Expedition",
+    "number": "128/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Shellder",
+    "set_name": "Expedition",
+    "number": "129/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Spearow",
+    "set_name": "Expedition",
+    "number": "130/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Squirtle",
+    "set_name": "Expedition",
+    "number": "131/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Squirtle",
+    "set_name": "Expedition",
+    "number": "132/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Tauros",
+    "set_name": "Expedition",
+    "number": "133/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Totodile",
+    "set_name": "Expedition",
+    "number": "134/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Totodile",
+    "set_name": "Expedition",
+    "number": "135/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Vulpix",
+    "set_name": "Expedition",
+    "number": "136/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Bill's Maintenance",
+    "set_name": "Expedition",
+    "number": "137/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Copycat",
+    "set_name": "Expedition",
+    "number": "138/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Dual Ball",
+    "set_name": "Expedition",
+    "number": "139/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Energy Removal 2",
+    "set_name": "Expedition",
+    "number": "140/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Energy Restore",
+    "set_name": "Expedition",
+    "number": "141/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Mary's Impulse",
+    "set_name": "Expedition",
+    "number": "142/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Master Ball",
+    "set_name": "Expedition",
+    "number": "143/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Multi Technical Machine 01",
+    "set_name": "Expedition",
+    "number": "144/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Pokémon Nurse",
+    "set_name": "Expedition",
+    "number": "145/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Pokémon Reversal",
+    "set_name": "Expedition",
+    "number": "146/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Power Charge",
+    "set_name": "Expedition",
+    "number": "147/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Professor Elm's Training Method",
+    "set_name": "Expedition",
+    "number": "148/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Professor Oak's Research",
+    "set_name": "Expedition",
+    "number": "149/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Strength Charm",
+    "set_name": "Expedition",
+    "number": "150/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Super Scoop Up",
+    "set_name": "Expedition",
+    "number": "151/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Warp Point",
+    "set_name": "Expedition",
+    "number": "152/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Energy Search",
+    "set_name": "Expedition",
+    "number": "153/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Full Heal",
+    "set_name": "Expedition",
+    "number": "154/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Moo-Moo Milk",
+    "set_name": "Expedition",
+    "number": "155/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Potion",
+    "set_name": "Expedition",
+    "number": "156/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Switch",
+    "set_name": "Expedition",
+    "number": "157/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Darkness Energy",
+    "set_name": "Expedition",
+    "number": "158/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Metal Energy",
+    "set_name": "Expedition",
+    "number": "159/165",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
     "name": "Kingdra",
     "set_name": "Aquapolis",
     "number": "148/147",
@@ -1270,6 +2030,926 @@
     "variant": "holo",
     "edition": "unlimited",
     "rarity": "holo_rare"
+  },
+  {
+    "name": "Donphan",
+    "set_name": "Aquapolis",
+    "number": "7/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Elekid",
+    "set_name": "Aquapolis",
+    "number": "9/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Exeggutor",
+    "set_name": "Aquapolis",
+    "number": "13/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Houndoom",
+    "set_name": "Aquapolis",
+    "number": "14/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Jynx",
+    "set_name": "Aquapolis",
+    "number": "18/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Lanturn",
+    "set_name": "Aquapolis",
+    "number": "20/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Parasect",
+    "set_name": "Aquapolis",
+    "number": "27/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Porygon2",
+    "set_name": "Aquapolis",
+    "number": "28/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Primeape",
+    "set_name": "Aquapolis",
+    "number": "29/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Quagsire",
+    "set_name": "Aquapolis",
+    "number": "30/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Rapidash",
+    "set_name": "Aquapolis",
+    "number": "31/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Slowbro",
+    "set_name": "Aquapolis",
+    "number": "33/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Bellsprout",
+    "set_name": "Aquapolis",
+    "number": "45/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Dodrio",
+    "set_name": "Aquapolis",
+    "number": "46/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Flaaffy",
+    "set_name": "Aquapolis",
+    "number": "47/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Furret",
+    "set_name": "Aquapolis",
+    "number": "48/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Gloom",
+    "set_name": "Aquapolis",
+    "number": "49/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Golduck",
+    "set_name": "Aquapolis",
+    "number": "50/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Growlithe",
+    "set_name": "Aquapolis",
+    "number": "51/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Magnemite",
+    "set_name": "Aquapolis",
+    "number": "52/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Marill",
+    "set_name": "Aquapolis",
+    "number": "53/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Marowak",
+    "set_name": "Aquapolis",
+    "number": "54/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Nidorino",
+    "set_name": "Aquapolis",
+    "number": "55/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Pupitar",
+    "set_name": "Aquapolis",
+    "number": "56/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Scyther",
+    "set_name": "Aquapolis",
+    "number": "57/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Seadra",
+    "set_name": "Aquapolis",
+    "number": "58/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Seaking",
+    "set_name": "Aquapolis",
+    "number": "59/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Skiploom",
+    "set_name": "Aquapolis",
+    "number": "60/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Smoochum",
+    "set_name": "Aquapolis",
+    "number": "61/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Spinarak",
+    "set_name": "Aquapolis",
+    "number": "62/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Tyrogue",
+    "set_name": "Aquapolis",
+    "number": "63/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Voltorb",
+    "set_name": "Aquapolis",
+    "number": "64/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Weepinbell",
+    "set_name": "Aquapolis",
+    "number": "65/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Wooper",
+    "set_name": "Aquapolis",
+    "number": "66/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Aipom",
+    "set_name": "Aquapolis",
+    "number": "67/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Bellsprout",
+    "set_name": "Aquapolis",
+    "number": "68/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Chansey",
+    "set_name": "Aquapolis",
+    "number": "69/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Chinchou",
+    "set_name": "Aquapolis",
+    "number": "70/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Chinchou",
+    "set_name": "Aquapolis",
+    "number": "71/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Cubone",
+    "set_name": "Aquapolis",
+    "number": "72/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Doduo",
+    "set_name": "Aquapolis",
+    "number": "73/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Drowzee",
+    "set_name": "Aquapolis",
+    "number": "74/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Eevee",
+    "set_name": "Aquapolis",
+    "number": "75/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Exeggcute",
+    "set_name": "Aquapolis",
+    "number": "76/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Exeggcute",
+    "set_name": "Aquapolis",
+    "number": "77/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Goldeen",
+    "set_name": "Aquapolis",
+    "number": "78/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Grimer",
+    "set_name": "Aquapolis",
+    "number": "79/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Growlithe",
+    "set_name": "Aquapolis",
+    "number": "80/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Hitmonchan",
+    "set_name": "Aquapolis",
+    "number": "81/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Hitmontop",
+    "set_name": "Aquapolis",
+    "number": "82/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Hoppip",
+    "set_name": "Aquapolis",
+    "number": "83/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Horsea",
+    "set_name": "Aquapolis",
+    "number": "84/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Horsea",
+    "set_name": "Aquapolis",
+    "number": "85/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Houndour",
+    "set_name": "Aquapolis",
+    "number": "86/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Houndour",
+    "set_name": "Aquapolis",
+    "number": "87/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Kangaskhan",
+    "set_name": "Aquapolis",
+    "number": "88/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Larvitar",
+    "set_name": "Aquapolis",
+    "number": "89/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Lickitung",
+    "set_name": "Aquapolis",
+    "number": "90/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Magnemite",
+    "set_name": "Aquapolis",
+    "number": "91/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Mankey",
+    "set_name": "Aquapolis",
+    "number": "92/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Mareep",
+    "set_name": "Aquapolis",
+    "number": "93/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Miltank",
+    "set_name": "Aquapolis",
+    "number": "94/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Mr. Mime",
+    "set_name": "Aquapolis",
+    "number": "95/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Nidoran ♂",
+    "set_name": "Aquapolis",
+    "number": "96/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Oddish",
+    "set_name": "Aquapolis",
+    "number": "97/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Onix",
+    "set_name": "Aquapolis",
+    "number": "98/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Paras",
+    "set_name": "Aquapolis",
+    "number": "99/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Phanpy",
+    "set_name": "Aquapolis",
+    "number": "100/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Pinsir",
+    "set_name": "Aquapolis",
+    "number": "101/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Ponyta",
+    "set_name": "Aquapolis",
+    "number": "102/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Porygon",
+    "set_name": "Aquapolis",
+    "number": "103/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Psyduck",
+    "set_name": "Aquapolis",
+    "number": "104/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Remoraid",
+    "set_name": "Aquapolis",
+    "number": "105/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Scyther",
+    "set_name": "Aquapolis",
+    "number": "106/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Sentret",
+    "set_name": "Aquapolis",
+    "number": "107/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Slowpoke",
+    "set_name": "Aquapolis",
+    "number": "108/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Smeargle",
+    "set_name": "Aquapolis",
+    "number": "109/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Sneasel",
+    "set_name": "Aquapolis",
+    "number": "110/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Spinarak",
+    "set_name": "Aquapolis",
+    "number": "111/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Tangela",
+    "set_name": "Aquapolis",
+    "number": "112/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Tentacool",
+    "set_name": "Aquapolis",
+    "number": "113/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Togepi",
+    "set_name": "Aquapolis",
+    "number": "114/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Voltorb",
+    "set_name": "Aquapolis",
+    "number": "115/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Vulpix",
+    "set_name": "Aquapolis",
+    "number": "116/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Wooper",
+    "set_name": "Aquapolis",
+    "number": "117/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Apricorn Forest",
+    "set_name": "Aquapolis",
+    "number": "118/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Darkness Cube 01",
+    "set_name": "Aquapolis",
+    "number": "119/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Energy Switch",
+    "set_name": "Aquapolis",
+    "number": "120/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Fighting Cube 01",
+    "set_name": "Aquapolis",
+    "number": "121/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Fire Cube 01",
+    "set_name": "Aquapolis",
+    "number": "122/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Forest Guardian",
+    "set_name": "Aquapolis",
+    "number": "123/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Grass Cube 01",
+    "set_name": "Aquapolis",
+    "number": "124/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Healing Berry",
+    "set_name": "Aquapolis",
+    "number": "125/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Juggler",
+    "set_name": "Aquapolis",
+    "number": "126/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Lightning Cube 01",
+    "set_name": "Aquapolis",
+    "number": "127/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Memory Berry",
+    "set_name": "Aquapolis",
+    "number": "128/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Metal Cube 01",
+    "set_name": "Aquapolis",
+    "number": "129/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Pokémon Fan Club",
+    "set_name": "Aquapolis",
+    "number": "130/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Pokémon Park",
+    "set_name": "Aquapolis",
+    "number": "131/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Psychic Cube 01",
+    "set_name": "Aquapolis",
+    "number": "132/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Seer",
+    "set_name": "Aquapolis",
+    "number": "133/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Super Energy Removal 2",
+    "set_name": "Aquapolis",
+    "number": "134/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Time Shard",
+    "set_name": "Aquapolis",
+    "number": "135/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Town Volunteers",
+    "set_name": "Aquapolis",
+    "number": "136/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Traveling Salesman",
+    "set_name": "Aquapolis",
+    "number": "137/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Undersea Ruins",
+    "set_name": "Aquapolis",
+    "number": "138/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Power Plant",
+    "set_name": "Aquapolis",
+    "number": "139/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Water Cube 01",
+    "set_name": "Aquapolis",
+    "number": "140/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Weakness Guard",
+    "set_name": "Aquapolis",
+    "number": "141/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Darkness Energy",
+    "set_name": "Aquapolis",
+    "number": "142/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Metal Energy",
+    "set_name": "Aquapolis",
+    "number": "143/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Rainbow Energy",
+    "set_name": "Aquapolis",
+    "number": "144/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Boost Energy",
+    "set_name": "Aquapolis",
+    "number": "145/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Crystal Energy",
+    "set_name": "Aquapolis",
+    "number": "146/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Warp Energy",
+    "set_name": "Aquapolis",
+    "number": "147/147",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
   },
   {
     "name": "Celebi",
@@ -1574,6 +3254,902 @@
     "variant": "holo",
     "edition": "unlimited",
     "rarity": "holo_rare"
+  },
+  {
+    "name": "Aerodactyl",
+    "set_name": "Skyridge",
+    "number": "1/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Omastar",
+    "set_name": "Skyridge",
+    "number": "23/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Wigglytuff",
+    "set_name": "Skyridge",
+    "number": "34/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "rare"
+  },
+  {
+    "name": "Electrode",
+    "set_name": "Skyridge",
+    "number": "36/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Kabuto",
+    "set_name": "Skyridge",
+    "number": "37/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Machoke",
+    "set_name": "Skyridge",
+    "number": "38/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Misdreavus",
+    "set_name": "Skyridge",
+    "number": "39/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Noctowl",
+    "set_name": "Skyridge",
+    "number": "40/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Omanyte",
+    "set_name": "Skyridge",
+    "number": "41/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Persian",
+    "set_name": "Skyridge",
+    "number": "42/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Piloswine",
+    "set_name": "Skyridge",
+    "number": "43/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Starmie",
+    "set_name": "Skyridge",
+    "number": "44/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Wobbuffet",
+    "set_name": "Skyridge",
+    "number": "45/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Abra",
+    "set_name": "Skyridge",
+    "number": "46/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Buried Fossil",
+    "set_name": "Skyridge",
+    "number": "47/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Cleffa",
+    "set_name": "Skyridge",
+    "number": "48/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Delibird",
+    "set_name": "Skyridge",
+    "number": "49/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Diglett",
+    "set_name": "Skyridge",
+    "number": "50/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Ditto",
+    "set_name": "Skyridge",
+    "number": "51/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Dugtrio",
+    "set_name": "Skyridge",
+    "number": "52/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Dunsparce",
+    "set_name": "Skyridge",
+    "number": "53/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Eevee",
+    "set_name": "Skyridge",
+    "number": "54/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Farfetch'd",
+    "set_name": "Skyridge",
+    "number": "55/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Forretress",
+    "set_name": "Skyridge",
+    "number": "56/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Gastly",
+    "set_name": "Skyridge",
+    "number": "57/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Girafarig",
+    "set_name": "Skyridge",
+    "number": "58/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Gligar",
+    "set_name": "Skyridge",
+    "number": "59/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Golbat",
+    "set_name": "Skyridge",
+    "number": "60/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Granbull",
+    "set_name": "Skyridge",
+    "number": "61/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Growlithe",
+    "set_name": "Skyridge",
+    "number": "62/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Haunter",
+    "set_name": "Skyridge",
+    "number": "63/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Heracross",
+    "set_name": "Skyridge",
+    "number": "64/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Hoothoot",
+    "set_name": "Skyridge",
+    "number": "65/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Houndour",
+    "set_name": "Skyridge",
+    "number": "66/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Igglybuff",
+    "set_name": "Skyridge",
+    "number": "67/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Jigglypuff",
+    "set_name": "Skyridge",
+    "number": "68/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Kadabra",
+    "set_name": "Skyridge",
+    "number": "69/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Kakuna",
+    "set_name": "Skyridge",
+    "number": "70/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Lapras",
+    "set_name": "Skyridge",
+    "number": "71/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Ledyba",
+    "set_name": "Skyridge",
+    "number": "72/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Ledyba",
+    "set_name": "Skyridge",
+    "number": "73/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Machop",
+    "set_name": "Skyridge",
+    "number": "74/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Magikarp",
+    "set_name": "Skyridge",
+    "number": "75/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Magnemite",
+    "set_name": "Skyridge",
+    "number": "76/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Mantine",
+    "set_name": "Skyridge",
+    "number": "77/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Meowth",
+    "set_name": "Skyridge",
+    "number": "78/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Murkrow",
+    "set_name": "Skyridge",
+    "number": "79/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Natu",
+    "set_name": "Skyridge",
+    "number": "80/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Nidoran ♀",
+    "set_name": "Skyridge",
+    "number": "81/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Nidoran ♀",
+    "set_name": "Skyridge",
+    "number": "82/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Nidorina",
+    "set_name": "Skyridge",
+    "number": "83/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Pikachu",
+    "set_name": "Skyridge",
+    "number": "84/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Pineco",
+    "set_name": "Skyridge",
+    "number": "85/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Pineco",
+    "set_name": "Skyridge",
+    "number": "86/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Poliwag",
+    "set_name": "Skyridge",
+    "number": "87/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Poliwhirl",
+    "set_name": "Skyridge",
+    "number": "88/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Raticate",
+    "set_name": "Skyridge",
+    "number": "89/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Rattata",
+    "set_name": "Skyridge",
+    "number": "90/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Rhyhorn",
+    "set_name": "Skyridge",
+    "number": "91/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Sandshrew",
+    "set_name": "Skyridge",
+    "number": "92/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Sandslash",
+    "set_name": "Skyridge",
+    "number": "93/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Seel",
+    "set_name": "Skyridge",
+    "number": "94/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Seel",
+    "set_name": "Skyridge",
+    "number": "95/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Shuckle",
+    "set_name": "Skyridge",
+    "number": "96/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Skarmory",
+    "set_name": "Skyridge",
+    "number": "97/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Slugma",
+    "set_name": "Skyridge",
+    "number": "98/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Slugma",
+    "set_name": "Skyridge",
+    "number": "99/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Snorlax",
+    "set_name": "Skyridge",
+    "number": "100/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Snubbull",
+    "set_name": "Skyridge",
+    "number": "101/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Stantler",
+    "set_name": "Skyridge",
+    "number": "102/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Staryu",
+    "set_name": "Skyridge",
+    "number": "103/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Staryu",
+    "set_name": "Skyridge",
+    "number": "104/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Sunflora",
+    "set_name": "Skyridge",
+    "number": "105/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Sunkern",
+    "set_name": "Skyridge",
+    "number": "106/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Swinub",
+    "set_name": "Skyridge",
+    "number": "107/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Swinub",
+    "set_name": "Skyridge",
+    "number": "108/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Teddiursa",
+    "set_name": "Skyridge",
+    "number": "109/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Ursaring",
+    "set_name": "Skyridge",
+    "number": "110/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Venomoth",
+    "set_name": "Skyridge",
+    "number": "111/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Venonat",
+    "set_name": "Skyridge",
+    "number": "112/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Voltorb",
+    "set_name": "Skyridge",
+    "number": "113/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Weedle",
+    "set_name": "Skyridge",
+    "number": "114/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Weedle",
+    "set_name": "Skyridge",
+    "number": "115/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Yanma",
+    "set_name": "Skyridge",
+    "number": "116/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Zubat",
+    "set_name": "Skyridge",
+    "number": "117/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Zubat",
+    "set_name": "Skyridge",
+    "number": "118/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "common"
+  },
+  {
+    "name": "Ancient Ruins",
+    "set_name": "Skyridge",
+    "number": "119/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Relic Hunter",
+    "set_name": "Skyridge",
+    "number": "120/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Apricorn Maker",
+    "set_name": "Skyridge",
+    "number": "121/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Crystal Shard",
+    "set_name": "Skyridge",
+    "number": "122/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Desert Shaman",
+    "set_name": "Skyridge",
+    "number": "123/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Fast Ball",
+    "set_name": "Skyridge",
+    "number": "124/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Fisherman",
+    "set_name": "Skyridge",
+    "number": "125/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Friend Ball",
+    "set_name": "Skyridge",
+    "number": "126/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Hyper Potion",
+    "set_name": "Skyridge",
+    "number": "127/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Lure Ball",
+    "set_name": "Skyridge",
+    "number": "128/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Miracle Sphere α",
+    "set_name": "Skyridge",
+    "number": "129/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Miracle Sphere β",
+    "set_name": "Skyridge",
+    "number": "130/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Miracle Sphere γ",
+    "set_name": "Skyridge",
+    "number": "131/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Mirage Stadium",
+    "set_name": "Skyridge",
+    "number": "132/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Mystery Plate α",
+    "set_name": "Skyridge",
+    "number": "133/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Mystery Plate β",
+    "set_name": "Skyridge",
+    "number": "134/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Mystery Plate γ",
+    "set_name": "Skyridge",
+    "number": "135/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Mystery Plate δ",
+    "set_name": "Skyridge",
+    "number": "136/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Mystery Zone",
+    "set_name": "Skyridge",
+    "number": "137/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Oracle",
+    "set_name": "Skyridge",
+    "number": "138/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Star Piece",
+    "set_name": "Skyridge",
+    "number": "139/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Underground Expedition",
+    "set_name": "Skyridge",
+    "number": "140/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Underground Lake",
+    "set_name": "Skyridge",
+    "number": "141/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Bounce Energy",
+    "set_name": "Skyridge",
+    "number": "142/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Cyclone Energy",
+    "set_name": "Skyridge",
+    "number": "143/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Retro Energy",
+    "set_name": "Skyridge",
+    "number": "144/144",
+    "variant": "reverse_holo",
+    "edition": "unlimited",
+    "rarity": "uncommon"
   },
   {
     "name": "Mew",

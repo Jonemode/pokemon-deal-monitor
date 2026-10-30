@@ -10,15 +10,18 @@ EXPECTED_SET_COUNTS = {
     "Neo Discovery": 17,
     "Neo Revelation": 16,
     "Neo Destiny": 24,
-    "Expedition": 32,
-    "Aquapolis": 35,
-    "Skyridge": 38,
+    "Expedition": 127,
+    "Aquapolis": 150,
+    "Skyridge": 150,
     "Southern Islands": 6,
     "Legendary Collection": 110,
     "Wizards Black Star Promos": 53,
 }
 
 PROMOS = "Wizards Black Star Promos"
+
+# Sets with holos, and reverse holos whose art no holo shares.
+E_CARD_SETS = ("Expedition", "Aquapolis", "Skyridge")
 
 FIRST_EDITION_SETS = {
     "Base Set",
@@ -58,6 +61,9 @@ class TestCardData(unittest.TestCase):
     def test_variants(self):
         for card in self.cards:
             if card.set_name == PROMOS:
+                continue
+            if card.set_name in E_CARD_SETS:
+                self.assertIn(card.variant, (Variant.HOLO, Variant.REVERSE_HOLO))
                 continue
             expected = (
                 Variant.REVERSE_HOLO
@@ -107,6 +113,8 @@ class TestCardData(unittest.TestCase):
         allowed = {Rarity.HOLO_RARE, Rarity.SHINING, Rarity.CRYSTAL}
         for card in self.cards:
             if card.set_name in ("Southern Islands", "Legendary Collection", PROMOS):
+                continue
+            if card.variant == Variant.REVERSE_HOLO:
                 continue
             self.assertIn(card.rarity, allowed, card.identifier)
 

@@ -41,7 +41,7 @@ REVERSE_HOLO_PATTERN = re.compile(
     r"\breverse\b|\brev holo\b|\bfirework|\bswirl|\bcosmo"
 )
 # Sellers label the non-holo version of a reverse holo card "Regular".
-REGULAR_PATTERN = re.compile(r"\bregular\b")
+REGULAR_PATTERN = re.compile(r"\bregular\b|\b(?:non|not) reverse\b")
 HOLO_PATTERN = re.compile(r"\bholo|\bfoil\b")
 CRYSTAL_PATTERN = re.compile(r"\bcrystal\b")
 
@@ -187,6 +187,14 @@ class PokemonTitleRules(TitleRules):
         elif card.variant == Variant.REVERSE_HOLO:
             if not mentions_reverse or REGULAR_PATTERN.search(text):
                 return None
+            # Reverse holos of the same Pokémon with other art, or sharing
+            # a holo's, aren't in the catalog, so only the number tells them
+            # apart. A number that isn't this card's has already ruled it out.
+            if (
+                card.set_name in SETS_WITH_NON_HOLO_DUPLICATES
+                and not any(self.title_numbers(text))
+            ):
+                return None
         elif mentions_reverse:
             return None
 
@@ -204,6 +212,7 @@ class PokemonTitleRules(TitleRules):
 
         if (
             card.set_name in SETS_WITH_NON_HOLO_DUPLICATES
+            and card.variant == Variant.HOLO
             and not is_crystal
             and full not in title_full_numbers
             and not HOLO_PATTERN.search(text)

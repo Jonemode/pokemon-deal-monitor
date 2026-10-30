@@ -5,8 +5,8 @@ from datetime import timedelta
 
 from ...game import Game
 from ...valuation import CardRules
-from .catalog import CARDS, GAME
-from .matcher import RULES
+from .catalog import CARDS, GAME, Variant
+from .matcher import RULES, SETS_WITH_NON_HOLO_DUPLICATES
 from .pricecharting import PRODUCT_IDS_PATH
 from .tcgplayer import TCGPLAYER
 
@@ -54,6 +54,10 @@ ALERT_RULES = replace(CardRules.up_to_over_value(MAX_OVER_VALUE),
 # Promos skip the many worth only a few dollars.
 PROMO_RULES = replace(ALERT_RULES, min_value_cents=5000)
 
+# E-Card reverse holos with art no holo shares skip the many commons worth
+# only a few dollars.
+REVERSE_HOLO_ART_RULES = replace(ALERT_RULES, min_value_cents=5000)
+
 # Cards sellers often list wrongly, with a far cheaper card's listing
 # titled as this one. A discount beyond this is taken to mean the wrong
 # card rather than a bargain.
@@ -72,6 +76,12 @@ POKEMON = Game(
     set_rules={"Wizards Black Star Promos": PROMO_RULES},
     # Each replaces its set's rules.
     card_rules={
+        **{
+            card.identifier: REVERSE_HOLO_ART_RULES
+            for card in CARDS
+            if card.variant == Variant.REVERSE_HOLO
+            and card.set_name in SETS_WITH_NON_HOLO_DUPLICATES
+        },
         # 30th Anniversary Lugia reprints listed as Aquapolis.
         "pokemon:Aquapolis:149/147:holo:unlimited": replace(
             ALERT_RULES, max_plausible_discount=MISLISTED_CARD_DISCOUNT),
