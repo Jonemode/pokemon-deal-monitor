@@ -57,9 +57,9 @@ ALERT_RULES = replace(CardRules.up_to_over_value(MAX_OVER_VALUE),
 # Promos skip the many worth only a few dollars.
 PROMO_RULES = replace(ALERT_RULES, min_value_cents=5000)
 
-# E-Card reverse holos with art no holo shares skip the many commons worth
-# only a few dollars.
-REVERSE_HOLO_ART_RULES = replace(ALERT_RULES, min_value_cents=5000)
+# E-Card reverse holos with art no holo shares. A few have no PriceCharting
+# price, such as Aquapolis Golduck with its 50a and 50b printings.
+REVERSE_HOLO_ART_RULES = replace(ALERT_RULES, alert_without_value=True)
 
 # Cards sellers often list wrongly, with a far cheaper card's listing
 # titled as this one. A discount beyond this is taken to mean the wrong

@@ -67,7 +67,8 @@ def format_alert(
 
     Prices include shipping, as the value comparison does. An auction gives
     its current bid, time left and suggested maximum bid; a Best Offer
-    listing its asking price.
+    listing its asking price. A card with no value says so in place of the
+    comparison, and has no maximum bid.
     """
     card = candidate.match.card
     deal = candidate.deal
@@ -77,10 +78,12 @@ def format_alert(
         f'<a href="{url}"><b>{html.escape(card.name)} · '
         f"{html.escape(card.set_name)}</b></a>"
     )
-    total = format_whole_dollars(deal.total_cents)
     shipping_known = item.shipping_cents is not None
+    total = format_whole_dollars(item.price_cents + (item.shipping_cents or 0))
     # Sets allowed over value can alert on a price above it.
-    if deal.discount < 0:
+    if candidate.no_value:
+        versus = "No value"
+    elif deal.discount < 0:
         versus = f"{-deal.discount:.0%} over"
     else:
         versus = f"{deal.discount:.0%} off"
@@ -89,12 +92,13 @@ def format_alert(
         # The max bid allows for shipping, so with shipping unknown it is
         # before shipping.
         bid = total if shipping_known else f"{total} + ship"
-        max_bid = format_whole_dollars(deal.max_bid_cents, round_down=True)
         line = (
             f"{versus} · Bid {bid} · "
             f"{format_time_left(item.ends_at, now or utc_now(), timezone)}"
-            f" · max {max_bid}" + ("" if shipping_known else " + ship")
         )
+        if not candidate.no_value:
+            max_bid = format_whole_dollars(deal.max_bid_cents, round_down=True)
+            line += f" · max {max_bid}" + ("" if shipping_known else " + ship")
     elif item.best_offer:
         asking = total if shipping_known else f"{total} + ship"
         line = f"{versus} · {asking} obo"
@@ -152,16 +156,18 @@ def send_alerts(
     now: datetime | None = None,
     timezone: tzinfo | None = None,
 ) -> int:
-    """Send an alert for each qualifying deal, best discount first.
-    Returns the number of alerts sent."""
+    """Send an alert for each qualifying deal, best discount first, then
+    each listing with no value. Returns the number of alerts sent."""
     now = now or utc_now()
     deals = sorted(
-        (c for c in poll.candidates if c.deal is not None and c.deal.qualifies),
+        (c for c in poll.candidates
+         if not c.no_value and c.deal is not None and c.deal.qualifies),
         key=lambda c: c.deal.discount,
         reverse=True,
     )
+    no_values = [c for c in poll.candidates if c.no_value]
     return send_each([(c.item.item_id, format_alert(c, now, timezone))
-                      for c in deals],
+                      for c in deals + no_values],
                      storage, send, now)
 
 

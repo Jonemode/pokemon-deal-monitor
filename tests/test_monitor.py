@@ -60,6 +60,58 @@ class FixedPricer:
         })
 
 
+class NoValuePricer:
+    """Has no price for any card, which alert under NoValuePricer's rules."""
+
+    game = replace(GAME, default_rules=replace(DEFAULT_RULES, alert_without_value=True))
+
+    def valuation(self, card, now=None):
+        return None
+
+
+class TestNoValue(unittest.TestCase):
+
+    def setUp(self):
+        self.storage = Storage(":memory:")
+        self.addCleanup(self.storage.close)
+
+    def poll(self, pricer, title=LUGIA, summary=None, now=START):
+        self.transport = FakeTransport({"neo": search_response(
+            summary or item_summary("1", title, "100.00"))})
+        client = EbayClient(CONFIG, transport=self.transport)
+        return poll_once(client, self.storage, GAME, queries=["neo"],
+                         now=now, pricer=pricer)
+
+    def test_alerts_under_the_cards_rule_with_details_looked_up(self):
+        (candidate,) = self.poll(NoValuePricer()).candidates
+        self.assertTrue(candidate.no_value)
+        self.assertIsNone(candidate.deal)
+        self.assertEqual(len(self.transport.item_requests), 1)
+
+    def test_not_without_the_rule(self):
+        class Pricer(NoValuePricer):
+            game = GAME
+        (candidate,) = self.poll(Pricer()).candidates
+        self.assertFalse(candidate.no_value)
+        self.assertEqual(self.transport.item_requests, [])
+
+    def test_a_low_confidence_value_counts_as_no_value(self):
+        class Pricer(NoValuePricer):
+            def valuation(self, card, now=None):
+                return value_card({TCGPLAYER: PriceRecord(
+                    card.identifier, TCGPLAYER, START, raw_cents=200000)})
+        (candidate,) = self.poll(Pricer()).candidates
+        self.assertTrue(candidate.no_value)
+
+    def test_a_confident_value_is_compared_as_usual(self):
+        class Pricer(FixedPricer):
+            game = NoValuePricer.game
+        (candidate,) = self.poll(Pricer(), summary=item_summary(
+            "1", LUGIA, "2500.00")).candidates
+        self.assertFalse(candidate.no_value)
+        self.assertFalse(candidate.deal.qualifies)
+
+
 class TestPollOnce(unittest.TestCase):
 
     def setUp(self):

@@ -45,9 +45,11 @@ REGULAR_PATTERN = re.compile(r"\bregular\b|\b(?:non|not) reverse\b")
 HOLO_PATTERN = re.compile(r"\bholo|\bfoil\b")
 CRYSTAL_PATTERN = re.compile(r"\bcrystal\b")
 
-FULL_NUMBER_PATTERN = re.compile(r"\b(h?)0*(\d{1,3}) ?/ ?(h?)0*(\d{1,3})\b")
+# A few Aquapolis cards have printings numbered e.g. 50a and 50b, which share
+# a catalog entry.
+FULL_NUMBER_PATTERN = re.compile(r"\b(h?)0*(\d{1,3})[ab]? ?/ ?(h?)0*(\d{1,3})\b")
 PARTIAL_NUMBER_PATTERN = re.compile(
-    r"#\s?(h?)0*(\d{1,3})\b|\b(h)0*(\d{1,2})\b"
+    r"#\s?(h?)0*(\d{1,3})[ab]?\b|\b(h)0*(\d{1,2})\b"
     # Promo numbers are also written "No. 4" or "Promo 4".
     r"|\b(?:no|promo) ?#?0*(\d{1,3})\b"
 )

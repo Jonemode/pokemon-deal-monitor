@@ -67,6 +67,9 @@ class CardRules:
     # different card rather than a bargain. Auctions of these cards are
     # skipped, since a low current bid says nothing about which card it is.
     max_plausible_discount: float | None = None
+    # Alert on every listing of a card with no confident value, for cards
+    # PriceCharting doesn't price, since there's nothing to compare it to.
+    alert_without_value: bool = False
 
     @classmethod
     def up_to_over_value(cls, premium: float) -> "CardRules":

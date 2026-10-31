@@ -63,6 +63,38 @@ def auction_candidate(bid_cents, shipping_cents=500, bids=3,
 HEADING = '<a href="https://www.ebay.com/itm/1"><b>Lugia · Neo Genesis</b></a>\n'
 
 
+def no_value_candidate(item_id="1", auction=False):
+    item = EbayItem(item_id=item_id, title="Lugia 9/111 Neo Genesis 1st Edition",
+                    url=f"https://www.ebay.com/itm/{item_id}", price_cents=4000,
+                    currency="USD", shipping_cents=500, auction=auction,
+                    ends_at=START + timedelta(hours=1) if auction else None)
+    return Candidate(item, Match(LUGIA, 1.0), UpsertResult.NEW, no_value=True)
+
+
+class TestNoValueAlert(unittest.TestCase):
+
+    def test_says_no_value_in_place_of_the_comparison(self):
+        self.assertEqual(format_alert(no_value_candidate()),
+                         HEADING + "No value · $45 shipped")
+
+    def test_auction_has_no_maximum_bid(self):
+        self.assertEqual(format_alert(no_value_candidate(auction=True), now=START),
+                         HEADING + "No value · Bid $45 · 1h 0m left")
+
+    def test_sent_after_deals(self):
+        candidates = [no_value_candidate("2"), candidate("3", 140000)]
+        with Storage(":memory:") as storage:
+            for c in candidates:
+                storage.upsert_listing(c.item.to_listing(LUGIA.identifier, 1.0),
+                                       now=START)
+            sent = []
+            count = send_alerts(PollResult(candidates=candidates),
+                                storage, sent.append, now=START)
+        self.assertEqual(count, 2)
+        self.assertIn("off", sent[0])
+        self.assertIn("No value", sent[1])
+
+
 class TestFormatAlert(unittest.TestCase):
 
     def test_alert_contents(self):

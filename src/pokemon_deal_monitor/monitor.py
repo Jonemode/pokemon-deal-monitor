@@ -54,6 +54,8 @@ class Candidate:
     # None when no pricer was given or the card has no known value.
     deal: Deal | None = None
     details: ItemDetails | None = None
+    # Alerts with no confident value, under the card's alert_without_value.
+    no_value: bool = False
 
 
 @dataclass
@@ -212,7 +214,12 @@ def poll_once(
             matched += 1
 
             deal = value_listing(pricer, best, item, listing, now)
-            qualifies = deal is not None and deal.qualifies
+            no_value = (
+                pricer is not None
+                and pricer.game.rules_for(best.card).alert_without_value
+                and (deal is None or not deal.valuation.confident)
+            )
+            qualifies = no_value or (deal is not None and deal.qualifies)
 
             # Each detail lookup is a call, so only listings that would alert
             # on price are looked up, once, then read from storage. One that
@@ -238,7 +245,7 @@ def poll_once(
 
             if result != UpsertResult.UNCHANGED or qualifies:
                 poll.candidates.append(
-                    Candidate(item, best, result, deal, details)
+                    Candidate(item, best, result, deal, details, no_value)
                 )
 
         # For tuning searches: how far back a Buy It Now search reaches,

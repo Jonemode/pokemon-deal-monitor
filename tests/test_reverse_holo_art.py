@@ -70,10 +70,20 @@ class TestReverseHolosWithUniqueArt(unittest.TestCase):
         self.assertEqual(matches("Charizard 6/165 Expedition Holo"),
                          [("Expedition", "6/165", Variant.HOLO)])
 
-    def test_alert_only_at_50_dollars_or_more(self):
+    def test_lettered_printings_match_their_catalog_entry(self):
+        for title, expected in (
+            ("Golduck 50a/147 Aquapolis Reverse Holo", ("Aquapolis", "50/147")),
+            ("Porygon 103b/147 Aquapolis Reverse Holo", ("Aquapolis", "103/147")),
+            ("Mr. Mime Reverse Foil Aquapolis #95a", ("Aquapolis", "95/147")),
+        ):
+            self.assertEqual(matches(title), [(*expected, Variant.REVERSE_HOLO)], title)
+
+    def test_no_minimum_value_and_alert_without_one(self):
         self.assertIs(POKEMON.rules_for(card("Expedition", "121/165")),
                       REVERSE_HOLO_ART_RULES)
-        self.assertEqual(REVERSE_HOLO_ART_RULES.min_value_cents, 5000)
+        self.assertIsNone(REVERSE_HOLO_ART_RULES.min_value_cents)
+        self.assertTrue(REVERSE_HOLO_ART_RULES.alert_without_value)
         (holo,) = [c for c in CARDS if c.set_name == "Expedition"
                    and c.number == "6/165"]
         self.assertIs(POKEMON.rules_for(holo), ALERT_RULES)
+        self.assertFalse(ALERT_RULES.alert_without_value)

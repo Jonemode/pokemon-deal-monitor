@@ -44,6 +44,8 @@ COMMAND_WAIT_SECONDS = 20
 
 def describe_deal(candidate) -> str:
     deal = candidate.deal
+    if candidate.no_value:
+        return "ALERT no value"
     if deal is None:
         return "no value"
     valuation = deal.valuation
