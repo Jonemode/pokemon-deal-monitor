@@ -32,7 +32,7 @@ from .status import CommandListener, MonitorStatus, format_status
 from .storage import Storage, utc_now
 from .telegram import TelegramClient, TelegramError
 from .valuation import Pricer
-from .watch import poll_watches
+from .watch import WATCHES, poll_watches
 
 
 logger = logging.getLogger("pokemon_deal_monitor")
@@ -204,8 +204,8 @@ def poll_and_alert(client, storage, pricer, notify, auctions=False,
     return poll
 
 
-def watch_and_alert(client, storage, notify) -> None:
-    result = poll_watches(client, storage)
+def watch_and_alert(client, storage, notify, watches=WATCHES) -> None:
+    result = poll_watches(client, storage, watches)
     for hit in result.hits:
         logger.info("[watch] %s | %s | %s", hit.watch.name,
                     format_dollars(hit.item.price_cents), hit.item.url)
@@ -296,9 +296,11 @@ def main() -> None:
                                               auctions=True,
                                               quiet_hours=quiet_hours)
                         status.record(poll, auctions=True, now=utc_now())
-                    # Watched cards share the auctions' schedule, keeping
-                    # eBay calls under the daily limit.
-                    watch_and_alert(client, storage, notify)
+                # Most watched cards share the auctions' schedule, keeping
+                # eBay calls under the daily limit.
+                watch_and_alert(client, storage, notify, [
+                    watch for watch in WATCHES if auctions_due or watch.every_poll
+                ])
             except Exception:
                 # Keep the monitor alive through transient network failures.
                 logger.exception("Poll failed")

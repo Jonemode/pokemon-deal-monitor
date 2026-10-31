@@ -7,12 +7,22 @@ from pokemon_deal_monitor.ebay import EbayClient
 from pokemon_deal_monitor.storage import Storage
 from pokemon_deal_monitor.watch import WATCHES, WatchHit, poll_watches
 
-from .fakes import CONFIG, FakeTransport, auction_summary, item_summary, search_response
+from .fakes import (
+    CONFIG,
+    FakeTransport,
+    auction_summary,
+    item_response,
+    item_summary,
+    search_response,
+)
 
 
 START = datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc)
 CORNHOLIO = WATCHES[0]
 FLEER = "1995 FLEER ULTRA MTV ANIMATION #29 CORNHOLIO PSA 10"
+NAMI = WATCHES[1]
+STAMPED = "Nami Kentaro Yabuki EB05-055 L Foil Stamped Heroines Vol.2 ONE PIECE Japanese"
+UNSAID = "Nami Kentaro Yabuki SR-P Foil Stamped EB05-055 Heroines Edition One Piece TCG"
 
 
 class TestWatchMatching(unittest.TestCase):
@@ -27,6 +37,90 @@ class TestWatchMatching(unittest.TestCase):
             "BEAVIS and BUTTHEAD Sericel The Great Cornholio MTV Sericel Animation Art Cel",
         ):
             self.assertFalse(CORNHOLIO.matches(title), title)
+
+
+class TestNamiMatching(unittest.TestCase):
+
+    def test_stamped_titles(self):
+        for title in (
+            STAMPED,
+            UNSAID,
+            "Nami (Kentaro Yabuki) SR-P :Foil Stamped Japanese One Piece Card Game Near Mint",
+            "Nami EB05-055 SR Parallel Kentaro Yabuki Signed Foil ONE PIECE Card Japanese",
+            "Nami (055) (Kentaro Yabuki) (Gold Stamped) EB05-055 Extra Booster: One Piece...",
+        ):
+            self.assertTrue(NAMI.matches(title), title)
+
+    def test_other_cards(self):
+        for title in (
+            "Nico Robin & Nami Gold Don EB05 Heroines Edition Vol.2 ONE PIECE card Japanese",
+            "ONE PIECE CCG Heroines Vol. 2 NAMI Secret Rare Gold Foil Card EB05-061 SEC",
+            "Nami Kentaro Yabuki EB05-055 SR-P Heroines Vol.2 ONE PIECE Japanese NM 2026",
+            "ONE PIECE Card Game Chinese Nami Kentaro Yabuki EB05-055 L Stamp Heroines Vol.2",
+            "Nami eb05 055 (Kentaro Yabuki) (Gold Stamped)  One Piece English Mint condition",
+            "Nami EB05-055 Gold Stamped Proxy Japanese",
+        ):
+            self.assertFalse(NAMI.matches(title), title)
+
+
+class TestNamiLimits(unittest.TestCase):
+
+    def setUp(self):
+        self.storage = Storage(":memory:")
+        self.addCleanup(self.storage.close)
+
+    def poll(self, *summaries, items=None):
+        self.transport = FakeTransport({NAMI.query: search_response(*summaries)},
+                                       items=items)
+        client = EbayClient(CONFIG, transport=self.transport)
+        return poll_watches(client, self.storage, [NAMI], now=START)
+
+    def ids(self, result):
+        return [hit.item.item_id for hit in result.hits]
+
+    def test_must_be_below_the_limit_with_shipping(self):
+        result = self.poll(item_summary("under", STAMPED, "694.99", "5.00"),
+                           item_summary("at", STAMPED, "695.00", "5.00"),
+                           item_summary("over", STAMPED, "1475.00", None))
+        self.assertEqual(self.ids(result), ["under"])
+
+    def test_alerts_once_a_price_drops_below_the_limit(self):
+        self.assertEqual(self.ids(self.poll(item_summary("1", STAMPED, "800.00"))), [])
+        self.assertEqual(self.ids(self.poll(item_summary("1", STAMPED, "600.00"))), ["1"])
+
+    def test_auction_under_the_limit(self):
+        result = self.poll(auction_summary("1", STAMPED, bid="50.00"))
+        self.assertEqual(self.ids(result), ["1"])
+
+    def test_title_saying_japanese_needs_no_lookup(self):
+        self.assertEqual(self.ids(self.poll(item_summary("1", STAMPED))), ["1"])
+        self.assertEqual(self.transport.item_requests, [])
+
+    def test_language_decides_when_the_title_does_not(self):
+        result = self.poll(
+            item_summary("jp", UNSAID), item_summary("en", UNSAID),
+            item_summary("blank", UNSAID),
+            items={"jp": item_response(language="Japanese"),
+                   "en": item_response(language="English"),
+                   "blank": item_response(language=None)},
+        )
+        self.assertEqual(self.ids(result), ["jp", "blank"])
+
+    def test_language_is_looked_up_once(self):
+        items = {"1": item_response(language="English")}
+        self.poll(item_summary("1", UNSAID), items=items)
+        self.assertEqual(len(self.transport.item_requests), 1)
+        self.poll(item_summary("1", UNSAID), items=items)
+        self.assertEqual(self.transport.item_requests, [])
+
+    def test_failed_lookup_is_retried(self):
+        result = self.poll(item_summary("1", UNSAID), items={"1": (500, b"error")})
+        self.assertEqual(self.ids(result), [])
+        self.assertEqual(len(result.errors), 1)
+        self.assertEqual(self.ids(self.poll(
+            item_summary("1", UNSAID),
+            items={"1": item_response(language="Japanese")},
+        )), ["1"])
 
 
 class TestPollWatches(unittest.TestCase):

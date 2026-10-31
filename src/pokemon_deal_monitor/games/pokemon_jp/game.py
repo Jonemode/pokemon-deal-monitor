@@ -3,7 +3,7 @@
 from datetime import timedelta
 
 from ...catalog import DATA_DIR
-from ...game import ENGLISH, Game
+from ...game import ENGLISH, JAPANESE, Game
 from ..pokemon.game import ALERT_RULES
 from .catalog import CARDS, GAME
 from .matcher import RULES
@@ -18,11 +18,6 @@ SEARCH_INTERVALS = {"corocoro shining mew": timedelta(minutes=16)}
 # is easier to map than to search for.
 PRODUCT_IDS_PATH = DATA_DIR / GAME / "pricecharting_ids.json"
 
-# eBay Language values for Japanese, lowercased. English is kept too, since
-# some sellers leave eBay's default.
-JAPANESE = frozenset({"japanese", "japanisch", "giapponese", "japonais",
-                      "japonés", "japones", "japonês", "japans"}) | ENGLISH
-
 POKEMON_JP = Game(
     key=GAME,
     name="Japanese Pokémon",
@@ -31,6 +26,7 @@ POKEMON_JP = Game(
     searches=SEARCHES,
     search_intervals=SEARCH_INTERVALS,
     pricecharting_ids_path=PRODUCT_IDS_PATH,
-    languages=JAPANESE,
+    # English is kept too, since some sellers leave eBay's default.
+    languages=JAPANESE | ENGLISH,
     default_rules=ALERT_RULES,
 )

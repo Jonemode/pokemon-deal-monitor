@@ -14,6 +14,8 @@ from .valuation import DEFAULT_RULES, CardRules
 # name English in their own language.
 ENGLISH = frozenset({"english", "inglese", "englisch", "anglais", "inglés",
                      "ingles", "engels"})
+JAPANESE = frozenset({"japanese", "japanisch", "giapponese", "japonais",
+                      "japonés", "japones", "japonês", "japans"})
 
 
 @dataclass(frozen=True)
