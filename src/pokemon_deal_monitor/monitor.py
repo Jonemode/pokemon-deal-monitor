@@ -182,7 +182,8 @@ def poll_once(
         progress = f"[{index}/{len(queries)}]"
         logger.info("%s Searching %s %r", progress, kind, query)
         try:
-            items = client.search(query, auctions_ending_before=ending_before)
+            items = client.search(query, auctions_ending_before=ending_before,
+                                  us_sellers_only=game.us_sellers_only)
         except (EbayError, OSError) as error:
             logger.warning("Search %r failed: %s", query, error)
             poll.errors.append(f"{query}: {error}")

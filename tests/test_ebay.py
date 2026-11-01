@@ -155,6 +155,7 @@ class TestEbayClient(unittest.TestCase):
         self.assertIn("buyingOptions:{FIXED_PRICE}", params["filter"][0])
         self.assertIn("conditionIds:{4000}", params["filter"][0])
         self.assertIn("price:[10..5000]", params["filter"][0])
+        self.assertIn("itemLocationCountry:US", params["filter"][0])
         self.assertNotIn("aspect_filter", params)
         self.assertEqual(request.get_header("Authorization"), "Bearer token-1")
         self.assertEqual(
@@ -233,7 +234,8 @@ class TestEbayClient(unittest.TestCase):
                          "buyingOptions:{AUCTION},"
                          "itemEndDate:[..2026-10-17T14:00:00Z],"
                          "conditionIds:{4000},"
-                         "price:[..5000],priceCurrency:USD")
+                         "price:[..5000],priceCurrency:USD,"
+                         "itemLocationCountry:US")
         self.assertEqual(params["sort"][0], "endingSoonest")
         self.assertTrue(item.auction)
         self.assertEqual(item.price_cents, 25000)
@@ -258,6 +260,12 @@ class TestEbayClient(unittest.TestCase):
             .get("offset") for r in transport.search_requests
         ]
         self.assertEqual(offsets, [None, ["2"]])
+
+    def test_search_can_include_sellers_abroad(self):
+        transport = FakeTransport()
+        EbayClient(CONFIG, transport=transport).search("q", us_sellers_only=False)
+        (request,) = transport.search_requests
+        self.assertNotIn("itemLocationCountry", urllib.parse.unquote(request.full_url))
 
     def test_buy_it_now_search_takes_one_page(self):
         transport = FakeTransport({"q": search_response(

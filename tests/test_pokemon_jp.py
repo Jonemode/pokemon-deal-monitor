@@ -1,15 +1,18 @@
 import unittest
+import urllib.parse
 from datetime import datetime, timedelta, timezone
 
 from pokemon_deal_monitor.game import ENGLISH
 from pokemon_deal_monitor.games import GAMES
 from pokemon_deal_monitor.games.pokemon.game import ALERT_RULES, POKEMON
 from pokemon_deal_monitor.games.pokemon_jp.game import POKEMON_JP
-from pokemon_deal_monitor.monitor import details_rejection
-from pokemon_deal_monitor.ebay import ItemDetails
+from pokemon_deal_monitor.monitor import details_rejection, poll_once
+from pokemon_deal_monitor.ebay import EbayClient, ItemDetails
 from pokemon_deal_monitor.pricecharting import load_product_ids
 from pokemon_deal_monitor.storage import PriceRecord, Storage
 from pokemon_deal_monitor.valuation import TCGPLAYER
+
+from .fakes import CONFIG, FakeTransport
 
 
 (MEW,) = POKEMON_JP.cards
@@ -62,6 +65,16 @@ class TestCoroCoroMew(unittest.TestCase):
         # The English game still rejects Japanese listings.
         self.assertIsNotNone(details_rejection(
             ItemDetails(None, "Japanese"), ENGLISH))
+
+    def test_only_japanese_pokemon_includes_sellers_abroad(self):
+        for game in GAMES:
+            transport = FakeTransport()
+            with Storage(":memory:") as storage:
+                poll_once(EbayClient(CONFIG, transport=transport), storage, game,
+                          queries=["q"])
+            url = urllib.parse.unquote(transport.search_requests[0].full_url)
+            self.assertEqual("itemLocationCountry:US" in url,
+                             game is not POKEMON_JP, game.key)
 
     def test_searched_every_16_minutes(self):
         self.assertEqual(POKEMON_JP.search_intervals["corocoro shining mew"],

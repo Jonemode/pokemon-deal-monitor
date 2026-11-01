@@ -28,5 +28,7 @@ POKEMON_JP = Game(
     pricecharting_ids_path=PRODUCT_IDS_PATH,
     # English is kept too, since some sellers leave eBay's default.
     languages=JAPANESE | ENGLISH,
+    # Most listings are sold from Japan.
+    us_sellers_only=False,
     default_rules=ALERT_RULES,
 )

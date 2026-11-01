@@ -78,6 +78,11 @@ class TestNamiLimits(unittest.TestCase):
     def ids(self, result):
         return [hit.item.item_id for hit in result.hits]
 
+    def test_includes_sellers_abroad(self):
+        self.poll()
+        (request,) = self.transport.search_requests
+        self.assertNotIn("itemLocationCountry", urllib.parse.unquote(request.full_url))
+
     def test_must_be_below_the_limit_with_shipping(self):
         result = self.poll(item_summary("under", STAMPED, "694.99", "5.00"),
                            item_summary("at", STAMPED, "695.00", "5.00"),
@@ -139,7 +144,7 @@ class TestPollWatches(unittest.TestCase):
         params = urllib.parse.parse_qs(urllib.parse.urlsplit(
             self.transport.search_requests[0].full_url).query)
         self.assertNotIn("category_ids", params)
-        self.assertEqual(params["filter"], ["buyingOptions:{FIXED_PRICE|AUCTION}"])
+        self.assertEqual(params["filter"], ["buyingOptions:{FIXED_PRICE|AUCTION},itemLocationCountry:US"])
 
     def test_new_matching_listings_alert_once(self):
         result = self.poll(item_summary("1", FLEER, "3499.99"),

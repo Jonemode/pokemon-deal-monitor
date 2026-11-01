@@ -33,6 +33,8 @@ class Watch:
     # A title matching this needs no lookup: some sellers leave eBay's default
     # Language of English on foreign cards.
     language_title: re.Pattern | None = None
+    # False for cards mostly sold from abroad.
+    us_sellers_only: bool = True
     # Searched every poll, rather than only when auctions are.
     every_poll: bool = False
 
@@ -82,6 +84,7 @@ WATCHES = [
         max_cents=70000,
         languages=JAPANESE,
         language_title=re.compile(r"\b(?:japanese|japan|jpn|jp)\b", re.IGNORECASE),
+        us_sellers_only=False,
         every_poll=True,
     ),
 ]
@@ -129,7 +132,8 @@ def poll_watches(
     result = WatchResult()
     for watch in watches:
         try:
-            items = client.search_everywhere(watch.query)
+            items = client.search_everywhere(
+                watch.query, us_sellers_only=watch.us_sellers_only)
         except (EbayError, OSError) as error:
             logger.warning("Watch search %r failed: %s", watch.query, error)
             result.errors.append(f"{watch.query}: {error}")

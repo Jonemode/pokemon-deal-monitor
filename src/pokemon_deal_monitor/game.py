@@ -39,6 +39,8 @@ class Game:
     # eBay Language values to accept, lowercased. A blank Language is
     # accepted too.
     languages: frozenset[str] = ENGLISH
+    # False for cards mostly sold from abroad.
+    us_sellers_only: bool = True
     # Alert rules for the game's cards, and those differing from them by
     # set name or, replacing the set's, by card identifier.
     default_rules: CardRules = DEFAULT_RULES
