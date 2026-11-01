@@ -62,8 +62,9 @@ def format_alert(
     now: datetime | None = None,
     timezone: tzinfo | None = None,
 ) -> str:
-    """Return a two-line Telegram HTML message: the card and set, linked to
-    the listing, then the price against value, which always comes first.
+    """Return a two-line Telegram HTML message: the card, set and any 1st
+    edition, linked to the listing, then the price against value, which
+    always comes first.
 
     Prices include shipping, as the value comparison does. An auction gives
     its current bid, time left and suggested maximum bid; a Best Offer
@@ -74,9 +75,10 @@ def format_alert(
     deal = candidate.deal
     item = candidate.item
     url = html.escape(listing_url(item.url))
+    edition = " · 1st ed" if card.first_edition_required else ""
     heading = (
         f'<a href="{url}"><b>{html.escape(card.name)} · '
-        f"{html.escape(card.set_name)}</b></a>"
+        f"{html.escape(card.set_name)}{edition}</b></a>"
     )
     shipping_known = item.shipping_cents is not None
     total = format_whole_dollars(item.price_cents + (item.shipping_cents or 0))

@@ -60,7 +60,7 @@ def auction_candidate(bid_cents, shipping_cents=500, bids=3,
                      ItemDetails(reserve_met=reserve_met))
 
 
-HEADING = '<a href="https://www.ebay.com/itm/1"><b>Lugia · Neo Genesis</b></a>\n'
+HEADING = '<a href="https://www.ebay.com/itm/1"><b>Lugia · Neo Genesis · 1st ed</b></a>\n'
 
 
 def no_value_candidate(item_id="1", auction=False):
@@ -102,6 +102,14 @@ class TestFormatAlert(unittest.TestCase):
             format_alert(candidate("1", 140000)),
             HEADING + "30% off · $1,405 shipped",
         )
+
+    def test_unlimited_card_has_no_edition(self):
+        card = PokemonCard("Blastoise", "Expedition", "36/165", Variant.REVERSE_HOLO,
+                           Edition.UNLIMITED, Rarity.HOLO_RARE)
+        c = candidate("1", 140000)
+        text = format_alert(Candidate(c.item, Match(card, 1.0), c.result, c.deal))
+        self.assertTrue(text.startswith(
+            '<a href="https://www.ebay.com/itm/1"><b>Blastoise · Expedition</b></a>\n'))
 
     def test_over_value_alert(self):
         c = candidate("1", 205000)

@@ -23,6 +23,10 @@ class Card:
     game: ClassVar[str]
 
     @property
+    def first_edition_required(self) -> bool:
+        return False
+
+    @property
     def printing(self) -> str:
         """What tells this printing apart from others with the same set and
         number, e.g. "holo:1st"."""
