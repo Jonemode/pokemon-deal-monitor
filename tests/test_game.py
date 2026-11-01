@@ -35,7 +35,7 @@ class TestGame(unittest.TestCase):
     def test_set_rules(self):
         promo = card("pokemon:Wizards Black Star Promos:9/53:holo:unlimited")
         rules = POKEMON.rules_for(promo)
-        self.assertEqual(rules.min_discount, -0.20)
+        self.assertEqual(rules.min_discount, -0.30)
         self.assertEqual(rules.min_value_cents, 5000)
 
     def test_card_rules(self):
@@ -53,7 +53,7 @@ class TestGame(unittest.TestCase):
     def test_birthday_pikachu_keeps_promo_rules(self):
         rules = POKEMON.rules_for(
             card("pokemon:Wizards Black Star Promos:24/53:holo:unlimited"))
-        self.assertEqual(rules.min_discount, -0.20)
+        self.assertEqual(rules.min_discount, -0.30)
         self.assertEqual(rules.min_value_cents, 5000)
 
     def test_legendary_collection_rules(self):
@@ -61,26 +61,26 @@ class TestGame(unittest.TestCase):
         rules = POKEMON.rules_for(charizard)
         value = Valuation(10000, True, {})
 
-        self.assertTrue(evaluate_deal(12000, True, value, rules).qualifies)
-        self.assertFalse(evaluate_deal(12001, True, value, rules).qualifies)
-        self.assertFalse(evaluate_offer(12001, 0, value, rules).qualifies)
+        self.assertTrue(evaluate_deal(13000, True, value, rules).qualifies)
+        self.assertFalse(evaluate_deal(13001, True, value, rules).qualifies)
+        self.assertFalse(evaluate_offer(13001, 0, value, rules).qualifies)
 
         auction = evaluate_auction(7500, 500, value, rules)
         self.assertTrue(auction.qualifies)
-        self.assertEqual(auction.max_bid_cents, 11500)
+        self.assertEqual(auction.max_bid_cents, 12500)
         self.assertEqual(evaluate_auction(8001, 0, value, rules).reasons,
                          ("current bid less than 20% below value",))
 
-    def test_every_card_alerts_up_to_20_percent_over_and_auctions_20_under(self):
+    def test_every_card_alerts_up_to_30_percent_over_and_auctions_20_under(self):
         for c in POKEMON.cards:
             rules = POKEMON.rules_for(c)
             self.assertEqual((rules.min_discount, rules.max_offer_premium,
                               rules.min_auction_discount, rules.max_bid_discount),
-                             (-0.20, 0.20, 0.20, -0.20), c.identifier)
+                             (-0.30, 0.30, 0.20, -0.30), c.identifier)
 
     def test_aquapolis_lugia_keeps_its_discount_limit(self):
         rules = POKEMON.rules_for(card("pokemon:Aquapolis:149/147:holo:unlimited"))
-        self.assertEqual(rules.min_discount, -0.20)
+        self.assertEqual(rules.min_discount, -0.30)
         self.assertEqual(rules.max_plausible_discount, 0.50)
 
     def test_default_rules(self):

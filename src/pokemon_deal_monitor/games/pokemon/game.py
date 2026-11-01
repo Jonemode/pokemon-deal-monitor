@@ -46,7 +46,7 @@ SEARCH_INTERVALS = {
 # set: Buy It Now and Best Offer listings, and the maximum bid suggested
 # for auctions. Change this one number to tighten or loosen those alerts,
 # e.g. -0.10 to alert only at 10% or more below value.
-MAX_OVER_VALUE = 0.20
+MAX_OVER_VALUE = 0.30
 # How far below value an auction's current bid plus shipping must be to
 # alert, for every set. Early bids sit far below where an auction ends, so
 # this is stricter than MAX_OVER_VALUE.
