@@ -39,6 +39,7 @@ class PriceChartingPrice:
     # Prices in cents; None when PriceCharting has no value for that grade.
     ungraded_cents: int | None
     grade_5_cents: int | None
+    grade_6_cents: int | None
     grade_7_cents: int | None
     # Units sold over the last year, across all grades.
     sales_volume: int | None
@@ -58,6 +59,7 @@ def parse_product(product: dict) -> PriceChartingPrice:
         product_name=product.get("product-name", ""),
         ungraded_cents=optional_int(product.get("loose-price")),
         grade_5_cents=optional_int(product.get("condition-15-price")),
+        grade_6_cents=optional_int(product.get("condition-16-price")),
         grade_7_cents=optional_int(product.get("cib-price")),
         sales_volume=optional_int(product.get("sales-volume")),
     )

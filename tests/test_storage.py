@@ -253,7 +253,8 @@ class TestPriceCache(unittest.TestCase):
 
     def test_save_and_get_prices(self):
         record = PriceRecord("card", "pricecharting", START, raw_cents=100,
-                             grade_5_cents=150, grade_7_cents=200,
+                             grade_5_cents=150, grade_6_cents=170,
+                             grade_7_cents=200,
                              sales_volume=12)
         self.storage.save_price(record)
         self.storage.save_price(PriceRecord("card", "tcgplayer", START,

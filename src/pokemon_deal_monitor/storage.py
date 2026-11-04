@@ -76,6 +76,9 @@ MIGRATIONS = [
     WHERE card_identifier IS NOT NULL AND card_identifier NOT LIKE 'watch:%';
     UPDATE prices SET card_identifier = 'pokemon:' || card_identifier;
     """,
+    """
+    ALTER TABLE prices ADD COLUMN grade_6_cents INTEGER;
+    """,
 ]
 
 
@@ -122,6 +125,7 @@ class PriceRecord:
     raw_cents: int | None = None
     grade_5_cents: int | None = None
     grade_7_cents: int | None = None
+    grade_6_cents: int | None = None
     sales_volume: int | None = None
 
 
@@ -326,13 +330,14 @@ class Storage:
                 """
                 INSERT OR REPLACE INTO prices (
                     card_identifier, source, raw_cents, grade_5_cents,
-                    grade_7_cents, sales_volume, fetched_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    grade_6_cents, grade_7_cents, sales_volume, fetched_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     record.card_identifier, record.source, record.raw_cents,
-                    record.grade_5_cents, record.grade_7_cents,
-                    record.sales_volume, format_time(record.fetched_at),
+                    record.grade_5_cents, record.grade_6_cents,
+                    record.grade_7_cents, record.sales_volume,
+                    format_time(record.fetched_at),
                 ),
             )
 

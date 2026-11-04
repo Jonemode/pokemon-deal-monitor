@@ -113,11 +113,14 @@ class Deal:
 def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
     """Return a value for a card from its cached prices.
 
-    PriceCharting's ungraded price is the value, capped at its grade 7 price
-    since a raw card rarely sells above a graded near mint copy. TCGplayer is
-    a cross-check: a much lower TCGplayer price adds a warning. Without a
-    PriceCharting raw price, the TCGplayer price or a grade 5 estimate is
-    shown but is never confident enough to alert on.
+    The value comes from PriceCharting's ungraded and grade 6 prices: the
+    grade 6 price when it's below ungraded, otherwise their average, since
+    an ungraded card is often in about grade 6 condition. Without a grade 6
+    price, it's the ungraded price capped at grade 7, since a raw card
+    rarely sells above a graded near mint copy. TCGplayer is a cross-check:
+    a much lower TCGplayer price adds a warning. Without a PriceCharting raw
+    price, the TCGplayer price or a grade 5 estimate is shown but is never
+    confident enough to alert on.
     """
     pricecharting = prices.get(PRICECHARTING)
     tcgplayer = prices.get(TCGPLAYER)
@@ -133,13 +136,7 @@ def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
     if PRICECHARTING in estimates:
         value = estimates[PRICECHARTING]
         confident = True
-        if TCGPLAYER in estimates:
-            ratio = value / estimates[TCGPLAYER]
-            if ratio > MAX_SOURCE_RATIO:
-                warnings.append(
-                    f"sources disagree: TCGplayer is {ratio:.1f}x lower"
-                )
-        else:
+        if TCGPLAYER not in estimates:
             notes.append("no TCGplayer price")
     elif TCGPLAYER in estimates:
         value = estimates[TCGPLAYER]
@@ -153,10 +150,23 @@ def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
     else:
         return None
 
-    if pricecharting and pricecharting.grade_7_cents:
+    grade_6 = pricecharting.grade_6_cents if pricecharting else None
+    if PRICECHARTING in estimates and grade_6:
+        if grade_6 < value:
+            value = grade_6
+            notes.append("grade 6 price")
+        elif grade_6 > value:
+            value = round((value + grade_6) / 2)
+            notes.append("average of ungraded and grade 6 prices")
+    elif pricecharting and pricecharting.grade_7_cents:
         if value > pricecharting.grade_7_cents:
             value = pricecharting.grade_7_cents
             notes.append("capped at grade 7 price")
+
+    if confident and TCGPLAYER in estimates:
+        ratio = value / estimates[TCGPLAYER]
+        if ratio > MAX_SOURCE_RATIO:
+            warnings.append(f"sources disagree: TCGplayer is {ratio:.1f}x lower")
 
     return Valuation(
         value_cents=value,
@@ -377,6 +387,7 @@ class Pricer:
             fetched_at=now,
             raw_cents=price.ungraded_cents,
             grade_5_cents=price.grade_5_cents,
+            grade_6_cents=price.grade_6_cents,
             grade_7_cents=price.grade_7_cents,
             sales_volume=price.sales_volume,
         ))

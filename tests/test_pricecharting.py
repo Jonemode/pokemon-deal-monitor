@@ -73,11 +73,13 @@ class TestParsing(unittest.TestCase):
         price = parse_product({
             "id": "6910", "product-name": "Lugia [1st Edition] #9",
             "loose-price": 250000, "condition-15-price": 300000,
-            "cib-price": 450000, "sales-volume": "37",
+            "condition-16-price": 380000, "cib-price": 450000,
+            "sales-volume": "37",
         })
         self.assertEqual(price.product_id, "6910")
         self.assertEqual(price.ungraded_cents, 250000)
         self.assertEqual(price.grade_5_cents, 300000)
+        self.assertEqual(price.grade_6_cents, 380000)
         self.assertEqual(price.grade_7_cents, 450000)
         self.assertEqual(price.sales_volume, 37)
 

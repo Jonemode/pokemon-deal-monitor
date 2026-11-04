@@ -24,10 +24,12 @@ LUGIA = PokemonCard("Lugia", "Neo Genesis", "9/111", Variant.HOLO,
                     Edition.FIRST_EDITION, Rarity.HOLO_RARE)
 
 
-def record(source, raw=None, grade_5=None, grade_7=None, fetched_at=START):
+def record(source, raw=None, grade_5=None, grade_7=None, fetched_at=START,
+           grade_6=None):
     return PriceRecord(
         card_identifier=LUGIA.identifier, source=source, fetched_at=fetched_at,
-        raw_cents=raw, grade_5_cents=grade_5, grade_7_cents=grade_7,
+        raw_cents=raw, grade_5_cents=grade_5, grade_6_cents=grade_6,
+        grade_7_cents=grade_7,
     )
 
 
@@ -79,6 +81,45 @@ class TestValueCard(unittest.TestCase):
         })
         self.assertEqual(valuation.value_cents, 200000)
         self.assertIn("capped at grade 7 price", valuation.notes)
+
+    def test_grade_6_when_below_ungraded(self):
+        valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, raw=250000, grade_6=180000,
+                                  grade_7=200000),
+        })
+        self.assertEqual(valuation.value_cents, 180000)
+        self.assertIn("grade 6 price", valuation.notes)
+
+    def test_average_with_grade_6_when_above_ungraded(self):
+        valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, raw=100000, grade_6=150001,
+                                  grade_7=110000),
+        })
+        # Not capped at grade 7 once there's a grade 6 price.
+        self.assertEqual(valuation.value_cents, 125000)
+        self.assertIn("average of ungraded and grade 6 prices", valuation.notes)
+
+    def test_grade_6_equal_to_ungraded(self):
+        valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, raw=100000, grade_6=100000),
+        })
+        self.assertEqual(valuation.value_cents, 100000)
+
+    def test_grade_6_ignored_without_ungraded(self):
+        valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, grade_6=100000),
+            TCGPLAYER: record(TCGPLAYER, raw=130000),
+        })
+        self.assertEqual(valuation.value_cents, 130000)
+        self.assertFalse(valuation.confident)
+
+    def test_sources_compared_on_the_value_used(self):
+        valuation = value_card({
+            PRICECHARTING: record(PRICECHARTING, raw=100000, grade_6=300000),
+            TCGPLAYER: record(TCGPLAYER, raw=100000),
+        })
+        self.assertEqual(valuation.warnings,
+                         ("sources disagree: TCGplayer is 2.0x lower",))
 
     def test_grade_5_fallback(self):
         valuation = value_card({
@@ -237,7 +278,8 @@ class FakeTcgplayer:
 
 PC_PRICE = PriceChartingPrice(
     product_id="6910", product_name="Lugia [1st Edition] #9",
-    ungraded_cents=250000, grade_5_cents=300000, grade_7_cents=450000,
+    ungraded_cents=250000, grade_5_cents=300000, grade_6_cents=None,
+    grade_7_cents=450000,
     sales_volume=37,
 )
 
