@@ -4,7 +4,7 @@ from dataclasses import replace
 from datetime import timedelta
 
 from ...game import Game
-from ...valuation import CardRules
+from ...valuation import NEAR_MINT, CardRules
 from .catalog import CARDS, GAME, Variant
 from .matcher import RULES, SETS_WITH_NON_HOLO_DUPLICATES
 from .pricecharting import PRODUCT_IDS_PATH
@@ -56,6 +56,9 @@ ALERT_RULES = replace(CardRules.up_to_over_value(MAX_OVER_VALUE),
 
 # Promos skip the many worth only a few dollars.
 PROMO_RULES = replace(ALERT_RULES, min_value_cents=5000)
+# Promos only worth buying near mint: Mew 8, 9 and 47, Meowth 10, Eevee 11.
+NEAR_MINT_PROMOS = ["8/53:normal", "9/53:holo", "47/53:normal",
+                    "10/53:holo", "11/53:holo"]
 
 # E-Card reverse holos with art no holo shares. A few have no PriceCharting
 # price, such as Aquapolis Golduck with its 50a and 50b printings.
@@ -65,6 +68,11 @@ REVERSE_HOLO_ART_RULES = replace(ALERT_RULES, alert_without_value=True)
 # titled as this one. A discount beyond this is taken to mean the wrong
 # card rather than a bargain.
 MISLISTED_CARD_DISCOUNT = 0.50
+
+# 1st edition Base Set starters listed this far below value, at any listing
+# type, are taken to be fakes or unlimited copies.
+STARTERS_MAX_DISCOUNT = 0.75
+BASE_SET_1ST_STARTERS = ["2/102", "4/102", "15/102"]  # Blastoise, Charizard, Venusaur
 
 POKEMON = Game(
     key=GAME,
@@ -84,6 +92,16 @@ POKEMON = Game(
             for card in CARDS
             if card.variant == Variant.REVERSE_HOLO
             and card.set_name in SETS_WITH_NON_HOLO_DUPLICATES
+        },
+        **{
+            f"pokemon:Wizards Black Star Promos:{promo}:unlimited":
+                replace(PROMO_RULES, card_conditions=NEAR_MINT)
+            for promo in NEAR_MINT_PROMOS
+        },
+        **{
+            f"pokemon:Base Set:{number}:holo:1st":
+                replace(ALERT_RULES, max_discount=STARTERS_MAX_DISCOUNT)
+            for number in BASE_SET_1ST_STARTERS
         },
         # 30th Anniversary Lugia reprints listed as Aquapolis.
         "pokemon:Aquapolis:149/147:holo:unlimited": replace(

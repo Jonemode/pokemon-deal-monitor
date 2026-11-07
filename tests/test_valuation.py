@@ -157,6 +157,19 @@ class TestEvaluateDeal(unittest.TestCase):
         self.assertTrue(deal.qualifies)
         self.assertAlmostEqual(deal.discount, 0.5)
 
+    def test_max_discount_skips_every_listing_type(self):
+        from pokemon_deal_monitor.valuation import CardRules
+        rules = CardRules(max_discount=0.75)
+        # $500 is exactly 75% off $2,000: still alerts.
+        self.assertTrue(evaluate_deal(50000, True, self.valuation, rules).qualifies)
+        self.assertTrue(evaluate_auction(50000, 0, self.valuation, rules).qualifies)
+        deal = evaluate_deal(49999, True, self.valuation, rules)
+        self.assertEqual(deal.reasons, ("discount above 75%",))
+        auction = evaluate_auction(49999, 0, self.valuation, rules)
+        self.assertEqual(auction.reasons, ("current bid more than 75% below value",))
+        # Best Offer listings this cheap fail as deals and offers alike.
+        self.assertFalse(evaluate_offer(49999, 0, self.valuation, rules).qualifies)
+
     def test_implausible_discount_on_reprinted_card(self):
         lugia = PokemonCard("Lugia", "Aquapolis", "149/147", Variant.HOLO,
                             Edition.UNLIMITED, Rarity.CRYSTAL)

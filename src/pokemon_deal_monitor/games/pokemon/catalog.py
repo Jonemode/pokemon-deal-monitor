@@ -45,6 +45,10 @@ class PokemonCard(Card):
         return self.edition == Edition.FIRST_EDITION
 
     @property
+    def reverse_holo(self) -> bool:
+        return self.variant == Variant.REVERSE_HOLO
+
+    @property
     def printing(self) -> str:
         edition = "1st" if self.first_edition_required else "unlimited"
         return f"{self.variant.value}:{edition}"

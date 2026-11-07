@@ -27,6 +27,10 @@ class Card:
         return False
 
     @property
+    def reverse_holo(self) -> bool:
+        return False
+
+    @property
     def printing(self) -> str:
         """What tells this printing apart from others with the same set and
         number, e.g. "holo:1st"."""

@@ -45,6 +45,12 @@ MAX_SOURCE_RATIO = 1.5
 # after taking off the premium buyers pay for a graded slab.
 GRADE_5_RAW_DISCOUNT = 0.2
 
+# eBay "Card Condition" values to alert on, lowercased. Listings that leave it
+# blank are kept too: the title isn't used to guess, since "HP" in a title
+# usually means hit points rather than heavily played.
+NEAR_MINT = frozenset({"near mint or better"})
+ACCEPTED_CARD_CONDITIONS = NEAR_MINT | {"lightly played (excellent)"}
+
 
 @dataclass(frozen=True)
 class CardRules:
@@ -67,9 +73,14 @@ class CardRules:
     # different card rather than a bargain. Auctions of these cards are
     # skipped, since a low current bid says nothing about which card it is.
     max_plausible_discount: float | None = None
+    # A discount beyond this skips every listing type, auctions included,
+    # for cards whose too-cheap listings are fakes or the wrong edition.
+    max_discount: float | None = None
     # Alert on every listing of a card with no confident value, for cards
     # PriceCharting doesn't price, since there's nothing to compare it to.
     alert_without_value: bool = False
+    # eBay Card Condition values to alert on, lowercased.
+    card_conditions: frozenset[str] = ACCEPTED_CARD_CONDITIONS
 
     @classmethod
     def up_to_over_value(cls, premium: float) -> "CardRules":
@@ -177,6 +188,12 @@ def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
     )
 
 
+def too_cheap(total_cents: int, valuation: Valuation, rules: CardRules) -> bool:
+    """Whether a total is further below value than the rules allow."""
+    return (rules.max_discount is not None
+            and total_cents < round(valuation.value_cents * (1 - rules.max_discount)))
+
+
 def evaluate_deal(
     total_cents: int,
     shipping_known: bool,
@@ -212,6 +229,8 @@ def evaluate_deal(
         reasons.append(
             f"discount above {max_discount:.0%}, likely a different card"
         )
+    if too_cheap(total_cents, valuation, rules):
+        reasons.append(f"discount above {rules.max_discount:.0%}")
 
     return Deal(
         total_cents=total_cents,
@@ -287,6 +306,9 @@ def evaluate_auction(
         reasons.append(f"value below ${min_value / 100:,.0f}")
     if rules.max_plausible_discount is not None:
         reasons.append("auctions skipped, other cards are often listed as this one")
+    if too_cheap(total_cents, valuation, rules):
+        reasons.append(f"current bid more than {rules.max_discount:.0%}"
+                       " below value")
 
     return Deal(
         total_cents=total_cents,

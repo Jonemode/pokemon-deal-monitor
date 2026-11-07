@@ -1,9 +1,11 @@
 """Japanese Pokémon cards, as the monitor watches them."""
 
+from dataclasses import replace
 from datetime import timedelta
 
 from ...catalog import DATA_DIR
 from ...game import ENGLISH, JAPANESE, Game
+from ...valuation import NEAR_MINT
 from ..pokemon.game import ALERT_RULES
 from .catalog import CARDS, GAME
 from .matcher import RULES
@@ -30,5 +32,5 @@ POKEMON_JP = Game(
     languages=JAPANESE | ENGLISH,
     # Most listings are sold from Japan.
     us_sellers_only=False,
-    default_rules=ALERT_RULES,
+    default_rules=replace(ALERT_RULES, card_conditions=NEAR_MINT),
 )

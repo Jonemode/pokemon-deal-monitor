@@ -44,7 +44,7 @@ def listing_url(url: str) -> str:
 def format_time_left(
     ends_at: datetime | None, now: datetime, timezone: tzinfo | None = None
 ) -> str:
-    """Return e.g. "1h 25m left", or with a timezone, the local end
+    """Return e.g. "85m left", or with a timezone, the local end
     time of an auction further off, e.g. "ends 3:10am", as found by the
     evening sweep."""
     if ends_at is None:
@@ -53,8 +53,7 @@ def format_time_left(
         local = ends_at.astimezone(timezone)
         return f"ends {local.hour % 12 or 12}:{local:%M}{local:%p}".lower()
     minutes = max(0, int((ends_at - now).total_seconds() // 60))
-    hours, minutes = divmod(minutes, 60)
-    return f"{hours}h {minutes}m left" if hours else f"{minutes}m left"
+    return f"{minutes}m left"
 
 
 def format_alert(
@@ -62,8 +61,8 @@ def format_alert(
     now: datetime | None = None,
     timezone: tzinfo | None = None,
 ) -> str:
-    """Return a two-line Telegram HTML message: the card, set and any 1st
-    edition, linked to the listing, then the price against value, which
+    """Return a two-line Telegram HTML message: the card, set, and any
+    reverse holo or 1st edition, linked to the listing, then the price against value, which
     always comes first.
 
     Prices include shipping, as the value comparison does. An auction gives
@@ -75,10 +74,11 @@ def format_alert(
     deal = candidate.deal
     item = candidate.item
     url = html.escape(listing_url(item.url))
-    edition = " · 1st ed" if card.first_edition_required else ""
+    printing = (" · reverse" if card.reverse_holo else "") + (
+        " · 1st ed" if card.first_edition_required else "")
     heading = (
         f'<a href="{url}"><b>{html.escape(card.name)} · '
-        f"{html.escape(card.set_name)}{edition}</b></a>"
+        f"{html.escape(card.set_name)}{printing}</b></a>"
     )
     shipping_known = item.shipping_cents is not None
     total = format_whole_dollars(item.price_cents + (item.shipping_cents or 0))

@@ -79,7 +79,7 @@ class TestNoValueAlert(unittest.TestCase):
 
     def test_auction_has_no_maximum_bid(self):
         self.assertEqual(format_alert(no_value_candidate(auction=True), now=START),
-                         HEADING + "No value · Bid $45 · 1h 0m left")
+                         HEADING + "No value · Bid $45 · 60m left")
 
     def test_sent_after_deals(self):
         candidates = [no_value_candidate("2"), candidate("3", 140000)]
@@ -103,13 +103,22 @@ class TestFormatAlert(unittest.TestCase):
             HEADING + "30% off · $1,405 shipped",
         )
 
-    def test_unlimited_card_has_no_edition(self):
-        card = PokemonCard("Blastoise", "Expedition", "36/165", Variant.REVERSE_HOLO,
+    def heading_for(self, variant):
+        card = PokemonCard("Blastoise", "Expedition", "36/165", variant,
                            Edition.UNLIMITED, Rarity.HOLO_RARE)
         c = candidate("1", 140000)
-        text = format_alert(Candidate(c.item, Match(card, 1.0), c.result, c.deal))
-        self.assertTrue(text.startswith(
-            '<a href="https://www.ebay.com/itm/1"><b>Blastoise · Expedition</b></a>\n'))
+        return format_alert(Candidate(c.item, Match(card, 1.0), c.result, c.deal)
+                            ).split("\n")[0]
+
+    def test_unlimited_holo_has_neither_label(self):
+        self.assertEqual(self.heading_for(Variant.HOLO),
+                         '<a href="https://www.ebay.com/itm/1">'
+                         "<b>Blastoise · Expedition</b></a>")
+
+    def test_reverse_holo_says_reverse(self):
+        self.assertEqual(self.heading_for(Variant.REVERSE_HOLO),
+                         '<a href="https://www.ebay.com/itm/1">'
+                         "<b>Blastoise · Expedition · reverse</b></a>")
 
     def test_over_value_alert(self):
         c = candidate("1", 205000)
@@ -146,7 +155,7 @@ class TestFormatAlert(unittest.TestCase):
     def test_auction_alert(self):
         self.assertEqual(
             format_alert(auction_candidate(80000), now=START),
-            HEADING + "60% off · Bid $805 · 1h 25m left · max $1,795",
+            HEADING + "60% off · Bid $805 · 85m left · max $1,795",
         )
 
     def test_overnight_auction_gives_local_end_time(self):
@@ -162,12 +171,12 @@ class TestFormatAlert(unittest.TestCase):
     def test_auction_ending_soon_keeps_time_left(self):
         text = format_alert(auction_candidate(80000), now=START,
                             timezone=ZoneInfo("America/Los_Angeles"))
-        self.assertIn("1h 25m left", text)
+        self.assertIn("85m left", text)
 
     def test_auction_alert_without_shipping(self):
         text = format_alert(auction_candidate(80000, None), now=START)
         self.assertTrue(text.endswith(
-            "\n60% off · Bid $800 + ship · 1h 25m left · max $1,800 + ship"
+            "\n60% off · Bid $800 + ship · 85m left · max $1,800 + ship"
         ))
 
     def test_whole_dollars(self):

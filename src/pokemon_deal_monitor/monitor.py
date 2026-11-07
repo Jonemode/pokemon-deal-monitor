@@ -14,7 +14,14 @@ from .ebay import (
 from .game import ENGLISH, Game
 from .matcher import Match
 from .storage import Listing, Storage, UpsertResult, utc_now
-from .valuation import Deal, Pricer, evaluate_auction, evaluate_deal, evaluate_offer
+from .valuation import (
+    ACCEPTED_CARD_CONDITIONS,
+    Deal,
+    Pricer,
+    evaluate_auction,
+    evaluate_deal,
+    evaluate_offer,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -39,11 +46,6 @@ MIN_SEARCH_WINDOW = timedelta(hours=3)
 # Searches only return the newest listings, so a listing missing from one
 # poll may still be live. Only treat it as ended after this long unseen.
 ENDED_AFTER = timedelta(hours=24)
-
-# eBay "Card Condition" values to keep, lowercased. Listings that leave it
-# blank are kept too: the title isn't used to guess, since "HP" in a title
-# usually means hit points rather than heavily played.
-ACCEPTED_CARD_CONDITIONS = {"near mint or better", "lightly played (excellent)"}
 
 
 @dataclass(frozen=True)
@@ -76,14 +78,16 @@ def is_graded(item: EbayItem) -> bool:
 
 
 def details_rejection(
-    details: ItemDetails, languages: frozenset[str] = ENGLISH
+    details: ItemDetails,
+    languages: frozenset[str] = ENGLISH,
+    card_conditions: frozenset[str] = ACCEPTED_CARD_CONDITIONS,
 ) -> str | None:
     """Return why a listing's details rule it out, or None if they don't.
 
     A blank Language is kept, as is a blank Card Condition.
     """
     condition = details.card_condition
-    if condition is not None and condition.lower() not in ACCEPTED_CARD_CONDITIONS:
+    if condition is not None and condition.lower() not in card_conditions:
         return f"card condition {condition}"
     language = details.language
     if language is not None and language.lower() not in languages:
@@ -241,7 +245,10 @@ def poll_once(
                 looked_up += 1
                 storage.save_details(item.item_id, details.card_condition,
                                      details.language, now=now)
-            if details is not None and details_rejection(details, game.languages):
+            if details is not None and details_rejection(
+                details, game.languages,
+                game.rules_for(best.card).card_conditions,
+            ):
                 continue
 
             if result != UpsertResult.UNCHANGED or qualifies:

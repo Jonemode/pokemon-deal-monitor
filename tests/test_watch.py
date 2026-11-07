@@ -194,7 +194,7 @@ class TestWatchAlert(unittest.TestCase):
         item = self.poll_item(auction_summary("1", FLEER, bid="20.00", shipping=None,
                                               ends="2026-10-17T13:30:00.000Z"))
         self.assertTrue(format_watch_alert(WatchHit(CORNHOLIO, item), now=START)
-                        .endswith("\nBid $20 + ship · 1h 30m left"))
+                        .endswith("\nBid $20 + ship · 90m left"))
 
 
 if __name__ == "__main__":

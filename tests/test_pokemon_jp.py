@@ -1,4 +1,5 @@
 import unittest
+from dataclasses import replace
 import urllib.parse
 from datetime import datetime, timedelta, timezone
 
@@ -66,6 +67,16 @@ class TestCoroCoroMew(unittest.TestCase):
         self.assertIsNotNone(details_rejection(
             ItemDetails(None, "Japanese"), ENGLISH))
 
+    def test_only_near_mint_is_kept(self):
+        for condition in ("Near mint or better", "Near Mint or Better", None):
+            self.assertIsNone(details_rejection(
+                ItemDetails(condition, "Japanese"), POKEMON_JP.languages,
+                POKEMON_JP.rules_for(MEW).card_conditions), condition)
+        for condition in ("Lightly played (Excellent)", "Moderately played (Very good)"):
+            self.assertIsNotNone(details_rejection(
+                ItemDetails(condition, "Japanese"), POKEMON_JP.languages,
+                POKEMON_JP.rules_for(MEW).card_conditions), condition)
+
     def test_only_japanese_pokemon_includes_sellers_abroad(self):
         for game in GAMES:
             transport = FakeTransport()
@@ -81,7 +92,9 @@ class TestCoroCoroMew(unittest.TestCase):
                          timedelta(minutes=16))
 
     def test_alerts_like_every_pokemon_set(self):
-        self.assertIs(POKEMON_JP.rules_for(MEW), ALERT_RULES)
+        self.assertEqual(replace(POKEMON_JP.rules_for(MEW),
+                             card_conditions=ALERT_RULES.card_conditions),
+                         ALERT_RULES)
 
     def test_priced_by_pricecharting(self):
         ids = load_product_ids(POKEMON_JP.pricecharting_ids_path)

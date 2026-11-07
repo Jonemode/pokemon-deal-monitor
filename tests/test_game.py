@@ -83,9 +83,38 @@ class TestGame(unittest.TestCase):
         self.assertEqual(rules.min_discount, -0.30)
         self.assertEqual(rules.max_plausible_discount, 0.50)
 
+    def test_near_mint_only_promos(self):
+        promos = {c.identifier: c for c in POKEMON.cards
+                  if c.set_name == "Wizards Black Star Promos"}
+        near_mint = {i for i, c in promos.items()
+                     if POKEMON.rules_for(c).card_conditions == {"near mint or better"}}
+        self.assertEqual(sorted(promos[i].name for i in near_mint),
+                         ["Eevee", "Meowth", "Mew", "Mew", "Mew"])
+        for i in near_mint:
+            self.assertEqual(POKEMON.rules_for(promos[i]).min_value_cents, 5000)
+
+    def test_other_cards_accept_lightly_played(self):
+        for game in GAMES:
+            for c in game.cards:
+                if game.key == "pokemon_jp" or game.rules_for(c).card_conditions == {
+                        "near mint or better"}:
+                    continue
+                self.assertIn("lightly played (excellent)",
+                              game.rules_for(c).card_conditions, c.identifier)
+
+    def test_1st_edition_base_starters_skip_listings_over_75_off(self):
+        names = {c.name: POKEMON.rules_for(c).max_discount for c in POKEMON.cards
+                 if c.set_name == "Base Set" and c.first_edition_required}
+        for name in ("Charizard", "Blastoise", "Venusaur"):
+            self.assertEqual(names.pop(name), 0.75, name)
+            self.assertEqual(POKEMON.rules_for(next(
+                c for c in POKEMON.cards if c.name == name
+                and c.identifier.startswith("pokemon:Base Set:"))).min_discount, -0.30)
+        self.assertEqual(set(names.values()), {None})
+
     def test_default_rules(self):
-        charizard = card("pokemon:Base Set:4/102:holo:1st")
-        self.assertIs(POKEMON.rules_for(charizard), ALERT_RULES)
+        machamp = card("pokemon:Base Set:8/102:holo:1st")
+        self.assertIs(POKEMON.rules_for(machamp), ALERT_RULES)
 
     def test_up_to_over_value(self):
         rules = CardRules.up_to_over_value(0.15)
