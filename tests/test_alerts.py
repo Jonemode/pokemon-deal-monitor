@@ -173,6 +173,13 @@ class TestFormatAlert(unittest.TestCase):
                             timezone=ZoneInfo("America/Los_Angeles"))
         self.assertIn("85m left", text)
 
+    def test_time_left_in_hours_from_two_hours_out(self):
+        from pokemon_deal_monitor.alerts import format_time_left
+        for delta, expected in ((timedelta(minutes=119, seconds=59), "119m left"),
+                                (timedelta(hours=2), "2h 0m left"),
+                                (timedelta(hours=3, minutes=5), "3h 5m left")):
+            self.assertEqual(format_time_left(START + delta, START), expected)
+
     def test_auction_alert_without_shipping(self):
         text = format_alert(auction_candidate(80000, None), now=START)
         self.assertTrue(text.endswith(

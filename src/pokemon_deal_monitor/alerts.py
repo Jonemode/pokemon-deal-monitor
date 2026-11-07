@@ -44,7 +44,8 @@ def listing_url(url: str) -> str:
 def format_time_left(
     ends_at: datetime | None, now: datetime, timezone: tzinfo | None = None
 ) -> str:
-    """Return e.g. "85m left", or with a timezone, the local end
+    """Return e.g. "85m left", or from two hours out "2h 5m left", or
+    with a timezone, the local end
     time of an auction further off, e.g. "ends 3:10am", as found by the
     evening sweep."""
     if ends_at is None:
@@ -53,7 +54,10 @@ def format_time_left(
         local = ends_at.astimezone(timezone)
         return f"ends {local.hour % 12 or 12}:{local:%M}{local:%p}".lower()
     minutes = max(0, int((ends_at - now).total_seconds() // 60))
-    return f"{minutes}m left"
+    if minutes < 120:
+        return f"{minutes}m left"
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours}h {minutes}m left"
 
 
 def format_alert(
