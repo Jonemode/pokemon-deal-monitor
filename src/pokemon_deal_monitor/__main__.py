@@ -271,8 +271,22 @@ def main() -> None:
         last_auction_poll = None
         # When each game's Buy It Now searches last ran, by game and search.
         last_searched = {pricer.game.key: {} for pricer in pricers}
+        paused = False
         while True:
             started = time.monotonic()
+            # No polls during quiet hours, saving eBay calls: the evening
+            # sweep has already found the auctions ending then, and each
+            # Buy It Now search reaches back past their start.
+            if quiet_hours is not None and quiet_hours.contains(utc_now()):
+                if not paused:
+                    logger.info("Quiet hours: polls paused until %s",
+                                f"{quiet_hours.end:%H:%M}")
+                    paused = True
+                wait_until(started + args.interval, listener)
+                continue
+            if paused:
+                logger.info("Quiet hours over: polls resumed")
+                paused = False
             auctions_due = (
                 last_auction_poll is None
                 or started - last_auction_poll

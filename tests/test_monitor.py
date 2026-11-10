@@ -471,6 +471,13 @@ class TestAuctionCutoff(unittest.TestCase):
         now = pacific(17, 20, 30)
         self.assertEqual(auction_cutoff(now), now + timedelta(hours=2))
 
+    def test_evening_sweep_before_midnight_to_5am_quiet_hours(self):
+        quiet = QuietHours(time(0), time(5), PACIFIC)
+        # From 10pm, auctions ending by 5am are searched for.
+        self.assertEqual(auction_cutoff(pacific(17, 22), quiet), pacific(18, 5))
+        self.assertEqual(auction_cutoff(pacific(17, 21, 59), quiet),
+                         pacific(17, 23, 59))
+
     def test_evening_extends_to_end_of_quiet_hours(self):
         for now in (pacific(17, 20), pacific(17, 21, 59)):
             self.assertEqual(auction_cutoff(now, QUIET), pacific(18, 7))
