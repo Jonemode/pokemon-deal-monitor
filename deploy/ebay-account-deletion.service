@@ -1,0 +1,26 @@
+# Answers eBay's Marketplace Account Deletion notifications, behind Caddy.
+# Installed by make deploy; see deploy/README.md.
+[Unit]
+Description=eBay account deletion notification endpoint
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=monitor
+Group=monitor
+WorkingDirectory=/opt/pokemon-deal-monitor
+Environment=PYTHONPATH=src
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 -m pokemon_deal_monitor.account_deletion
+Restart=always
+RestartSec=10
+
+# It writes nothing.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

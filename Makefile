@@ -46,10 +46,13 @@ run:
 deploy:
 	@git diff --quiet HEAD || echo "Warning: uncommitted changes are not deployed."
 	git archive HEAD | ssh $(DEPLOY_HOST) 'sudo -u monitor tar -x --no-overwrite-dir -C $(DEPLOY_DIR) \
-		&& install -m 644 $(DEPLOY_DIR)/deploy/pokemon-deal-monitor.service /etc/systemd/system/ \
+		&& install -m 644 $(DEPLOY_DIR)/deploy/pokemon-deal-monitor.service \
+			$(DEPLOY_DIR)/deploy/ebay-account-deletion.service /etc/systemd/system/ \
+		&& install -m 644 $(DEPLOY_DIR)/deploy/Caddyfile /etc/caddy/Caddyfile \
 		&& systemctl daemon-reload \
-		&& systemctl restart pokemon-deal-monitor \
-		&& systemctl is-active pokemon-deal-monitor'
+		&& systemctl restart pokemon-deal-monitor ebay-account-deletion \
+		&& systemctl reload caddy \
+		&& systemctl is-active pokemon-deal-monitor ebay-account-deletion caddy'
 
 logs:
 	ssh $(DEPLOY_HOST) journalctl -u pokemon-deal-monitor -f -o cat

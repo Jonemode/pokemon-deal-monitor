@@ -1,0 +1,11 @@
+# Caddy serves HTTPS for eBay's account deletion notifications, with a
+# certificate it gets and renews itself. Installed by make deploy as
+# /etc/caddy/Caddyfile. sslip.io resolves the name to the droplet's IP.
+167-71-16-111.sslip.io {
+	handle /ebay/account-deletion {
+		reverse_proxy 127.0.0.1:8080
+	}
+	handle {
+		respond 404
+	}
+}

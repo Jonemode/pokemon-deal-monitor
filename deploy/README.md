@@ -1,8 +1,10 @@
 # Running on a server
 
 The monitor runs on a DigitalOcean Droplet (Ubuntu 24.04, 1 GB) as a
-systemd service. It only makes outbound HTTPS calls, so the firewall allows
-SSH alone.
+systemd service. It only makes outbound HTTPS calls. A second service
+answers eBay's Marketplace Account Deletion notifications, which eBay
+requires apps to subscribe to, behind Caddy for HTTPS, so the firewall
+allows SSH, HTTP and HTTPS.
 
 ## Day to day
 
@@ -24,7 +26,11 @@ as root.
 
        apt-get update && apt-get upgrade -y
        apt-get install -y make sqlite3
-       ufw allow OpenSSH && ufw --force enable
+       ufw allow OpenSSH && ufw allow 80,443/tcp && ufw --force enable
+
+   Then install Caddy from its apt repository, following
+   https://caddyserver.com/docs/install#debian-ubuntu-raspbian. Put the
+   new server's IP in `deploy/Caddyfile`'s sslip.io name.
 
 2. Create the user the monitor runs as, with the project as its home:
 
@@ -48,4 +54,11 @@ as root.
 5. `make deploy` sets ownership, installs the service and starts it. The
    first time, also enable it so it starts on boot:
 
-       ssh pokemon-monitor systemctl enable pokemon-deal-monitor
+       ssh pokemon-monitor systemctl enable pokemon-deal-monitor ebay-account-deletion
+
+6. On eBay's developer portal, under Application Keysets, open the
+   production keyset's Notifications, choose Marketplace Account Deletion,
+   and enter the endpoint and token from `.env`
+   (`EBAY_DELETION_ENDPOINT`, `EBAY_DELETION_TOKEN`). eBay checks the
+   endpoint when you save; "Send Test Notification" should then show in
+   `journalctl -u ebay-account-deletion`.
