@@ -66,7 +66,7 @@ def format_alert(
     timezone: tzinfo | None = None,
 ) -> str:
     """Return a two-line Telegram HTML message: the card, set, and any
-    reverse holo or 1st edition, linked to the listing, then the price against value, which
+    reverse holo, 1st edition or grade, linked to the listing, then the price against value, which
     always comes first.
 
     Prices include shipping, as the value comparison does. An auction gives
@@ -79,7 +79,8 @@ def format_alert(
     item = candidate.item
     url = html.escape(listing_url(item.url))
     printing = (" · reverse" if card.reverse_holo else "") + (
-        " · 1st ed" if card.first_edition_required else "")
+        " · 1st ed" if card.first_edition_required else "") + (
+        f" · {candidate.grade}" if candidate.grade else "")
     heading = (
         f'<a href="{url}"><b>{html.escape(card.name)} · '
         f"{html.escape(card.set_name)}{printing}</b></a>"

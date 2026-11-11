@@ -121,6 +121,29 @@ class Deal:
     offer_cents: int | None = None
 
 
+def value_graded(prices: dict[str, PriceRecord], grade: int) -> Valuation | None:
+    """Return a graded card's value: PriceCharting's price for its grade
+    alone, never the ungraded price. None without one."""
+    pricecharting = prices.get(PRICECHARTING)
+    if pricecharting is None:
+        return None
+    cents = {
+        4: pricecharting.grade_4_cents,
+        5: pricecharting.grade_5_cents,
+        6: pricecharting.grade_6_cents,
+        7: pricecharting.grade_7_cents,
+        8: pricecharting.grade_8_cents,
+    }.get(grade)
+    if not cents:
+        return None
+    return Valuation(
+        value_cents=cents,
+        confident=True,
+        estimates={f"pricecharting_grade_{grade}": cents},
+        notes=(f"grade {grade} price",),
+    )
+
+
 def value_card(prices: dict[str, PriceRecord]) -> Valuation | None:
     """Return a value for a card from its cached prices.
 
@@ -352,13 +375,22 @@ class Pricer:
         now = now or utc_now()
         self.refresh_tcgplayer(now)
         self.refresh_pricecharting(card, now)
+        return value_card(self.fresh_prices(card, now))
 
-        prices = {
+    def graded_valuation(
+        self, card: Card, grade: int, now: datetime | None = None
+    ) -> Valuation | None:
+        """Value a graded copy at PriceCharting's price for its grade."""
+        now = now or utc_now()
+        self.refresh_pricecharting(card, now)
+        return value_graded(self.fresh_prices(card, now), grade)
+
+    def fresh_prices(self, card: Card, now: datetime) -> dict[str, PriceRecord]:
+        return {
             source: record
             for source, record in self.storage.get_prices(card.identifier).items()
             if now - record.fetched_at <= PRICE_STALE_LIMIT
         }
-        return value_card(prices)
 
     def refresh_tcgplayer(self, now: datetime) -> None:
         if self.game.tcgplayer is None:
@@ -408,8 +440,10 @@ class Pricer:
             source=PRICECHARTING,
             fetched_at=now,
             raw_cents=price.ungraded_cents,
+            grade_4_cents=price.grade_4_cents,
             grade_5_cents=price.grade_5_cents,
             grade_6_cents=price.grade_6_cents,
             grade_7_cents=price.grade_7_cents,
+            grade_8_cents=price.grade_8_cents,
             sales_volume=price.sales_volume,
         ))

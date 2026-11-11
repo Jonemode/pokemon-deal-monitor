@@ -38,7 +38,7 @@ NOT_FIRST_EDITION_PATTERN = re.compile(r"\b(?:no|not|non) (?:1st|first)\b")
 UNLIMITED_PATTERN = re.compile(r"\b(?:unlimited|unl)\b")
 NON_HOLO_PATTERN = re.compile(r"\bnon ?holo|\bno holo\b")
 REVERSE_HOLO_PATTERN = re.compile(
-    r"\breverse\b|\brev holo\b|\bfirework|\bswirl|\bcosmo"
+    r"\breverse\b|\brev holo\b|\brev foil\b|\bfirework|\bswirl|\bcosmo"
 )
 # Sellers label the non-holo version of a reverse holo card "Regular".
 REGULAR_PATTERN = re.compile(r"\bregular\b|\b(?:non|not) reverse\b")

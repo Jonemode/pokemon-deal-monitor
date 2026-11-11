@@ -12,6 +12,7 @@ from .ebay import (
     parse_time,
 )
 from .game import ENGLISH, Game
+from .graded import Grade, parse_grade, strip_grade
 from .matcher import Match
 from .storage import Listing, Storage, UpsertResult, utc_now
 from .valuation import (
@@ -58,6 +59,8 @@ class Candidate:
     details: ItemDetails | None = None
     # Alerts with no confident value, under the card's alert_without_value.
     no_value: bool = False
+    # A graded listing's grade, which it's valued at.
+    grade: Grade | None = None
 
 
 @dataclass
@@ -104,14 +107,18 @@ def stored_details(storage: Storage, item_id: str) -> ItemDetails | None:
 
 def value_listing(
     pricer: Pricer | None, match: Match, item: EbayItem, listing: Listing,
-    now: datetime,
+    now: datetime, grade: Grade | None = None,
 ) -> Deal | None:
     if pricer is None:
         return None
-    valuation = pricer.valuation(match.card, now=now)
+    if grade is None:
+        valuation = pricer.valuation(match.card, now=now)
+        rules = pricer.game.rules_for(match.card)
+    else:
+        valuation = pricer.graded_valuation(match.card, grade.price_grade, now=now)
+        rules = pricer.game.graded_rules
     if valuation is None:
         return None
-    rules = pricer.game.rules_for(match.card)
     if item.auction:
         return evaluate_auction(listing.total_cents, listing.shipping_cents,
                                 valuation, rules)
@@ -170,7 +177,7 @@ def poll_once(
     candidates so an alert that failed to send is retried.
     """
     now = now or utc_now()
-    queries = game.searches if queries is None else queries
+    queries = game.searches + game.graded_searches if queries is None else queries
     poll = PollResult()
     seen = set()
     # Cleared when eBay rate limits or rejects a details lookup, since the
@@ -186,8 +193,10 @@ def poll_once(
         progress = f"[{index}/{len(queries)}]"
         logger.info("%s Searching %s %r", progress, kind, query)
         try:
+            graded_search = query in game.graded_searches
             items = client.search(query, auctions_ending_before=ending_before,
-                                  us_sellers_only=game.us_sellers_only)
+                                  us_sellers_only=game.us_sellers_only,
+                                  graded=graded_search)
         except (EbayError, OSError) as error:
             logger.warning("Search %r failed: %s", query, error)
             poll.errors.append(f"{query}: {error}")
@@ -205,7 +214,16 @@ def poll_once(
             seen.add(item.item_id)
             new_items += 1
 
-            matches = [] if is_graded(item) else game.title_rules.match(item.title)
+            grade = None
+            if not graded_search:
+                matches = [] if is_graded(item) else game.title_rules.match(item.title)
+            elif is_graded(item) and (grade := parse_grade(item.title)):
+                matches = [
+                    match for match in game.title_rules.match(strip_grade(item.title))
+                    if match.card.set_name in game.graded_sets
+                ]
+            else:
+                matches = []
             best = matches[0] if matches else None
 
             listing = item.to_listing(
@@ -218,9 +236,10 @@ def poll_once(
                 continue
             matched += 1
 
-            deal = value_listing(pricer, best, item, listing, now)
+            deal = value_listing(pricer, best, item, listing, now, grade)
             no_value = (
-                pricer is not None
+                grade is None
+                and pricer is not None
                 and pricer.game.rules_for(best.card).alert_without_value
                 and (deal is None or not deal.valuation.confident)
             )
@@ -253,7 +272,7 @@ def poll_once(
 
             if result != UpsertResult.UNCHANGED or qualifies:
                 poll.candidates.append(
-                    Candidate(item, best, result, deal, details, no_value)
+                    Candidate(item, best, result, deal, details, no_value, grade)
                 )
 
         # For tuning searches: how far back a Buy It Now search reaches,

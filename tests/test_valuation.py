@@ -291,8 +291,9 @@ class FakeTcgplayer:
 
 PC_PRICE = PriceChartingPrice(
     product_id="6910", product_name="Lugia [1st Edition] #9",
-    ungraded_cents=250000, grade_5_cents=300000, grade_6_cents=None,
-    grade_7_cents=450000,
+    ungraded_cents=250000, grade_4_cents=None, grade_5_cents=300000,
+    grade_6_cents=None,
+    grade_7_cents=450000, grade_8_cents=None,
     sales_volume=37,
 )
 

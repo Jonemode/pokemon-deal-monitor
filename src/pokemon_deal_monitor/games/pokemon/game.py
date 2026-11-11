@@ -29,6 +29,11 @@ SEARCHES = [
     "pokemon wotc promo",
 ]
 
+# Graded copies, valued at PriceCharting's price for their grade. Not
+# "reverse holo": their slabs' labels, which titles copy, say "REV.FOIL".
+GRADED_SEARCHES = ["pokemon legendary collection"]
+GRADED_SETS = frozenset({"Legendary Collection"})
+
 # Searches run less often than every poll. Each still reaches back many
 # hours, so these only delay alerts. Polls are 4 minutes apart, so a search
 # runs on the first poll after its interval: use multiples of 4 minutes.
@@ -40,6 +45,8 @@ SEARCH_INTERVALS = {
     "pokemon southern islands": timedelta(minutes=8),
     "pokemon wotc promo": timedelta(minutes=8),
     "pokemon black star promo": timedelta(minutes=12),
+    # Few graded copies are listed.
+    GRADED_SEARCHES[0]: timedelta(minutes=12),
 }
 
 # How far over value a listing's total can be and still alert, for every
@@ -53,6 +60,12 @@ MAX_OVER_VALUE = 0.30
 MIN_AUCTION_DISCOUNT = 0.20
 ALERT_RULES = replace(CardRules.up_to_over_value(MAX_OVER_VALUE),
                       min_auction_discount=MIN_AUCTION_DISCOUNT)
+
+# Graded listings alert up to this far over their grade's price, with a
+# maximum bid to match.
+GRADED_MAX_OVER_VALUE = 0.05
+GRADED_RULES = replace(CardRules.up_to_over_value(GRADED_MAX_OVER_VALUE),
+                       min_auction_discount=MIN_AUCTION_DISCOUNT)
 
 # Promos skip the many worth only a few dollars.
 PROMO_RULES = replace(ALERT_RULES, min_value_cents=5000)
@@ -84,6 +97,9 @@ POKEMON = Game(
     tcgplayer=TCGPLAYER,
     pricecharting_ids_path=PRODUCT_IDS_PATH,
     default_rules=ALERT_RULES,
+    graded_searches=GRADED_SEARCHES,
+    graded_sets=GRADED_SETS,
+    graded_rules=GRADED_RULES,
     set_rules={"Wizards Black Star Promos": PROMO_RULES},
     # Each replaces its set's rules.
     card_rules={

@@ -38,9 +38,11 @@ class PriceChartingPrice:
     product_name: str
     # Prices in cents; None when PriceCharting has no value for that grade.
     ungraded_cents: int | None
+    grade_4_cents: int | None
     grade_5_cents: int | None
     grade_6_cents: int | None
     grade_7_cents: int | None
+    grade_8_cents: int | None
     # Units sold over the last year, across all grades.
     sales_volume: int | None
 
@@ -53,14 +55,16 @@ def optional_int(value) -> int | None:
 
 def parse_product(product: dict) -> PriceChartingPrice:
     # PriceCharting reuses video game field names for card grades:
-    # "loose" is ungraded and "cib" is grade 7.
+    # "loose" is ungraded, "cib" is grade 7 or 7.5 and "new" 8 or 8.5.
     return PriceChartingPrice(
         product_id=str(product["id"]),
         product_name=product.get("product-name", ""),
         ungraded_cents=optional_int(product.get("loose-price")),
+        grade_4_cents=optional_int(product.get("condition-14-price")),
         grade_5_cents=optional_int(product.get("condition-15-price")),
         grade_6_cents=optional_int(product.get("condition-16-price")),
         grade_7_cents=optional_int(product.get("cib-price")),
+        grade_8_cents=optional_int(product.get("new-price")),
         sales_volume=optional_int(product.get("sales-volume")),
     )
 

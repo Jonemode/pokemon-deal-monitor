@@ -79,6 +79,12 @@ MIGRATIONS = [
     """
     ALTER TABLE prices ADD COLUMN grade_6_cents INTEGER;
     """,
+    """
+    ALTER TABLE prices ADD COLUMN grade_4_cents INTEGER;
+    """,
+    """
+    ALTER TABLE prices ADD COLUMN grade_8_cents INTEGER;
+    """,
 ]
 
 
@@ -126,6 +132,8 @@ class PriceRecord:
     grade_5_cents: int | None = None
     grade_7_cents: int | None = None
     grade_6_cents: int | None = None
+    grade_4_cents: int | None = None
+    grade_8_cents: int | None = None
     sales_volume: int | None = None
 
 
@@ -330,14 +338,16 @@ class Storage:
                 """
                 INSERT OR REPLACE INTO prices (
                     card_identifier, source, raw_cents, grade_5_cents,
-                    grade_6_cents, grade_7_cents, sales_volume, fetched_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    grade_6_cents, grade_7_cents, sales_volume, fetched_at,
+                    grade_4_cents, grade_8_cents
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     record.card_identifier, record.source, record.raw_cents,
                     record.grade_5_cents, record.grade_6_cents,
                     record.grade_7_cents, record.sales_volume,
-                    format_time(record.fetched_at),
+                    format_time(record.fetched_at), record.grade_4_cents,
+                    record.grade_8_cents,
                 ),
             )
 

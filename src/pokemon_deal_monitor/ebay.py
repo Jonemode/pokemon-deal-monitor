@@ -29,6 +29,7 @@ MIN_BUY_IT_NOW_PRICE_USD = 10
 # are never alerted on, and filtering them out on eBay's side lets each
 # search's 200 results reach back further.
 UNGRADED_CONDITION_ID = 4000
+GRADED_CONDITION_ID = 2750
 # Limits a search to sellers in the US.
 US_SELLERS_FILTER = ",itemLocationCountry:US"
 PAGE_LIMIT = 200
@@ -260,10 +261,12 @@ class EbayClient:
         limit: int = PAGE_LIMIT,
         auctions_ending_before: datetime | None = None,
         us_sellers_only: bool = True,
+        graded: bool = False,
     ) -> list[EbayItem]:
         """Return the newest Buy It Now card listings matching a query, or
         with auctions_ending_before, auctions ending by then, soonest first,
-        from up to MAX_AUCTION_PAGES pages."""
+        from up to MAX_AUCTION_PAGES pages. Ungraded cards only, or with
+        graded, graded only."""
         if auctions_ending_before is None:
             buying_filter = "buyingOptions:{FIXED_PRICE}"
             min_price = MIN_BUY_IT_NOW_PRICE_USD
@@ -283,7 +286,7 @@ class EbayClient:
                 "category_ids": CCG_INDIVIDUAL_CARDS_CATEGORY,
                 "filter": (
                     f"{buying_filter},"
-                    f"conditionIds:{{{UNGRADED_CONDITION_ID}}},"
+                    f"conditionIds:{{{GRADED_CONDITION_ID if graded else UNGRADED_CONDITION_ID}}},"
                     f"price:[{min_price}..{MAX_PRICE_USD}],priceCurrency:USD"
                     f"{US_SELLERS_FILTER if us_sellers_only else ''}"
                 ),

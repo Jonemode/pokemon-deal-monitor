@@ -46,6 +46,12 @@ class Game:
     default_rules: CardRules = DEFAULT_RULES
     set_rules: dict[str, CardRules] = field(default_factory=dict)
     card_rules: dict[str, CardRules] = field(default_factory=dict)
+    # Searches for graded listings, valued at their grade's price, of these
+    # sets' cards under these rules. Their intervals are in
+    # search_intervals too.
+    graded_searches: list[str] = field(default_factory=list)
+    graded_sets: frozenset[str] = frozenset()
+    graded_rules: CardRules = DEFAULT_RULES
 
     def rules_for(self, card: Card) -> CardRules:
         return self.card_rules.get(
@@ -59,7 +65,7 @@ class Game:
         given when each last ran. A second's leeway allows for a sleep
         waking slightly early."""
         return [
-            query for query in self.searches
+            query for query in self.searches + self.graded_searches
             if query not in last_searched
             or now - last_searched[query] >= self.search_intervals.get(
                 query, timedelta(seconds=poll_interval)

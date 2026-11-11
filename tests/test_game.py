@@ -125,7 +125,7 @@ class TestGame(unittest.TestCase):
 
 class TestSearchesDue(unittest.TestCase):
 
-    game = replace(POKEMON, searches=["busy", "quiet"],
+    game = replace(POKEMON, searches=["busy", "quiet"], graded_searches=[],
                    search_intervals={"quiet": timedelta(minutes=15)})
 
     def due(self, last_searched, now):
@@ -141,8 +141,13 @@ class TestSearchesDue(unittest.TestCase):
         # A sleep waking slightly early still counts.
         self.assertEqual(self.due(last, 899.5), ["busy", "quiet"])
 
+    def test_graded_searches_differ_from_ungraded(self):
+        for game in GAMES:
+            self.assertFalse(set(game.graded_searches) & set(game.searches))
+
     def test_pokemon_intervals_name_its_searches(self):
-        self.assertLessEqual(set(POKEMON.search_intervals), set(POKEMON.searches))
+        self.assertLessEqual(set(POKEMON.search_intervals),
+                             set(POKEMON.searches + POKEMON.graded_searches))
 
     def test_intervals_are_whole_numbers_of_polls(self):
         for game in GAMES:
@@ -155,9 +160,9 @@ class TestSearchesDue(unittest.TestCase):
         poll = timedelta(seconds=DEFAULT_POLL_INTERVAL_SECONDS)
         calls = sum(
             day / game.search_intervals.get(query, poll)
-            for game in GAMES for query in game.searches
+            for game in GAMES for query in game.searches + game.graded_searches
         )
-        self.assertEqual(calls, 3270)
+        self.assertEqual(calls, 3390)
 
 
 class TestPricerPerGame(unittest.TestCase):
