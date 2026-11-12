@@ -25,6 +25,7 @@ from .monitor import (
     AUCTION_POLL_INTERVAL,
     DEFAULT_POLL_INTERVAL_SECONDS,
     PollResult,
+    fetch_auction_results,
     poll_once,
 )
 from .pricecharting import PriceChartingClient, load_product_ids
@@ -262,6 +263,7 @@ def main() -> None:
                 poll_and_alert(client, storage, pricer, notify, auctions=True,
                                quiet_hours=quiet_hours)
             watch_and_alert(client, storage, notify)
+            fetch_auction_results(client, storage)
             return
 
         # Auctions are searched on every eighth poll at the default interval,
@@ -315,6 +317,7 @@ def main() -> None:
                 watch_and_alert(client, storage, notify, [
                     watch for watch in WATCHES if auctions_due or watch.every_poll
                 ])
+                fetch_auction_results(client, storage)
             except Exception:
                 # Keep the monitor alive through transient network failures.
                 logger.exception("Poll failed")

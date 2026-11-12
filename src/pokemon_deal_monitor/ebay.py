@@ -180,6 +180,33 @@ def parse_details(item: dict) -> ItemDetails:
     )
 
 
+@dataclass(frozen=True)
+class AuctionResult:
+    """An ended auction as eBay reports it."""
+    final_cents: int | None
+    bid_count: int | None
+    # False when it ended unsold, as when no one bid or the reserve wasn't
+    # met; None when eBay doesn't say.
+    sold: bool | None
+
+
+def parse_auction_result(item: dict) -> AuctionResult:
+    price = item.get("currentBidPrice") or item.get("price") or {}
+    sold_quantities = [
+        availability["estimatedSoldQuantity"]
+        for availability in item.get("estimatedAvailabilities", [])
+        if availability.get("estimatedSoldQuantity") is not None
+    ]
+    sold = sum(sold_quantities) > 0 if sold_quantities else None
+    if item.get("reservePriceMet") is False:
+        sold = False
+    return AuctionResult(
+        final_cents=to_cents(price["value"]) if "value" in price else None,
+        bid_count=item.get("bidCount"),
+        sold=sold,
+    )
+
+
 def parse_time(value: str | None) -> datetime | None:
     if value is None:
         return None
@@ -337,6 +364,16 @@ class EbayClient:
         """Return a listing's card condition, language and reserve."""
         quoted = urllib.parse.quote(item_id, safe="")
         return parse_details(
+            self._get_json(f"{self.host}/buy/browse/v1/item/{quoted}")
+        )
+
+    def auction_result(self, item_id: str) -> AuctionResult:
+        """Return an ended auction's final price, bids and whether it sold.
+
+        eBay keeps returning an auction after it ends, with its final bid.
+        """
+        quoted = urllib.parse.quote(item_id, safe="")
+        return parse_auction_result(
             self._get_json(f"{self.host}/buy/browse/v1/item/{quoted}")
         )
 

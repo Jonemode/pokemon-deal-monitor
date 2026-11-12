@@ -48,6 +48,10 @@ MIN_SEARCH_WINDOW = timedelta(hours=3)
 # poll may still be live. Only treat it as ended after this long unseen.
 ENDED_AFTER = timedelta(hours=24)
 
+# Alerted auctions are looked up this long after they end, for what they
+# sold for, last-second bids included.
+RESULT_DELAY = timedelta(minutes=2)
+
 # A listing's Card Condition and language are looked up again after this
 # long, or when a Buy It Now price changes, while it qualifies on price:
 # sellers revise them, for worse or better.
@@ -314,3 +318,38 @@ def poll_once(
     poll.items_seen = len(seen)
     storage.mark_ended(not_seen_since=now - ENDED_AFTER, now=now)
     return poll
+
+
+def fetch_auction_results(
+    client: EbayClient, storage: Storage, now: datetime | None = None
+) -> int:
+    """Look up the final price of each alerted auction that has ended,
+    once, for a record of what cards sell for. Returns the lookups made."""
+    now = now or utc_now()
+    looked_up = 0
+    for item_id in storage.auctions_awaiting_results(now - RESULT_DELAY):
+        try:
+            result = client.auction_result(item_id)
+        except EbayError as error:
+            if error.status != 404:
+                logger.warning("Result for %s failed: %s", item_id, error)
+                if stops_requests(error):
+                    break
+                continue
+            # Removed from eBay; nothing to look up again.
+            storage.save_auction_result(item_id, None, None, None, now=now)
+            looked_up += 1
+            continue
+        except OSError as error:
+            logger.warning("Result for %s failed: %s", item_id, error)
+            continue
+        looked_up += 1
+        storage.save_auction_result(item_id, result.final_cents,
+                                    result.bid_count, result.sold, now=now)
+        listing = storage.get_listing(item_id)
+        price = (f"${result.final_cents / 100:,.2f}"
+                 if result.final_cents is not None else "unknown")
+        outcome = {True: "sold", False: "unsold", None: "ended"}[result.sold]
+        logger.info("[result] %s at %s, %s bids | %s", outcome, price,
+                    result.bid_count, listing.title if listing else item_id)
+    return looked_up

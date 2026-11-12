@@ -105,6 +105,13 @@ MIGRATIONS = [
 
     CREATE INDEX listing_changes_item_id ON listing_changes (item_id);
     """,
+    # What an alerted auction sold for, looked up once it ends.
+    """
+    ALTER TABLE listings ADD COLUMN final_cents INTEGER;
+    ALTER TABLE listings ADD COLUMN bid_count INTEGER;
+    ALTER TABLE listings ADD COLUMN sold INTEGER;
+    ALTER TABLE listings ADD COLUMN result_fetched_at TEXT;
+    """,
 ]
 
 # Fields listing_changes records: a Buy It Now listing's total price, and
@@ -153,6 +160,12 @@ class StoredListing(Listing):
     card_condition: str | None = None
     language: str | None = None
     details_fetched_at: datetime | None = None
+    # An ended auction's result; see save_auction_result. All are None until
+    # result_fetched_at is set, and stay None if eBay no longer had it.
+    final_cents: int | None = None
+    bid_count: int | None = None
+    sold: bool | None = None
+    result_fetched_at: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -243,10 +256,11 @@ class Storage:
 
         fields = dict(row)
         for name in ("first_seen_at", "last_seen_at", "ended_at",
-                     "details_fetched_at", "created_at", "origin_at", "ends_at"):
+                     "details_fetched_at", "created_at", "origin_at", "ends_at",
+                     "result_fetched_at"):
             fields[name] = parse_time(fields[name])
         fields["shipping_known"] = bool(fields["shipping_known"])
-        for name in ("auction", "best_offer"):
+        for name in ("auction", "best_offer", "sold"):
             if fields[name] is not None:
                 fields[name] = bool(fields[name])
         return StoredListing(**fields)
@@ -425,6 +439,42 @@ class Storage:
                 (now_text, format_time(not_seen_since), now_text),
             )
         return cursor.rowcount
+
+    def auctions_awaiting_results(self, ended_before: datetime) -> list[str]:
+        """Return alerted auctions that ended before a time and haven't had
+        their result looked up, soonest ended first."""
+        rows = self.connection.execute(
+            """
+            SELECT item_id FROM listings
+            WHERE auction AND ends_at < ? AND result_fetched_at IS NULL
+            AND item_id IN (SELECT item_id FROM alerts)
+            ORDER BY ends_at
+            """,
+            (format_time(ended_before),),
+        ).fetchall()
+        return [row["item_id"] for row in rows]
+
+    def save_auction_result(
+        self,
+        item_id: str,
+        final_cents: int | None,
+        bid_count: int | None,
+        sold: bool | None,
+        now: datetime | None = None,
+    ) -> None:
+        """Store an ended auction's result. All None when eBay no longer
+        has the listing, so it isn't looked up again."""
+        with self.connection:
+            self.connection.execute(
+                """
+                UPDATE listings SET
+                    final_cents = ?, bid_count = ?, sold = ?,
+                    result_fetched_at = ?
+                WHERE item_id = ?
+                """,
+                (final_cents, bid_count, sold, format_time(now or utc_now()),
+                 item_id),
+            )
 
     def save_price(self, record: PriceRecord) -> None:
         with self.connection:
