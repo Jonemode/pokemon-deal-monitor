@@ -76,6 +76,8 @@ class EbayItem:
     condition: str | None = None
     image_url: str | None = None
     created_at: str | None = None
+    # When the first listing of a relisted item started.
+    origin_at: str | None = None
     # For an auction, price_cents is the current bid.
     auction: bool = False
     ends_at: datetime | None = None
@@ -99,6 +101,11 @@ class EbayItem:
             match_confidence=match_confidence,
             condition=self.condition,
             shipping_known=self.shipping_cents is not None,
+            auction=self.auction,
+            best_offer=self.best_offer,
+            created_at=parse_time(self.created_at),
+            origin_at=parse_time(self.origin_at),
+            ends_at=self.ends_at,
         )
 
 
@@ -203,6 +210,7 @@ def parse_item(summary: dict, auction: bool = False) -> EbayItem | None:
         condition=summary.get("condition"),
         image_url=summary.get("image", {}).get("imageUrl"),
         created_at=summary.get("itemCreationDate"),
+        origin_at=summary.get("itemOriginDate"),
         auction=auction,
         ends_at=parse_time(summary.get("itemEndDate")) if auction else None,
         bid_count=summary.get("bidCount") if auction else None,

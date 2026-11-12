@@ -193,14 +193,52 @@ class TestPollOnce(unittest.TestCase):
         self.assertEqual([c.item.item_id for c in poll.candidates], ["1"])
         self.assertEqual(len(self.transport.item_requests), 3)
 
-    def test_details_are_fetched_once(self):
+    def test_details_are_fetched_once_while_unchanged(self):
         searches = {"neo": search_response(item_summary("1", LUGIA, "900.00"))}
         self.poll(searches)
-        self.poll({"neo": search_response(item_summary("1", LUGIA, "800.00"))},
-                  now=START + timedelta(minutes=5))
+        self.poll(searches, now=START + timedelta(hours=23))
 
         self.assertEqual(self.transport.item_requests, [])
         self.assertIsNotNone(self.storage.get_listing("1").details_fetched_at)
+
+    def test_details_are_fetched_again_after_a_day(self):
+        searches = {"neo": search_response(item_summary("1", LUGIA, "900.00"))}
+        self.poll(searches, items={"1": item_response("Lightly played (Excellent)")})
+        # Revised to near mint: rejected a day ago, a candidate now.
+        poll = self.poll(searches, now=START + timedelta(hours=24))
+        self.assertEqual(len(self.transport.item_requests), 1)
+        self.assertEqual(len(poll.candidates), 1)
+        (change,) = self.storage.listing_changes("1")
+        self.assertEqual((change.field, change.old_value, change.new_value),
+                         ("card_condition", "Lightly played (Excellent)",
+                          "Near mint or better"))
+
+    def test_details_are_fetched_again_after_a_price_change(self):
+        self.poll({"neo": search_response(item_summary("1", LUGIA, "900.00"))})
+        self.poll({"neo": search_response(item_summary("1", LUGIA, "800.00"))},
+                  now=START + timedelta(minutes=5))
+        self.assertEqual(len(self.transport.item_requests), 1)
+        (change,) = self.storage.listing_changes("1")
+        self.assertEqual((change.field, change.old_value, change.new_value),
+                         ("total_cents", "90500", "80500"))
+
+    def test_details_of_listings_not_qualifying_are_not_refreshed(self):
+        self.poll({"neo": search_response(item_summary("1", LUGIA, "900.00"))})
+        self.poll({"neo": search_response(item_summary("1", LUGIA, "2900.00"))},
+                  now=START + timedelta(days=2))
+        self.assertEqual(self.transport.item_requests, [])
+
+    def test_stores_how_and_since_when_a_listing_is_sold(self):
+        summary = item_summary("1", LUGIA, "900.00", best_offer=True)
+        summary["itemOriginDate"] = "2026-09-01T08:00:00.000Z"
+        self.poll({"neo": search_response(summary)})
+        listing = self.storage.get_listing("1")
+        self.assertEqual((listing.auction, listing.best_offer), (False, True))
+        self.assertEqual(listing.created_at,
+                         datetime(2026, 10, 17, 12, 0, tzinfo=timezone.utc))
+        self.assertEqual(listing.origin_at,
+                         datetime(2026, 9, 1, 8, 0, tzinfo=timezone.utc))
+        self.assertIsNone(listing.ends_at)
 
     def test_unmatched_listing_details_not_fetched(self):
         self.poll({"neo": search_response(item_summary("1", "Pokemon Card Lot"))})
@@ -404,6 +442,33 @@ class TestPollOnce(unittest.TestCase):
         self.storage.record_alert("1", now=START)
         later = poll("700.00", START + timedelta(minutes=15))
         self.assertEqual(later.candidates, [])
+
+    def test_auction_bids_are_not_recorded_or_refetched(self):
+        def poll(bid, now):
+            self.transport = FakeTransport({"auction:neo": search_response(
+                auction_summary("1", LUGIA, bid=bid))})
+            client = EbayClient(CONFIG, transport=self.transport)
+            return poll_once(client, self.storage, GAME, queries=["neo"], now=now,
+                             pricer=FixedPricer(), auctions=True)
+
+        poll("500.00", START)
+        poll("600.00", START + timedelta(minutes=30))
+        self.assertEqual(self.transport.item_requests, [])
+        self.assertEqual(self.storage.listing_changes("1"), [])
+        listing = self.storage.get_listing("1")
+        self.assertTrue(listing.auction)
+        self.assertEqual(listing.ends_at,
+                         datetime(2026, 10, 17, 13, 0, tzinfo=timezone.utc))
+
+    def test_auctions_are_marked_ended_once_past_their_end(self):
+        client = EbayClient(CONFIG, transport=FakeTransport({
+            "auction:neo": search_response(auction_summary("1", LUGIA))}))
+        poll_once(client, self.storage, GAME, queries=["neo"], now=START,
+                  pricer=FixedPricer(), auctions=True)
+        # Ends at 13:00; a poll seeing nothing at 13:05 marks it ended.
+        self.storage.mark_ended(not_seen_since=START - timedelta(days=1),
+                                now=START + timedelta(minutes=65))
+        self.assertIsNotNone(self.storage.get_listing("1").ended_at)
 
     def test_unsent_deal_stays_candidate_until_alerted(self):
         def poll():

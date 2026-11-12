@@ -85,7 +85,32 @@ MIGRATIONS = [
     """
     ALTER TABLE prices ADD COLUMN grade_8_cents INTEGER;
     """,
+    # How each listing is sold and when it started, for re-checking
+    # listings later. Listings seen before are left blank.
+    """
+    ALTER TABLE listings ADD COLUMN auction INTEGER;
+    ALTER TABLE listings ADD COLUMN best_offer INTEGER;
+    ALTER TABLE listings ADD COLUMN created_at TEXT;
+    ALTER TABLE listings ADD COLUMN origin_at TEXT;
+    ALTER TABLE listings ADD COLUMN ends_at TEXT;
+
+    CREATE TABLE listing_changes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        item_id TEXT NOT NULL REFERENCES listings (item_id),
+        field TEXT NOT NULL,
+        old_value TEXT,
+        new_value TEXT,
+        changed_at TEXT NOT NULL
+    );
+
+    CREATE INDEX listing_changes_item_id ON listing_changes (item_id);
+    """,
 ]
+
+# Fields listing_changes records: a Buy It Now listing's total price, and
+# any listing's Card Condition. Auction bids change too often to record.
+TOTAL_FIELD = "total_cents"
+CARD_CONDITION_FIELD = "card_condition"
 
 
 @dataclass(frozen=True)
@@ -102,6 +127,15 @@ class Listing:
     condition: str | None = None
     # False when eBay gave no shipping cost, so shipping_cents is a guess.
     shipping_known: bool = True
+    # None for listings stored before these were kept.
+    auction: bool | None = None
+    best_offer: bool | None = None
+    # When eBay says the listing started, and when its first listing did,
+    # which is earlier for a relisted item.
+    created_at: datetime | None = None
+    origin_at: datetime | None = None
+    # When an auction ends.
+    ends_at: datetime | None = None
 
     @property
     def total_cents(self) -> int:
@@ -119,6 +153,15 @@ class StoredListing(Listing):
     card_condition: str | None = None
     language: str | None = None
     details_fetched_at: datetime | None = None
+
+
+@dataclass(frozen=True)
+class ListingChange:
+    item_id: str
+    field: str
+    old_value: str | None
+    new_value: str | None
+    changed_at: datetime
 
 
 @dataclass(frozen=True)
@@ -200,10 +243,33 @@ class Storage:
 
         fields = dict(row)
         for name in ("first_seen_at", "last_seen_at", "ended_at",
-                     "details_fetched_at"):
+                     "details_fetched_at", "created_at", "origin_at", "ends_at"):
             fields[name] = parse_time(fields[name])
         fields["shipping_known"] = bool(fields["shipping_known"])
+        for name in ("auction", "best_offer"):
+            if fields[name] is not None:
+                fields[name] = bool(fields[name])
         return StoredListing(**fields)
+
+    def listing_changes(self, item_id: str) -> list[ListingChange]:
+        """Return a listing's recorded changes, oldest first."""
+        rows = self.connection.execute(
+            "SELECT item_id, field, old_value, new_value, changed_at "
+            "FROM listing_changes WHERE item_id = ? ORDER BY id",
+            (item_id,),
+        ).fetchall()
+        return [ListingChange(**{**dict(row),
+                                 "changed_at": parse_time(row["changed_at"])})
+                for row in rows]
+
+    def _record_change(self, item_id: str, field: str, old, new,
+                       changed_at: str) -> None:
+        self.connection.execute(
+            "INSERT INTO listing_changes (item_id, field, old_value, new_value, "
+            "changed_at) VALUES (?, ?, ?, ?, ?)",
+            (item_id, field, None if old is None else str(old),
+             None if new is None else str(new), changed_at),
+        )
 
     def upsert_listing(
         self, listing: Listing, now: datetime | None = None
@@ -222,8 +288,9 @@ class Storage:
                     INSERT INTO listings (
                         item_id, title, url, price_cents, shipping_cents,
                         currency, card_identifier, match_confidence,
-                        condition, shipping_known, first_seen_at, last_seen_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        condition, shipping_known, first_seen_at, last_seen_at,
+                        auction, best_offer, created_at, origin_at, ends_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         listing.item_id, listing.title, listing.url,
@@ -231,6 +298,7 @@ class Storage:
                         listing.currency, listing.card_identifier,
                         listing.match_confidence, listing.condition,
                         listing.shipping_known, seen_at, seen_at,
+                        *self._sale_fields(listing),
                     ),
                 )
                 return UpsertResult.NEW
@@ -241,7 +309,8 @@ class Storage:
                     title = ?, url = ?, price_cents = ?, shipping_cents = ?,
                     currency = ?, card_identifier = ?, match_confidence = ?,
                     condition = ?, shipping_known = ?, last_seen_at = ?,
-                    ended_at = NULL
+                    ended_at = NULL, auction = ?, best_offer = ?,
+                    created_at = ?, origin_at = ?, ends_at = ?
                 WHERE item_id = ?
                 """,
                 (
@@ -249,13 +318,26 @@ class Storage:
                     listing.shipping_cents, listing.currency,
                     listing.card_identifier, listing.match_confidence,
                     listing.condition, listing.shipping_known, seen_at,
+                    *self._sale_fields(listing),
                     listing.item_id,
                 ),
             )
+            price_changed = existing.total_cents != listing.total_cents
+            if price_changed and not listing.auction:
+                self._record_change(listing.item_id, TOTAL_FIELD,
+                                    existing.total_cents, listing.total_cents,
+                                    seen_at)
 
-        if existing.total_cents != listing.total_cents:
+        if price_changed:
             return UpsertResult.PRICE_CHANGED
         return UpsertResult.UNCHANGED
+
+    @staticmethod
+    def _sale_fields(listing: Listing) -> tuple:
+        def time(value):
+            return format_time(value) if value is not None else None
+        return (listing.auction, listing.best_offer, time(listing.created_at),
+                time(listing.origin_at), time(listing.ends_at))
 
     def save_details(
         self,
@@ -264,14 +346,23 @@ class Storage:
         language: str | None,
         now: datetime | None = None,
     ) -> None:
+        """Store a listing's details, recording a Card Condition that
+        differs from the one fetched before."""
+        fetched_at = format_time(now or utc_now())
+        existing = self.get_listing(item_id)
         with self.connection:
+            if (existing is not None and existing.details_fetched_at is not None
+                    and existing.card_condition != card_condition):
+                self._record_change(item_id, CARD_CONDITION_FIELD,
+                                    existing.card_condition, card_condition,
+                                    fetched_at)
             self.connection.execute(
                 """
                 UPDATE listings SET
                     card_condition = ?, language = ?, details_fetched_at = ?
                 WHERE item_id = ?
                 """,
-                (card_condition, language, format_time(now or utc_now()), item_id),
+                (card_condition, language, fetched_at, item_id),
             )
 
     def should_alert(self, item_id: str) -> bool:
@@ -318,17 +409,20 @@ class Storage:
     def mark_ended(
         self, not_seen_since: datetime, now: datetime | None = None
     ) -> int:
-        """Mark live listings not seen since a cutoff as ended.
+        """Mark live listings not seen since a cutoff as ended, and
+        auctions past their end.
 
         Returns the number of listings marked.
         """
+        now_text = format_time(now or utc_now())
         with self.connection:
             cursor = self.connection.execute(
                 """
                 UPDATE listings SET ended_at = ?
-                WHERE ended_at IS NULL AND last_seen_at < ?
+                WHERE ended_at IS NULL
+                AND (last_seen_at < ? OR (auction AND ends_at < ?))
                 """,
-                (format_time(now or utc_now()), format_time(not_seen_since)),
+                (now_text, format_time(not_seen_since), now_text),
             )
         return cursor.rowcount
 

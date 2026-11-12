@@ -48,6 +48,11 @@ MIN_SEARCH_WINDOW = timedelta(hours=3)
 # poll may still be live. Only treat it as ended after this long unseen.
 ENDED_AFTER = timedelta(hours=24)
 
+# A listing's Card Condition and language are looked up again after this
+# long, or when a Buy It Now price changes, while it qualifies on price:
+# sellers revise them, for worse or better.
+DETAILS_MAX_AGE = timedelta(hours=24)
+
 
 @dataclass(frozen=True)
 class Candidate:
@@ -98,9 +103,17 @@ def details_rejection(
     return None
 
 
-def stored_details(storage: Storage, item_id: str) -> ItemDetails | None:
+def stored_details(
+    storage: Storage, item_id: str, now: datetime | None = None,
+    price_changed: bool = False,
+) -> ItemDetails | None:
+    """A listing's stored details, or None if they were never fetched or,
+    given now, are due to be fetched again."""
     stored = storage.get_listing(item_id)
     if stored is None or stored.details_fetched_at is None:
+        return None
+    if now is not None and (now - stored.details_fetched_at >= DETAILS_MAX_AGE
+                            or (price_changed and not stored.auction)):
         return None
     return ItemDetails(stored.card_condition, stored.language)
 
@@ -246,10 +259,12 @@ def poll_once(
             qualifies = no_value or (deal is not None and deal.qualifies)
 
             # Each detail lookup is a call, so only listings that would alert
-            # on price are looked up, once, then read from storage. One that
-            # qualifies later, after a price drop or as its auction's bid
-            # changes, is looked up then.
-            details = stored_details(storage, item.item_id)
+            # on price are looked up, then read from storage until they're
+            # due again. One that qualifies later, after a price drop or as
+            # its auction's bid changes, is looked up then.
+            details = stored_details(
+                storage, item.item_id, now if qualifies else None,
+                price_changed=result == UpsertResult.PRICE_CHANGED)
             if details is None and qualifies:
                 if not can_fetch_details:
                     continue
