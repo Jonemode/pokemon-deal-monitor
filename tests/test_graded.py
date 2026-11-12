@@ -178,9 +178,9 @@ class TestGradedPolls(unittest.TestCase):
                                   shipping="0.00")
         summary["condition"] = "Graded"
         (candidate,) = self.poll(summary, auctions=True).candidates
-        # A current bid 20% or more below $700, and a max bid 5% over it.
+        # A current bid 20% or more below $700, and a max bid at it.
         self.assertTrue(candidate.deal.qualifies)
-        self.assertEqual(candidate.deal.max_bid_cents, 73500)
+        self.assertEqual(candidate.deal.max_bid_cents, 70000)
 
     def test_alert_names_the_grade(self):
         (candidate,) = self.poll(self.graded("1", 5, "500.00")).candidates
@@ -193,7 +193,7 @@ class TestGradedRules(unittest.TestCase):
     def test_5_percent_over(self):
         self.assertEqual(GRADED_RULES.min_discount, -0.05)
         self.assertEqual(GRADED_RULES.max_offer_premium, 0.05)
-        self.assertEqual(GRADED_RULES.max_bid_discount, -0.05)
+        self.assertEqual(GRADED_RULES.max_bid_discount, 0.0)
 
     def test_legendary_collection_is_searched_graded(self):
         self.assertEqual(POKEMON.graded_searches, [QUERY])

@@ -61,11 +61,13 @@ MIN_AUCTION_DISCOUNT = 0.20
 ALERT_RULES = replace(CardRules.up_to_over_value(MAX_OVER_VALUE),
                       min_auction_discount=MIN_AUCTION_DISCOUNT)
 
-# Graded listings alert up to this far over their grade's price, with a
-# maximum bid to match.
+# Graded listings alert up to this far over their grade's price. Auctions
+# bid no more than the grade's price, since PriceCharting's prices for
+# grades 4 to 6 can follow a single sale.
 GRADED_MAX_OVER_VALUE = 0.05
 GRADED_RULES = replace(CardRules.up_to_over_value(GRADED_MAX_OVER_VALUE),
-                       min_auction_discount=MIN_AUCTION_DISCOUNT)
+                       min_auction_discount=MIN_AUCTION_DISCOUNT,
+                       max_bid_discount=0.0)
 
 # Promos skip the many worth only a few dollars.
 PROMO_RULES = replace(ALERT_RULES, min_value_cents=5000)
